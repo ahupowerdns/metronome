@@ -12,6 +12,7 @@ namespace YaHTTP {
 
   class Response;
   class Request;
+  class AsyncResponseLoader;
 
   class Request {
   public:
@@ -52,6 +53,25 @@ namespace YaHTTP {
      std::string body;
 
      friend std::istream& operator>>(std::istream& is, Response &resp);
+     friend class AsyncResponseLoader;
+  };
+
+  class AsyncResponseLoader {
+  public:
+    AsyncResponseLoader(Response *response) {
+      state = 0;
+      chunked = false;
+      chunk_size = 0;
+      this->response = response;
+    };
+    bool feed(const std::string &somedata);
+  private:
+    Response *response;
+    int state;
+    std::string buffer;
+    bool chunked;
+    int chunk_size;
+    std::ostringstream bodybuf;
   };
 
   Request::Request() {};
@@ -97,73 +117,16 @@ namespace YaHTTP {
      };
   Response::~Response() {};
 
-  void Response::load(std::istream &is) {  
-     int state = 0;
-     std::ostringstream bodybuf;
-
+  void Response::load(std::istream &is) {
+     AsyncResponseLoader arl(this);
      while(is.good()) {
-        std::stringbuf buf;
-        is.get(buf, '\n');
-        if (is.fail() && !is.bad()) is.clear(); // just didn't read anything
-        is.get();
-        std::string line=buf.str();
-        Utility::trim_right(line);
-
-        if (state == 0) { // startup line
-           std::string ver;
-           std::istringstream iss(line);
-           iss >> ver >> status >> statusText;
-           if (ver != "HTTP/1.1") 
-              throw ParseError("Not a HTTP response");
-           state = 1;
-        } else if (state == 1) {
-           std::string key,value;
-           size_t pos;
-           if (line.empty()) {
-               state = 2;
-               break;
-           }
-           // split headers
-           if ((pos = line.find_first_of(": ")) == std::string::npos) 
-             throw ParseError("Malformed header found in response");
-           key = line.substr(0, pos);
-           value = line.substr(pos+2);
-           std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-           headers[key] = value;
+        char buf[1024];
+        is.read(buf, 1024);
+        if (is.gcount()) { // did we actually read anything 
+           is.clear();
+           if (arl.feed(std::string(buf, is.gcount())) == true) return; // completed
         }
      }
-
-     if (!is.good() || state != 2) throw ParseError("Unexpected end of data");
-
-     bool chunked = (headers.find("transfer-encoding") != headers.end() && headers["transfer-encoding"] == "chunked");
-     int chunk_size = 0;
-     while(is.good()) {
-         size_t n;
-         char buf[1024] = {0};
-
-         if (chunked) {
-           if (chunk_size == 0) {
-             // read chunk length
-             is.get(buf, 1024);
-             is.get();
-             sscanf(buf, "%x", &chunk_size);
-             if (!chunk_size) break;
-           } else {
-             is.read(buf, chunk_size);
-             is.get();
-             bodybuf << buf;
-             chunk_size = 0;
-           }
-         } else {
-           is.readsome(buf,sizeof buf);
-           n = is.gcount();
-           if (n > 0) {
-             bodybuf << buf;
-           } else break;
-         }
-     }
-
-     body = bodybuf.str();
      // FIXME: parse cookies
   };
 
@@ -186,12 +149,84 @@ namespace YaHTTP {
   };
 
   std::ostream& operator<<(std::ostream& os, Response &resp) {
-       resp.write(os);
-       return os;
+     resp.write(os);
+     return os;
   };
 
   std::istream& operator>>(std::istream& is, Response &resp) {
-       resp.load(is);
-       return is;
+     resp.load(is);
+     return is;
   };
+
+  bool AsyncResponseLoader::feed(const std::string &somedata) {
+       size_t pos;
+       buffer.append(somedata);
+       while(state < 2) {
+          // need to find newline in buffer
+          if ((pos = buffer.find('\n')) == std::string::npos) return false;
+          std::string line(buffer.begin(), buffer.begin()+pos); // exclude newline
+          buffer.erase(buffer.begin(), buffer.begin()+pos+1); // remove line from buffer including newline
+          if (state == 0) { // startup line
+             std::string ver;
+             std::istringstream iss(line);
+             iss >> ver >> response->status >> response->statusText;
+             if (ver != "HTTP/1.1") 
+                throw ParseError("Not a HTTP response");
+             state = 1;
+          } else if (state == 1) {
+             std::string key,value;
+             size_t pos;
+             if (line.empty()) {
+               chunked = (response->headers.find("transfer-encoding") != response->headers.end() && response->headers["transfer-encoding"] == "chunked");
+               state = 2;
+               break;
+             }
+             // split headers
+             if ((pos = line.find_first_of(": ")) == std::string::npos)
+               throw ParseError("Malformed hader");
+             key = line.substr(0, pos);
+             value = line.substr(pos+2);
+             std::transform(key.begin(), key.end(), key.begin(), ::tolower);
+             response->headers[key] = value;
+          }
+       }
+
+       if (buffer.size() == 0) return false;
+      
+       while(buffer.size() > 0) {
+         char buf[1024] = {0};
+
+         if (chunked) {
+           if (chunk_size == 0) {
+             // read chunk length
+             if ((pos = buffer.find('\n')) == std::string::npos) return false;
+             if (pos > 1023) 
+               throw ParseError("Impossible chunk_size");
+             buffer.copy(buf, pos);
+             buf[pos]=0; // just in case...
+             buffer.erase(buffer.begin(), buffer.begin()+pos+1); // remove line from buffer
+             sscanf(buf, "%x", &chunk_size);
+             if (!chunk_size) break; // last chunk
+           } else {
+             if (buffer.size() < static_cast<size_t>(chunk_size+1)) return false; // expect newline
+             if (buffer.at(chunk_size) != '\n') return false; // there should be newline.
+             buffer.copy(buf, chunk_size);
+             buffer.erase(buffer.begin(), buffer.begin()+chunk_size+1);
+             bodybuf << buf;
+             chunk_size = 0;
+             if (buffer.size() == 0) return false; // just in case
+           }
+         } else {
+             bodybuf << buffer;
+             buffer = "";
+         }
+       }
+
+       if (chunk_size!=0) return false; // need more data
+
+       bodybuf.flush();
+       response->body = bodybuf.str();
+       bodybuf.str("");
+       return true;
+    };
 };

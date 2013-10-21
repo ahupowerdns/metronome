@@ -3,78 +3,109 @@
 #include <sstream>
 #include <string>
 
+#ifndef YAHTTP_MAX_URL_LENGTH
+#define YAHTTP_MAX_URL_LENGTH 2048
+#endif 
+
 namespace YaHTTP {
   class URL {
-  public:
-      URL() {};
-      URL(const std::string& url) {
-          parse(url);
-      }
-      URL(const char *url) { 
-          parse(std::string(url));
-      }
-      bool parse(const std::string& url) {
-          // get protocol first
-          size_t pos1,pos2;
-          if ( (pos1 = url.find_first_of(":")) == std::string::npos ) return false;
-          protocol = url.substr(0,pos1);
+   private: 
+      bool parseSchema(const std::string& url, size_t &pos) {
+          size_t pos1;
+          if (pos >= url.size()) return false; // no data
+          if ( (pos1 = url.find_first_of(":",pos)) == std::string::npos ) return false; // schema is mandatory
+          protocol = url.substr(pos, pos1-pos);
           if (protocol == "http") port = 80;
           if (protocol == "https") port = 443;
+          pos = pos1+1; // after :
+          if (url.compare(pos, 2, "//") == 0) {
+             pathless = false; // if this is true we put rest into parameters
+             pos += 2;
+          }
+          return true;
+      }
 
-          if (pos1+1 == url.length()) return true; // just protocol
-  
-          // get the part after proto, before host
-          if (url.compare(pos1, 3, "://") == 0) {
-             if ( (pos2 = url.find_first_of("/", pos1+3)) == std::string::npos ) return false;
-             host = url.substr(pos1+3,pos2-pos1-3);
+      bool parseHost(const std::string& url, size_t &pos) {
+          size_t pos1;
+          if (pos >= url.size()) return true; // no data
+          if ( (pos1 = url.find_first_of("/", pos)) == std::string::npos ) {
+             host = url.substr(pos);
+             path = "/";
+             pos = url.size();
           } else {
-             if ( (pos2 = url.find_first_of("/", pos1)) == std::string::npos ) {
-                host = url.substr(pos1+1);
-                return true;
-             }
-             host = url.substr(pos1+1,pos2);
+             host = url.substr(pos, pos1-pos);
+             pos = pos1;
           }
-  
-          path = url.substr(pos2);
-  
-          // now we have host, see if it contains username or port
-          if ( (pos1 = host.find_first_of("@")) != std::string::npos ) {
-             // yep.
-             username = host.substr(0,pos1);
-             host = host.substr(pos1+1);
-             // does username contain password?
-             if ( (pos1 = username.find_first_of(":")) != std::string::npos ) {
-               password = username.substr(pos1+1);
-               username = username.substr(0,pos1);
-             }
+          return true;
+      }
+
+      bool parseUserPass(const std::string& url, size_t &pos) {
+          size_t pos1,pos2;
+          if (pos >= url.size()) return true; // no data
+
+          if ( (pos1 = url.find_first_of("@",pos)) == std::string::npos ) return true; // no userinfo
+          pos2 = url.find_first_of(":",pos);
+
+          if (pos2 != std::string::npos) { // comes with password
+             username = url.substr(pos, pos2 - pos);
+             password = url.substr(pos2+1, pos1 - pos2 - 1);
+             password = Utility::decodeURL(password);
+          } else {
+             username = url.substr(pos+1, pos1 - pos);
           }
-          // see if there is port
-          if ( (pos1 = host.find_first_of(":")) != std::string::npos ) {
-             port = atoi(host.substr(pos1+1).c_str());
-             host = host.substr(0,pos1);
-          }
-          // see if path has parameters
-          if ( (pos1 = path.find_first_of("?")) != std::string::npos ) {
-             parameters = path.substr(pos1+1);
-             path = path.substr(0,pos1);
-          }
-          // see if parameters has anchors
-          if ( (pos1 = parameters.find_first_of("#")) != std::string::npos) {
-             anchor = parameters.substr(pos1+1);
-             parameters = parameters.substr(0,pos1);
-          }
-  
-          // decode some parts
+          pos = pos1+1;
           username = Utility::decodeURL(username);
-          password = Utility::decodeURL(password);
+          return true;
+      };
+
+      bool parsePath(const std::string& url, size_t &pos) {
+          size_t pos1;
+          if (pos >= url.size()) return true; // no data
+          if (url[pos] != '/') return false; // not an url
+          if ( (pos1 = url.find_first_of("?", pos)) == std::string::npos ) {
+             path = url;
+             pos = url.size();
+          } else {
+             path = url.substr(pos, pos1-pos);
+             pos = pos1;
+          }
           path = Utility::decodeURL(path);
           return true;
       }
-  
+
+      bool parseParameters(const std::string& url, size_t &pos) {
+          size_t pos1;
+          if (pos >= url.size()) return true; // no data
+          if (url[pos] == '#') return true; // anchor starts here
+          if (url[pos] != '?') return false; // not a parameter
+          if ( (pos1 = url.find_first_of("#", pos)) == std::string::npos ) {
+             parameters = url.substr(pos+1);;
+             pos = url.size();
+          } else {
+             parameters = url.substr(pos+1, pos1-pos-1);
+             pos = pos1;
+          }
+          return true;
+      }
+
+      bool parseAnchor(const std::string& url, size_t &pos) {
+          if (pos >= url.size()) return true; // no data
+          if (url[pos] != '#') return false; // not anchor
+          anchor = url.substr(pos+1);
+          return true;
+      }
+
+  public:
       std::string to_string() const {
           std::string tmp;
           std::ostringstream oss;
-          oss << protocol << "://";
+            
+          if (protocol.empty() == false) {
+             oss << protocol << ":";
+             if (host.empty() == false) {
+               oss << "//";
+             }
+          }
 
           if (username.empty() == false) {
            if (password.empty() == false)
@@ -82,14 +113,19 @@ namespace YaHTTP {
            else
              oss << Utility::encodeURL(username) << "@";
           }
-
-          oss << host;
+          if (host.empty() == false)
+             oss << host;
           if (!(protocol == "http" && port == 80) &&
-              !(protocol == "https" && port == 443)) 
+              !(protocol == "https" && port == 443) &&
+              port > 0) 
             oss << ":" << port;
+
           oss << Utility::encodeURL(path, true);
-          if (parameters.empty() == false)
-             oss << "?" << parameters;
+          if (parameters.empty() == false) {
+             if (!pathless) 
+                oss << "?";
+             oss << parameters;
+          }
           if (anchor.empty() == false)
              oss << "#" << anchor;
           return oss.str();
@@ -103,6 +139,38 @@ namespace YaHTTP {
       std::string path;
       std::string parameters;
       std::string anchor;
+      bool pathless;
+
+      URL() { protocol = ""; host = ""; port = 0; username = ""; password = ""; path = ""; parameters = ""; anchor =""; pathless = true; };
+      URL(const std::string& url) {
+          parse(url);
+      };
+
+      URL(const char *url) {
+          parse(std::string(url));
+      };
+
+      bool parse(const std::string& url) {
+          // setup
+          protocol = ""; host = ""; port = 0; 
+          username = ""; password = ""; path = ""; 
+          parameters = ""; anchor =""; pathless = true;
+
+          if (url.size() > YAHTTP_MAX_URL_LENGTH) return false;
+          size_t pos = 0;
+          if (*(url.begin()) != '/') { // full url?
+             if (parseSchema(url, pos) == false) return false;
+             if (pathless) {
+                parameters = url.substr(pos);
+                return true;
+             }
+             if (parseUserPass(url, pos) == false) return false;
+             if (parseHost(url, pos) == false) return false;
+          }
+          if (parsePath(url, pos) == false) return false;
+          if (parseParameters(url, pos) == false) return false;
+          return parseAnchor(url, pos);
+      };
 
       friend std::ostream & operator<<(std::ostream& os, const URL& url) {
          os<<url.to_string();

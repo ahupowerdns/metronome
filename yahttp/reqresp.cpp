@@ -144,8 +144,8 @@ namespace YaHTTP {
         std::string tmpurl;
         std::istringstream iss(line);
         iss >> request->method >> tmpurl >> ver;
-        if (ver != "HTTP/1.1")
-          throw ParseError("Not a HTTP 1.1 request");
+        if (ver.find("HTTP/1.") != 0)
+          throw ParseError("Not a HTTP 1.x request");
         // uppercase the request method
         std::transform(request->method.begin(), request->method.end(), request->method.begin(), ::toupper);
         request->url.parse(tmpurl);
@@ -155,12 +155,9 @@ namespace YaHTTP {
         size_t pos;
         if (line.empty()) {
           chunked = (request->headers.find("transfer-encoding") != request->headers.end() && request->headers["transfer-encoding"] == "chunked");
-          // validate certain headers
-          if (request->headers.find("host") == request->headers.end()) 
-            throw ParseError("Missing Host header");
-          else 
+          // host header is optional
+          if (request->headers.find("host") != request->headers.end())
             request->url.host = request->headers["host"];
-          // parse url
                
           state = 2;
           break;
@@ -240,8 +237,8 @@ namespace YaHTTP {
         std::string ver;
         std::istringstream iss(line);
         iss >> ver >> response->status >> response->statusText;
-        if (ver != "HTTP/1.1") 
-          throw ParseError("Not a HTTP response");
+        if (ver.find("HTTP/1.") != 0)
+          throw ParseError("Not a HTTP 1.x response");
         state = 1;
       } else if (state == 1) {
         std::string key,value;

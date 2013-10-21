@@ -37,6 +37,7 @@ namespace YaHTTP {
 
   Response::Response() {};
   Response::Response(const Request &req) {
+    headers["connection"] = "close";
     method = req.method;
     url = req.url;
     cookies = req.cookies;

@@ -73,15 +73,15 @@ namespace YaHTTP {
       os << Utility::status2text(status);
     else
       os << statusText;
-    os << std::endl;
+    os << "\r\n";
 
     // write headers
     strstr_map_t::const_iterator iter = headers.begin();
     while(iter != headers.end()) {
-      os << Utility::camelizeHeader(iter->first) << ": " << iter->second << std::endl;
+      os << Utility::camelizeHeader(iter->first) << ": " << iter->second << "\r\n";
       iter++;
     }
-    os << std::endl;
+    os << "\r\n";
     os << body;
   };
  
@@ -98,13 +98,13 @@ namespace YaHTTP {
   };
 
   void Request::write(std::ostream &os) const {
-    os << method << " " << url.path << " HTTP/1.1" << std::endl;
+    os << method << " " << url.path << " HTTP/1.1" << "\r\n";
     strstr_map_t::const_iterator iter = headers.begin();
     while(iter != headers.end()) {
-      os << Utility::camelizeHeader(iter->first) << ": " << iter->second << std::endl;
+      os << Utility::camelizeHeader(iter->first) << ": " << iter->second << "\r\n";
       iter++;
     }
-    os << std::endl;
+    os << "\r\n";
     if (body.size()>0) {
       os << body;
     }
@@ -136,9 +136,9 @@ namespace YaHTTP {
     buffer.append(somedata);
     while(state < 2) {
       // need to find newline in buffer
-      if ((pos = buffer.find("\n")) == std::string::npos) return false;
-      std::string line(buffer.begin(), buffer.begin()+pos); // exclude newline
-      buffer.erase(buffer.begin(), buffer.begin()+pos+1); // remove line from buffer including newline
+      if ((pos = buffer.find("\r\n")) == std::string::npos) return false;
+      std::string line(buffer.begin(), buffer.begin()+pos); // exclude CRLF
+      buffer.erase(buffer.begin(), buffer.begin()+pos+2); // remove line from buffer including CRLF
       if (state == 0) { // startup line
         std::string ver;
         std::string tmpurl;
@@ -232,10 +232,10 @@ namespace YaHTTP {
     size_t pos;
     buffer.append(somedata);
     while(state < 2) {
-      // need to find newline in buffer
-      if ((pos = buffer.find('\n')) == std::string::npos) return false;
-      std::string line(buffer.begin(), buffer.begin()+pos); // exclude newline
-      buffer.erase(buffer.begin(), buffer.begin()+pos+1); // remove line from buffer including newline
+      // need to find CRLF in buffer
+      if ((pos = buffer.find("\r\n")) == std::string::npos) return false;
+      std::string line(buffer.begin(), buffer.begin()+pos); // exclude CRLF
+      buffer.erase(buffer.begin(), buffer.begin()+pos+2); // remove line from buffer including CRLF
       if (state == 0) { // startup line
         std::string ver;
         std::istringstream iss(line);

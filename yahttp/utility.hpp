@@ -153,9 +153,9 @@ namespace YaHTTP {
         } else {
           key = parameters.substr(pos, delim-pos);
           if (nextpos == std::string::npos) {
-            value = parameters.substr(delim);
+            value = parameters.substr(delim+1);
           } else {
-            value = parameters.substr(delim, nextpos-delim);
+            value = parameters.substr(delim+1, nextpos-delim);
           }
         }
         if (key.empty()) {

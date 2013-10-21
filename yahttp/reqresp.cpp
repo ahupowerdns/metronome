@@ -150,6 +150,7 @@ namespace YaHTTP {
         // uppercase the request method
         std::transform(request->method.begin(), request->method.end(), request->method.begin(), ::toupper);
         request->url.parse(tmpurl);
+        request->parameters = Utility::parseUrlParameters(request->url.parameters);
         state = 1;
       } else if (state == 1) {
         std::string key,value;

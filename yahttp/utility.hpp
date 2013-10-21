@@ -136,6 +136,41 @@ namespace YaHTTP {
        }
     };
 
+    static std::map<std::string,std::string> parseUrlParameters(std::string parameters) {
+      std::string::size_type pos = 0;
+      std::map<std::string,std::string> parameter_map;
+      while (pos != std::string::npos) {
+        // find next parameter start
+        std::string::size_type nextpos = parameters.find("&", pos);
+        std::string::size_type delim = parameters.find("=", pos);
+        if (delim > nextpos) {
+          delim = nextpos;
+        }
+        std::string key;
+        std::string value;
+        if (delim == std::string::npos) {
+          key = parameters.substr(pos);
+        } else {
+          key = parameters.substr(pos, delim-pos);
+          if (nextpos == std::string::npos) {
+            value = parameters.substr(delim);
+          } else {
+            value = parameters.substr(delim, nextpos-delim);
+          }
+        }
+        if (key.empty()) {
+          // no parameters at all
+          break;
+        }
+        key = decodeURL(key);
+        value = decodeURL(value);
+        parameter_map[key] = value;
+
+        pos = nextpos;
+      }
+      return parameter_map;
+    };
+
     static void trim_right(std::string &str) {
        const std::locale &loc = std::locale::classic();
        std::string::reverse_iterator iter = str.rbegin();

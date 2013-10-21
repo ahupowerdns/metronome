@@ -3,6 +3,8 @@
 #include <sstream>
 #include <string>
 
+#include "utility.hpp"
+
 #ifndef YAHTTP_MAX_URL_LENGTH
 #define YAHTTP_MAX_URL_LENGTH 2048
 #endif 

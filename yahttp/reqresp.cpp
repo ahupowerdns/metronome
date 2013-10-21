@@ -253,7 +253,7 @@ namespace YaHTTP {
         }
         // split headers
         if ((pos = line.find_first_of(": ")) == std::string::npos)
-          throw ParseError("Malformed line");
+          throw ParseError("Malformed header line");
         key = line.substr(0, pos);
         value = line.substr(pos+2);
         std::transform(key.begin(), key.end(), key.begin(), ::tolower);

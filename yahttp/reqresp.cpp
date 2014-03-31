@@ -383,7 +383,7 @@ namespace YaHTTP {
       } else if (cookiestr.compare(pos, 8, "httpOnly")==0) {
         cstate = 1;
         for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
-          i->secure = false;
+          i->httponly = true;
       } else if (cookiestr.compare(pos, 6, "secure")  ==0) {
         cstate = 1; 
         for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
@@ -460,7 +460,7 @@ namespace YaHTTP {
       } else if (cookiestr.compare(pos, 8, "httpOnly")==0) {
         cstate = 1;
         for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
-          i->secure = false;
+          i->httponly = true;
       } else if (cookiestr.compare(pos, 6, "secure")  ==0) {
         cstate = 1;
         for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)

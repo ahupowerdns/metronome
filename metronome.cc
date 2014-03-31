@@ -109,24 +109,25 @@ void startWebserverThread(int sock, ComboAddress remote)
     body<<req.parameters["callback"]<<"({";
     bool first=true;
     for(const auto& name : names) {
-      auto vals = ss.retrieve(name, atoi(req.parameters["begin"].c_str()), 
-			      atoi(req.parameters["end"].c_str()));
-    
+      double begin = atoi(req.parameters["begin"].c_str());
+      double end = atoi(req.parameters["end"].c_str());
+      auto vals = ss.retrieve(name, begin, end);
+      CSplineSignalInterpolator<StatStorage::Datum> csi(vals);
+
       if(!first) 
 	body<<',';
       first=false;
     
       body<< '"' << name << "\": [";
       int count=0;
-      for(const auto& v : vals) {
-	if(!(count%60)) {
-	  if(count) {
-	    body<<',';
-	  }
-	  
-	  body<<"["<<v.timestamp<<','<<(int64_t)v.value<<']';
+      for(double t = vals.begin()->timestamp; t < vals.rbegin()->timestamp; t+= (vals.rbegin()->timestamp-vals.begin()->timestamp)/100) {
+	if(count) {
+	  body<<',';
 	}
-	count++; // "interpolate ;-)"
+	
+	body<<"["<<t<<','<<(int64_t)csi(t)<<']';
+      
+	count++; 
       }
       body<<"]";
     }

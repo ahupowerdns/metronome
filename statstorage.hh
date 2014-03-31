@@ -13,6 +13,10 @@ public:
   {
     time_t timestamp;
     double value;
+    bool operator<(double t) const
+    {
+      return timestamp < t;
+    }
   };
   
   std::vector<Datum> retrieve(const std::string& name, time_t begin, time_t end, int number=-1);

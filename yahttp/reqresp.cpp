@@ -174,9 +174,6 @@ namespace YaHTTP {
       }
     }
 
-    if (request->method != "POST") 
-      return true;
-       
     // do we have content-length? 
     if (!chunked) {
       if (request->headers.find("content-length") != request->headers.end()) {

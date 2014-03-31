@@ -1,18 +1,14 @@
-#include <map>
-#include <iostream>
-#include <locale>
-#include <algorithm>
-
-#include "url.hpp"
-#include "utility.hpp"
-#include "exception.hpp"
-
 #ifndef YAHTTP_MAX_REQUEST_SIZE 
 #define YAHTTP_MAX_REQUEST_SIZE 2097152
 #endif
 
+#ifndef YAHTTP_MAX_RESPONSE_SIZE
+#define YAHTTP_MAX_RESPONSE_SIZE 2097152
+#endif
+
 namespace YaHTTP {
   typedef std::map<std::string,std::string> strstr_map_t;
+  typedef std::map<std::string,Cookie> strcookie_map_t;
 
   class Response;
   class Request;
@@ -33,7 +29,7 @@ namespace YaHTTP {
 
      strstr_map_t headers;
      strstr_map_t parameters;
-     strstr_map_t cookies;
+     strcookie_map_t cookies;
 
      URL url;
      std::string method;
@@ -55,7 +51,7 @@ namespace YaHTTP {
 
      strstr_map_t headers;
      strstr_map_t parameters;
-     strstr_map_t cookies;
+     strcookie_map_t cookies;
 
      URL url;
      int status;
@@ -74,16 +70,22 @@ namespace YaHTTP {
       state = 0;
       chunked = false;
       chunk_size = 0;
+      maxbody = -1;
       this->response = response;
     };
     bool feed(const std::string &somedata);
+    bool ready() { return state > 1 && (maxbody < 0 || static_cast<unsigned long>(maxbody) >= bodybuf.str().size()); };
+    void finalize();
   private:
     Response *response;
     int state;
     std::string buffer;
     bool chunked;
     int chunk_size;
+    long maxbody;
     std::ostringstream bodybuf;
+    void keyValuePair(const std::string &keyvalue, std::string &key, std::string &value);
+    void parseCookies(const std::string &cookies);
   };
 
   class AsyncRequestLoader {
@@ -104,5 +106,7 @@ namespace YaHTTP {
     int chunk_size;
     std::ostringstream bodybuf;
     long maxbody;
+    void keyValuePair(const std::string &keyvalue, std::string &key, std::string &value);
+    void parseCookies(const std::string &cookies);
   };
 };

@@ -4,93 +4,55 @@
 <script src="js/jquery-1.8.3.min.js"></script>        
 <script src="js/d3.v3.js"></script>        
 <script src="js/rickshaw.min.js"></script>        
+<script src="js/moment.min.js"></script>        
 
 <link type="text/css" rel="stylesheet" href="graph.css">
 <link type="text/css" rel="stylesheet" href="detail.css">
 <link type="text/css" rel="stylesheet" href="legend.css">
 <link type="text/css" rel="stylesheet" href="lines.css">
 
-<script type="text/javascript">                                         
-
-$(document).ready(function() {
-
-function showStuff() {
-	$.getJSON("http://localhost:8000/?do=retrieve&callback=?&name=rxbytes&begin=0&end=2000000000", 
-		function(data) {
-			console.log("Hier: ");
-			console.log(data);
-			var toplot=[];
-			var prevval;
-			$.each(data.values, function(a, b) {
-				if(prevval != undefined)
-				    toplot.push({x: b[0], y: b[1] - prevval});
-				prevval=b[1];
-			    });
-			var graph = new Rickshaw.Graph( {
-			    element: document.querySelector("#chart"), 
-			    width: 500, 
-			    height: 200, 
-			    series: [{
-			        color: 'steelblue',
-			        data: toplot
-				    }]
-				});
-
-
-			
-			var axes = new Rickshaw.Graph.Axis.Time( {
-				graph: graph,
-				orientation: 'bottom',
-			} );
-			
-			var y_ticks = new Rickshaw.Graph.Axis.Y( {
-				graph: graph,
-				orientation: 'left',
-				tickFormat:
-				Rickshaw.Fixtures.Number.formatKMBT,
-				element:
-				document.getElementById('y_axis'),
-			} );
-			
-			graph.render();
-			axes.render();
-			
-		});
-};
-
-showStuff();
-});
-     
-</script> 
-
+<script src="engine.js"></script>
 <body>                                                                  
 
 <style>
 #chart_container {
+        top: 5px;
         position: relative;
-                font-family: Arial, Helvetica, sans-serif;
-                }
+        font-family: Arial, Helvetica, sans-serif;
+}
                 
 #chart {
 	position: relative;
-		left: 40px;
-		}
-		#y_axis {
-			position: absolute;
-				top: 0;
-					bottom: 0;
-						width: 40px;
-						}
+	left: 40px;
+}
+#y_axis {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	width: 40px;
+}
+#legend {
+	position: absolute;
+        top: 0;
+        bottom: 0;
+	left: 510px;
+	width: 140px;
+        height: 40px;
+}
 
 .rickshaw_graph .x_tick .title {
     bottom: -24px;
-        left: -18px;
-        }
+    left: -18px;
+}
+
 </style>
-<h1>rxbytes/s</h1>
+<h1>eth0</h1>
+
 <div id="chart_container">
 	<div id="y_axis"></div>
 		<div id="chart"></div>
-		</div>
+                <div id="legend"></div>
+        </div>
+
 </body>                                                                 
 </html>

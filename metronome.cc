@@ -95,31 +95,42 @@ void startWebserverThread(int sock, ComboAddress remote)
 	     atof(req.parameters["value"].c_str()));
   }
   else if(req.parameters["do"]=="retrieve") {
+
+      //    dumpRequest(req);
+      
+
     StatStorage ss("./stats");
-    auto vals = ss.retrieve(req.parameters["name"], atoi(req.parameters["begin"].c_str()), 
-			   atoi(req.parameters["end"].c_str()));
-    
-    //    dumpRequest(req);
-    
+    vector<string> names;
+    stringtok(names, req.parameters["name"], ",");
     resp.headers["Content-Type"]= "application/json";
     resp.headers["Access-Control-Allow-Origin"]= "*";
-
-
     ostringstream body;
     body.setf(std::ios::fixed);
-    body<<req.parameters["callback"]<<"({ values : [";
-    int count=0;
-    for(const auto& v : vals) {
-      if(!(count%60)) {
-	if(count) {
-	  body<<',';
+    body<<req.parameters["callback"]<<"({";
+    bool first=true;
+    for(const auto& name : names) {
+      auto vals = ss.retrieve(name, atoi(req.parameters["begin"].c_str()), 
+			      atoi(req.parameters["end"].c_str()));
+    
+      if(!first) 
+	body<<',';
+      first=false;
+    
+      body<< '"' << name << "\": [";
+      int count=0;
+      for(const auto& v : vals) {
+	if(!(count%60)) {
+	  if(count) {
+	    body<<',';
+	  }
+	  
+	  body<<"["<<v.timestamp<<','<<(int64_t)v.value<<']';
 	}
-
-	body<<"["<<v.timestamp<<','<<(int64_t)v.value<<']';
+	count++; // "interpolate ;-)"
       }
-      count++; // "interpolate ;-)"
+      body<<"]";
     }
-    body<<"]});";
+    body<<"});";
     resp.body=body.str();
   }
 

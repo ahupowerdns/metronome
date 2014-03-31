@@ -39,7 +39,7 @@ namespace YaHTTP {
      std::string method;
      std::string body;
 
-     friend std::istream& operator>>(std::istream& os, const Request &req);
+     friend std::istream& operator>>(std::istream& os, Request &req);
      friend std::ostream& operator<<(std::ostream& os, const Request &req);
      friend class AsyncRequestLoader;
   };

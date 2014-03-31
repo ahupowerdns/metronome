@@ -22,9 +22,16 @@ This delivers a JSONP callback with your values in there.
 
 To view, try html/index.html
 
+Thanks to
+=========
+Aki Tuomi for the excellent yahttp on https://github.com/cmouse/yahttp
+Rickshaw (for now) for the graphs. And a cast of thousands for C++2011.
+
 status
 ======
 "Toy" for now - stores all data in flat files, which we read in their entirety to 
 replay data.
+
+No configurability.
 
 Also, in lieu of interpollating, we just drop 90% of all entries in the storage now.

@@ -81,6 +81,10 @@ namespace YaHTTP {
       os << Utility::camelizeHeader(iter->first) << ": " << iter->second << "\r\n";
       iter++;
     }
+    if (cookies.size() > 0) { // write cookies
+      for(strcookie_map_t::const_iterator i = cookies.begin(); i != cookies.end(); i++)
+        os << "Set-Cookie: " << i->second.str() << "\r\n";
+    }
     os << "\r\n";
     os << body;
   };
@@ -104,6 +108,10 @@ namespace YaHTTP {
       os << Utility::camelizeHeader(iter->first) << ": " << iter->second << "\r\n";
       iter++;
     }
+    if (cookies.size() > 0) { // write cookies
+      for(strcookie_map_t::const_iterator i = cookies.begin(); i != cookies.end(); i++) 
+        os << "Cookie: " << i->second.str() << "\r\n";
+    } 
     os << "\r\n";
     if (body.size()>0) {
       os << body;

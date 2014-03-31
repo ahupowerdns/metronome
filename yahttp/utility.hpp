@@ -7,6 +7,8 @@ namespace YaHTTP {
 
   class DateTime {
   public:
+     bool isSet;
+
      int year;
 
      int month;
@@ -21,16 +23,19 @@ namespace YaHTTP {
 
      DateTime() { 
        initialize();
-       now();
      };
 
      void initialize() {
-       // does nothing now. 
+       isSet = false; 
      };
 
-     void now() {
+     void setLocal() {
        fromLocaltime(time((time_t*)NULL)); 
      };
+
+     void setGm() {
+       fromGmtime(time((time_t*)NULL));
+     }
 
      void fromLocaltime(time_t t) {
 #ifdef HAVE_LOCALTIME_R

@@ -1,7 +1,6 @@
 #include "reqresp.hpp"
 
 namespace YaHTTP {
-
   void Request::build(const std::string &method, const std::string &url, const std::string &params) {
     this->method = method;
     std::transform(this->method.begin(), this->method.end(), this->method.begin(), ::toupper);
@@ -65,7 +64,9 @@ namespace YaHTTP {
         if (arl.feed(std::string(buf, is.gcount())) == true) return; // completed
       }
     }
-    // FIXME: parse cookies
+
+
+    
   };
 
   void Response::write(std::ostream &os) const { 
@@ -136,10 +137,14 @@ namespace YaHTTP {
 
     buffer.append(somedata);
     while(state < 2) {
-      // need to find newline in buffer
-      if ((pos = buffer.find("\r\n")) == std::string::npos) return false;
-      std::string line(buffer.begin(), buffer.begin()+pos); // exclude CRLF
-      buffer.erase(buffer.begin(), buffer.begin()+pos+2); // remove line from buffer including CRLF
+      int cr=0;
+      // need to find CRLF in buffer
+      if ((pos = buffer.find_first_of("\n")) == std::string::npos) return false;
+      if (buffer[pos-1]=='\r')
+        cr=1;
+      std::string line(buffer.begin(), buffer.begin()+pos-cr); // exclude CRLF
+      buffer.erase(buffer.begin(), buffer.begin()+pos+1+cr); // remove line from buffer including CRLF
+
       if (state == 0) { // startup line
         std::string ver;
         std::string tmpurl;
@@ -228,10 +233,14 @@ namespace YaHTTP {
     size_t pos;
     buffer.append(somedata);
     while(state < 2) {
+      int cr=0;
       // need to find CRLF in buffer
-      if ((pos = buffer.find("\r\n")) == std::string::npos) return false;
-      std::string line(buffer.begin(), buffer.begin()+pos); // exclude CRLF
-      buffer.erase(buffer.begin(), buffer.begin()+pos+2); // remove line from buffer including CRLF
+      if ((pos = buffer.find_first_of("\n")) == std::string::npos) return false;
+      if (buffer[pos-1]=='\r') 
+        cr=1;
+      std::string line(buffer.begin(), buffer.begin()+pos-cr); // exclude CRLF
+      buffer.erase(buffer.begin(), buffer.begin()+pos+1+cr); // remove line from buffer including CRLF
+
       if (state == 0) { // startup line
         std::string ver;
         std::istringstream iss(line);

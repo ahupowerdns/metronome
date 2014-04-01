@@ -32,6 +32,4 @@ status
 "Toy" for now - stores all data in flat files, which we read in their entirety to 
 replay data.
 
-No configurability.
-
-Also, in lieu of interpollating, we just drop 90% of all entries in the storage now.
+But, starting to look nice.

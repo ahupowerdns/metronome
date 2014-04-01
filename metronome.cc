@@ -135,30 +135,33 @@ try
     
       body<< '"' << name << "\": [";
       int count=0;
-      for(double t = begin ; t < end; t+= (end-begin)/100) {
-	if(count) 
+      vector<StatStorage::Datum> derived;
+      int64_t prevt=0;
+      for(double t = begin ; t < end; t+= (end-begin)/200) {
+	if(count) {
 	  body<<',';
-	body<<"["<<t<<','<<(int64_t)csi(t)<<']';   
+	  derived.push_back({prevt, (csi(t)-csi(prevt))/(t-prevt)});
+	}
+	body<<"["<<(int64_t)t<<','<<(int64_t)csi(t)<<']';   
 	count++; 
+	prevt=t;
       }
       body<<"]";
-
-      derivative[name]=nonNegativeDerivative(vals);
+      derived.push_back({prevt, derived.rbegin()->value});
+      derivative[name]=derived;
     }
     body<<"}, derivative: {  ";
     first=true;
     for(const auto& deriv: derivative) {
-      CSplineSignalInterpolator<StatStorage::Datum> csi(deriv.second);
-
       if(!first)
 	body<<',';
       first=false;
       body<< '"' << deriv.first << "\": [";
       int count=0;
-      for(double t = begin ; t < end; t+= (end-begin)/100) {
+      for(auto iter = deriv.second.begin(); iter !=deriv.second.end(); ++iter) {
 	if(count) 
 	  body<<',';
-	body<<"["<<t<<','<<csi(t)<<']';   
+	body<<"["<<iter->timestamp<<','<<iter->value<<']';   
 	count++; 
       }
       body<<"]";

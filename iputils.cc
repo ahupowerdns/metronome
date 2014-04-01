@@ -27,7 +27,7 @@ int SConnect(int sockfd, const ComboAddress& remote)
 
 int SBind(int sockfd, const ComboAddress& local)
 {
-  int ret = bind(sockfd, (struct sockaddr*)&local, local.getSocklen());
+  int ret = ::bind(sockfd, (struct sockaddr*)&local, local.getSocklen());
   if(ret < 0)
     RuntimeError(boost::format("binding socket to %s: %s") % local.toStringWithPort() % strerror(errno));
   return ret;

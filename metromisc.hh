@@ -44,8 +44,12 @@ template<typename T>
 struct CSplineSignalInterpolator
 {
   explicit CSplineSignalInterpolator(const std::vector<T>& obs)
-    : d_obs(&obs)
+    : d_obs(&obs), d_disabled(false)
   {
+    if(d_obs->empty()) {
+      d_disabled=true;
+      return;
+    }
     double p, qn, sig, un;
 
     int n=obs.size();
@@ -69,7 +73,8 @@ struct CSplineSignalInterpolator
   }
 
   double operator()(double t) const {
-
+    if(d_disabled)
+      return 0;
     auto hi=lower_bound(d_obs->begin(), d_obs->end(), t);
     if(hi == d_obs->begin())
       return d_obs->begin()->value;
@@ -95,4 +100,5 @@ struct CSplineSignalInterpolator
 
   const std::vector<T>* d_obs;
   std::vector<double> d_y2;
+  bool d_disabled;
 };

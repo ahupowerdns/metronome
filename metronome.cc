@@ -82,6 +82,7 @@ vector<StatStorage::Datum> nonNegativeDerivative(const vector<StatStorage::Datum
 }
 
 void startWebserverThread(int sock, ComboAddress remote)
+try
 {
   string line;
   //  cout<<"Got web connection from "<<remote.toStringWithPort()<<endl;
@@ -134,7 +135,7 @@ void startWebserverThread(int sock, ComboAddress remote)
     
       body<< '"' << name << "\": [";
       int count=0;
-      for(double t = vals.begin()->timestamp; t < vals.rbegin()->timestamp; t+= (vals.rbegin()->timestamp-vals.begin()->timestamp)/100) {
+      for(double t = begin ; t < end; t+= (end-begin)/100) {
 	if(count) 
 	  body<<',';
 	body<<"["<<t<<','<<(int64_t)csi(t)<<']';   
@@ -154,7 +155,7 @@ void startWebserverThread(int sock, ComboAddress remote)
       first=false;
       body<< '"' << deriv.first << "\": [";
       int count=0;
-      for(double t = deriv.second.begin()->timestamp; t < deriv.second.rbegin()->timestamp; t+= (deriv.second.rbegin()->timestamp-deriv.second.begin()->timestamp)/100) {
+      for(double t = begin ; t < end; t+= (end-begin)/100) {
 	if(count) 
 	  body<<',';
 	body<<"["<<t<<','<<csi(t)<<']';   
@@ -176,7 +177,9 @@ void startWebserverThread(int sock, ComboAddress remote)
 
   close(sock);
 }
-
+catch(exception& e) {
+  cerr<<"Dying because of error: "<<e.what()<<endl;
+}
 void webServerThread(int sock)
 {
 

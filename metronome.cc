@@ -33,7 +33,7 @@ try
   int numStored=0;
   while(sockGetLine(sock, &line)) {
     // format: name value timestamp
-    cout<<"Got: "<<line;
+//    cout<<"Got: "<<line;
     vector<string> parts;
     stringtok(parts, line, " \t\r\n");
     if(parts.size()!=3) {

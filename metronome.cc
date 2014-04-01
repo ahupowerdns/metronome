@@ -68,6 +68,18 @@ void dumpRequest(const YaHTTP::Request& req)
   cout<<"Method: "<<req.method<<endl;
 }
 
+vector<StatStorage::Datum> nonNegativeDerivative(const vector<StatStorage::Datum>& in)
+{
+  vector<StatStorage::Datum> ret;
+  if(in.empty())
+    return ret;
+
+  for(auto iter = in.cbegin()+1; iter != in.cend(); ++iter) {
+    ret.push_back({iter->timestamp, (iter->value - (iter-1)->value)/(iter->timestamp - (iter-1)->timestamp)});
+  }
+  return ret;
+}
+
 void startWebserverThread(int sock, ComboAddress remote)
 {
   string line;
@@ -95,10 +107,7 @@ void startWebserverThread(int sock, ComboAddress remote)
 	     atof(req.parameters["value"].c_str()));
   }
   else if(req.parameters["do"]=="retrieve") {
-
       //    dumpRequest(req);
-      
-
     StatStorage ss("./stats");
     vector<string> names;
     stringtok(names, req.parameters["name"], ",");
@@ -106,11 +115,15 @@ void startWebserverThread(int sock, ComboAddress remote)
     resp.headers["Access-Control-Allow-Origin"]= "*";
     ostringstream body;
     body.setf(std::ios::fixed);
-    body<<req.parameters["callback"]<<"({";
+
+    double begin = atoi(req.parameters["begin"].c_str());
+    double end = atoi(req.parameters["end"].c_str());
+
+
+    body<<req.parameters["callback"]<<"({ raw: {";
     bool first=true;
+    map<string,vector<StatStorage::Datum> > derivative;
     for(const auto& name : names) {
-      double begin = atoi(req.parameters["begin"].c_str());
-      double end = atoi(req.parameters["end"].c_str());
       auto vals = ss.retrieve(name, begin, end);
       CSplineSignalInterpolator<StatStorage::Datum> csi(vals);
 
@@ -121,17 +134,36 @@ void startWebserverThread(int sock, ComboAddress remote)
       body<< '"' << name << "\": [";
       int count=0;
       for(double t = vals.begin()->timestamp; t < vals.rbegin()->timestamp; t+= (vals.rbegin()->timestamp-vals.begin()->timestamp)/100) {
-	if(count) {
+	if(count) 
 	  body<<',';
-	}
-	
-	body<<"["<<t<<','<<(int64_t)csi(t)<<']';
-      
+	body<<"["<<t<<','<<(int64_t)csi(t)<<']';   
 	count++; 
       }
       body<<"]";
+
+      derivative[name]=nonNegativeDerivative(vals);
     }
-    body<<"});";
+    body<<"}, derivative: {  ";
+    first=true;
+    for(const auto& deriv: derivative) {
+      CSplineSignalInterpolator<StatStorage::Datum> csi(deriv.second);
+
+      if(!first)
+	body<<',';
+      first=false;
+      body<< '"' << deriv.first << "\": [";
+      int count=0;
+      for(double t = deriv.second.begin()->timestamp; t < deriv.second.rbegin()->timestamp; t+= (deriv.second.rbegin()->timestamp-deriv.second.begin()->timestamp)/100) {
+	if(count) 
+	  body<<',';
+	body<<"["<<t<<','<<(int64_t)csi(t)<<']';   
+	count++; 
+      }
+      body<<"]";
+
+    }
+
+    body <<"}});";
     resp.body=body.str();
   }
 

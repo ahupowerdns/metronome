@@ -36,7 +36,8 @@ $(document).ready(function() {
 	qstring+="&begin="+(epoch-3601)+"&end="+(epoch+500);
 
 	$.getJSON(qstring, 
-		  function(series) {
+		  function(fullseries) {
+		      var series=fullseries.raw;
 		      var toplot=[];
 		      for(num in items) {
 			  if(items[num].transform != undefined)

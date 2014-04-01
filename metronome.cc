@@ -75,8 +75,9 @@ vector<StatStorage::Datum> nonNegativeDerivative(const vector<StatStorage::Datum
     return ret;
 
   for(auto iter = in.cbegin()+1; iter != in.cend(); ++iter) {
-    ret.push_back({iter->timestamp, (iter->value - (iter-1)->value)/(iter->timestamp - (iter-1)->timestamp)});
+    ret.push_back({(iter-1)->timestamp, (iter->value - (iter-1)->value)/(iter->timestamp - (iter-1)->timestamp)});
   }
+  ret.push_back({in.rbegin()->timestamp, ret.rbegin()->value});
   return ret;
 }
 
@@ -156,7 +157,7 @@ void startWebserverThread(int sock, ComboAddress remote)
       for(double t = deriv.second.begin()->timestamp; t < deriv.second.rbegin()->timestamp; t+= (deriv.second.rbegin()->timestamp-deriv.second.begin()->timestamp)/100) {
 	if(count) 
 	  body<<',';
-	body<<"["<<t<<','<<(int64_t)csi(t)<<']';   
+	body<<"["<<t<<','<<csi(t)<<']';   
 	count++; 
       }
       body<<"]";

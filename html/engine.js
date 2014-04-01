@@ -2,57 +2,66 @@
 $(document).ready(function() {
     moment().format();
 
-    function showStuff() {
-        var epoch = (new Date).getTime()/1000;
-        var series={};
-        var items = [ 
-          { name: "pdns.localhost.recursor.questions", legend: "Questions/s" }, 
-          { name: "pdns.localhost.recursor.all-outqueries", legend: "All outqueries/s"}];
-        
-	$.getJSON("http://xs.powerdns.com:8000/?do=retrieve&callback=?&name="+items[0].name+","+items[1].name+"&begin="+(epoch-3601)+"&end=2000000000", 
-		  function(series) {
-//		      console.log(series);
-//		      console.log(epoch);
-		      var prevval = undefined;
-		      var rxtraffic=[], txtraffic=[];
-		      $.each(series[items[0].name], function(a, b) {
-			      console.log("b[1]: "+b[1]);
-			      if(prevval != undefined) {
-				  rxtraffic.push({x: b[0], y: (b[1] - prevval[1])/(b[0]-prevval[0])  });
-				  console.log((b[1] - prevval[1]) +" and " +(b[0]-prevval[0]));
-			      }
-			      else 
-				  console.log("Skipped..");
-			      prevval=b;
-			  });
-		      prevval = undefined;
+    function nonNegativeDerivative(series)
+    {
+	var prevval;
+	var ret=[];
+	$.each(series, function(a, b) {    
+	    if(prevval != undefined) {
+		ret.push([b[0], (b[1] - prevval[1])/(b[0]-prevval[0])]);
+	    }
+	    prevval=b;
+	});
+	return ret;
+    }
+    
+    function coordinateTransform(series)
+    {
+	var ret=[];
+	$.each(series, function(a, b) {    
+	    ret.push({x: b[0], y: b[1]});
+	});
+	return ret;
+    }
 
-		      $.each(series[items[1].name], function(a, b) {
-			  if(prevval != undefined) {
-			      txtraffic.push({x: b[0], y: (b[1] - prevval[1])/(b[0]-prevval[0])});
-			  }
-			  prevval=b;
-		      });
+    function showStuff(config, where) {
+        var epoch = (new Date).getTime()/1000;
+	var items = config.items;
+
+	var qstring ="http://xs.powerdns.com:8000/?do=retrieve&callback=?&name=";
+	var names=[];
+	for(item in items)
+	    names.push(items[item].name);
+	qstring+= names.join(',');
+	qstring+="&begin="+(epoch-3601)+"&end="+(epoch+500);
+
+	$.getJSON(qstring, 
+		  function(series) {
+		      var toplot=[];
+		      for(num in items) {
+			  if(items[num].transform != undefined)
+			      toplot[num]= coordinateTransform(items[num].transform(series[items[num].name]));
+			  else
+			      toplot[num] = coordinateTransform(series[items[num].name]);
+		      }
 		      
-	              $("#chart").html("");
-                      $("#y_axis").html("");
-                      $("#legend").html("");
+		      $(where).html('<div class="chart_container"><div class="y_axis"></div><div class="chart"></div><div class="legend"></div>');
 		      
 		      var graph = new Rickshaw.Graph( {
-			  element: document.querySelector("#chart"), 
+			  element: $(where + " .chart")[0], 
 			  width: 450, 
 			  height: 250, 
-                          renderer: 'multi',
+                          renderer: config.renderer || 'multi',
 			  series: [
                               {
 			          color: 'red',
-			          data: rxtraffic,
+			          data: toplot[0],
                                   name: items[0].legend,
                                   renderer: 'line'
 		              },
                               {
 			          color: 'steelblue',
-			          data: txtraffic,
+			          data: toplot[1],
                                   name: items[1].legend,
                                   renderer: 'line'
 			      }                          
@@ -70,20 +79,40 @@ $(document).ready(function() {
 			  orientation: 'left',
 			  tickFormat:
 			  Rickshaw.Fixtures.Number.formatKMBT,
-			  element:
-			  document.getElementById('y_axis'),
+			  element: $(where+" .y_axis")[0]
 		      } );
 		
 		      var legend = new Rickshaw.Graph.Legend( {
                           graph: graph,
-                          element: document.getElementById('legend')
+                          element: $(where+ " .legend")[0]
                       } );		      
 		      graph.render();		    
 		  });	
     } 
     $.ajaxSetup({ cache: false });
-    showStuff();
-    setInterval(showStuff,5000);
+    var config = { items: [ 
+        { name: "pdns.localhost.recursor.questions", legend: "Questions/s", transform: nonNegativeDerivative }, 
+        { name: "pdns.localhost.recursor.all-outqueries", legend: "All outqueries/s", transform: nonNegativeDerivative}]};
+
+    showStuff(config, "#hier1");
+
+    var config2 ={ renderer: "stack", items: [ 
+        { name: "pdns.localhost.recursor.user-msec", legend: "User Msecs/s", transform: nonNegativeDerivative }, 
+        { name: "pdns.localhost.recursor.sys-msec", legend: "System Msecs/s", transform: nonNegativeDerivative}]};
+    showStuff(config2, "#hier2");
+
+    var config3 ={ renderer: "stack", items: [ 
+        { name: "pdns.localhost.recursor.packetcache-hits", legend: "hits/s", transform: nonNegativeDerivative }, 
+        { name: "pdns.localhost.recursor.packetcache-misses", legend: "misses/s", transform: nonNegativeDerivative}]};
+    showStuff(config3, "#hier3");
+
+    var config4 ={ renderer: "stack", items: [
+        { name: "pdns.localhost.recursor.cache-entries", legend: "Cache entries"}, 
+        { name: "pdns.localhost.recursor.packetcache-entries", legend: "Packetcache entries"}]};
+    showStuff(config4, "#hier4");
+
+
+//    setInterval(function() { showStuff(items, "#hier1");} ,5000);
     
 });
      

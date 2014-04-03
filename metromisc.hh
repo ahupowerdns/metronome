@@ -46,7 +46,7 @@ struct CSplineSignalInterpolator
   explicit CSplineSignalInterpolator(const std::vector<T>& obs)
     : d_obs(&obs), d_disabled(false)
   {
-    if(d_obs->empty()) {
+    if(d_obs->size() < 2) {
       d_disabled=true;
       return;
     }

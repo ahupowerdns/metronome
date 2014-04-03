@@ -1,12 +1,14 @@
 $(document).ready(function() {
     $.ajaxSetup({ cache: false });
     
-    var hostname='micro';
-    var comconfig = { url: "http://127.0.0.1:8000/", beginTime: -3600 };
+    var hostname='arathorn';
+    var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -7200 };
 
     var config1 = { items: [ 
         { name: "pdns."+hostname+".recursor.questions", legend: "Questions/s" }, 
-        { name: "pdns."+hostname+".recursor.all-outqueries", legend: "All outqueries/s"}]};
+        { name: "pdns."+hostname+".recursor.all-outqueries", legend: "All outqueries/s"},
+        { name: "pdns."+hostname+".recursor.servfail-answers", legend: "Servfail answers/s"}
+        ]};
 
 
     var config2 = { renderer: 'stack', items: [ 
@@ -31,6 +33,9 @@ $(document).ready(function() {
         { name: "pdns."+hostname+".recursor.throttled-out", legend: "Throttled/s" }, 
         { name: "pdns."+hostname+".recursor.resource-limits", legend: "Resource limited/s"}]};
 
+    var config3b ={ items: [
+        { name: "pdns."+hostname+".recursor.concurrent-queries", legend: "Concurrent queries", kind: "gauge"}
+        ]};
 
     
     var config4 = { items: [ 
@@ -51,6 +56,7 @@ $(document).ready(function() {
     var config6 ={ renderer: "stack", items: [
         { name: "pdns."+hostname+".recursor.cache-entries", legend: "Cache entries", kind: "gauge"}, 
         { name: "pdns."+hostname+".recursor.packetcache-entries", legend: "Packetcache entries", kind: "gauge"}]};
+
 
     var config7 = { items: [ 
         { name: "pdns."+hostname+".auth.udp-queries", legend: "Questions/s" }, 
@@ -77,9 +83,11 @@ $(document).ready(function() {
 	showStuff(comconfig, config2, "#hier2");
 	showStuff(comconfig, config3, "#hier3");
 	showStuff(comconfig, config3a, "#hier3a");	
+	showStuff(comconfig, config3b, "#hier3b");	
 	showStuff(comconfig, config4, "#hier4");
 	showStuff(comconfig, config5, "#hier5");
 	showStuff(comconfig, config6, "#hier6");
+
 	showStuff(comconfig, config7, "#hier7");
 	showStuff(comconfig, config8, "#hier8");
 	showStuff(comconfig, config9, "#hier9");	

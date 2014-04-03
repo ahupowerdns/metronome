@@ -93,7 +93,7 @@ function showStuff(comconfig, config, where) {
 		  
 		  var graph = new Rickshaw.Graph( {
 		      element: $(where + " .chart")[0], 
-		      width: 450, 
+		      width: 550, 
 		      height: 250, 
                       renderer: config.renderer || 'multi',
 		      series: plotseries

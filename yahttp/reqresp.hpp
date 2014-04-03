@@ -29,7 +29,7 @@ namespace YaHTTP {
 
      strstr_map_t headers;
      strstr_map_t parameters;
-     strcookie_map_t cookies;
+     CookieJar jar;
 
      URL url;
      std::string method;
@@ -51,7 +51,7 @@ namespace YaHTTP {
 
      strstr_map_t headers;
      strstr_map_t parameters;
-     strcookie_map_t cookies;
+     CookieJar jar;
 
      URL url;
      int status;
@@ -85,7 +85,6 @@ namespace YaHTTP {
     long maxbody;
     std::ostringstream bodybuf;
     void keyValuePair(const std::string &keyvalue, std::string &key, std::string &value);
-    void parseCookies(const std::string &cookies);
   };
 
   class AsyncRequestLoader {
@@ -107,6 +106,5 @@ namespace YaHTTP {
     std::ostringstream bodybuf;
     long maxbody;
     void keyValuePair(const std::string &keyvalue, std::string &key, std::string &value);
-    void parseCookies(const std::string &cookies);
   };
 };

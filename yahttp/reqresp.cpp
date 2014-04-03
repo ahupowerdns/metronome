@@ -22,14 +22,14 @@ namespace YaHTTP {
   Request::Request(const Response &resp) {
     method = resp.method;
     url = resp.url;
-    cookies = resp.cookies;
+    jar = resp.jar;
   };
   Request::Request(const Request &req) {
     method = req.method;
     url = req.url;
     parameters = req.parameters;
     headers = req.headers;
-    cookies = req.cookies;
+    jar = req.jar;
     body = req.body;
   };
   Request::~Request() {};
@@ -39,7 +39,7 @@ namespace YaHTTP {
     headers["connection"] = "close";
     method = req.method;
     url = req.url;
-    cookies = req.cookies;
+    jar = req.jar;
     status = 200;
   };
   Response::Response(const Response &resp) {
@@ -47,7 +47,7 @@ namespace YaHTTP {
     url = resp.url;
     parameters = resp.parameters;
     headers = resp.headers;
-    cookies = resp.cookies;
+    jar = resp.jar;
     body = resp.body;
     status = resp.status;
     statusText = resp.statusText;
@@ -81,8 +81,8 @@ namespace YaHTTP {
       os << Utility::camelizeHeader(iter->first) << ": " << iter->second << "\r\n";
       iter++;
     }
-    if (cookies.size() > 0) { // write cookies
-      for(strcookie_map_t::const_iterator i = cookies.begin(); i != cookies.end(); i++)
+    if (jar.cookies.size() > 0) { // write cookies
+      for(strcookie_map_t::const_iterator i = jar.cookies.begin(); i != jar.cookies.end(); i++)
         os << "Set-Cookie: " << i->second.str() << "\r\n";
     }
     os << "\r\n";
@@ -108,8 +108,8 @@ namespace YaHTTP {
       os << Utility::camelizeHeader(iter->first) << ": " << iter->second << "\r\n";
       iter++;
     }
-    if (cookies.size() > 0) { // write cookies
-      for(strcookie_map_t::const_iterator i = cookies.begin(); i != cookies.end(); i++) 
+    if (jar.cookies.size() > 0) { // write cookies
+      for(strcookie_map_t::const_iterator i = jar.cookies.begin(); i != jar.cookies.end(); i++) 
         os << "Cookie: " << i->second.str() << "\r\n";
     } 
     os << "\r\n";
@@ -181,7 +181,15 @@ namespace YaHTTP {
         key = line.substr(0, pos);
         value = line.substr(pos+2);
         std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-        request->headers[key] = value;
+        if (key == "cookie") {
+          request->jar.parseCookieHeader(value);
+        } else {
+          if (request->headers.find(key) != request->headers.end()) {
+            request->headers[key] = request->headers[key] + ";" + value;
+          } else {
+            request->headers[key] = value;
+          }
+        }
       }
     }
 
@@ -272,7 +280,7 @@ namespace YaHTTP {
         // is it already defined
 
         if (key == "set-cookie") {
-          parseCookies(value);
+          response->jar.parseCookieHeader(value);
         } else {
           if (response->headers.find(key) != response->headers.end()) {
             response->headers[key] = response->headers[key] + ";" + value;
@@ -336,160 +344,5 @@ namespace YaHTTP {
     response->body = bodybuf.str();
     bodybuf.str("");
   };
-
-  void AsyncResponseLoader::keyValuePair(const std::string &keyvalue, std::string &key, std::string &value) {
-    size_t pos;
-    pos = keyvalue.find("=");
-    if (pos == std::string::npos) throw "Not a Key-Value pair (cookie)";
-    key = std::string(keyvalue.begin(), keyvalue.begin()+pos);
-    value = std::string(keyvalue.begin()+pos+1, keyvalue.end());
-  }
-
-  void AsyncResponseLoader::parseCookies(const std::string &cookiestr) {
-    std::list<Cookie> cookies;
-    int cstate = 0; //cookiestate
-    size_t pos,npos;
-    pos = 0;
-    cstate = 0;
-    while(pos < cookiestr.size()) {
-      if (cookiestr.compare(pos, 7, "expires") ==0 ||
-          cookiestr.compare(pos, 6, "domain")  ==0 ||
-          cookiestr.compare(pos, 4, "path")    ==0) {
-        cstate = 1;
-        // get the date
-        std::string key, value, s;
-        npos = cookiestr.find("; ", pos);
-        if (npos == std::string::npos) {
-          // last value
-          s = std::string(cookiestr.begin() + pos + 1, cookiestr.end());
-          pos = cookiestr.size();
-        } else {
-          s = std::string(cookiestr.begin() + pos + 1, cookiestr.begin() + npos - 1);
-          pos = npos+2;
-        }
-        keyValuePair(s, key, value);
-        if (s == "expires") {
-          DateTime dt;
-          dt.parseCookie(value);
-          for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
-            i->expires = dt;
-        } else if (s == "domain") {
-          for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
-            i->domain = value;
-        } else if (s == "path") {
-          for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
-            i->path = value;
-        }
-      } else if (cookiestr.compare(pos, 8, "httpOnly")==0) {
-        cstate = 1;
-        for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
-          i->httponly = true;
-      } else if (cookiestr.compare(pos, 6, "secure")  ==0) {
-        cstate = 1; 
-        for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
-          i->secure = true;
-      } else if (cstate == 0) { // expect cookie
-        Cookie c;
-        std::string s;
-        npos = cookiestr.find("; ", pos);
-        if (npos == std::string::npos) {
-          // last value
-          s = std::string(cookiestr.begin() + pos, cookiestr.end());
-          pos = cookiestr.size();
-        } else {
-          s = std::string(cookiestr.begin() + pos, cookiestr.begin() + npos);
-          pos = npos+2;
-        }
-        keyValuePair(s, c.name, c.value);
-        cookies.push_back(c);
-      } else if (cstate == 1) {
-        // ignore crap
-        break;
-      }
-    } 
-
-    // store cookies
-    for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++) {
-      response->cookies[i->name] = *i;
-    }
-  };
-
-  void AsyncRequestLoader::keyValuePair(const std::string &keyvalue, std::string &key, std::string &value) {
-    size_t pos;
-    pos = keyvalue.find("=");
-    if (pos == std::string::npos) throw "Not a Key-Value pair (cookie)";
-    key = std::string(keyvalue.begin(), keyvalue.begin()+pos);
-    value = std::string(keyvalue.begin()+pos+1, keyvalue.end());
-  }
-
-  void AsyncRequestLoader::parseCookies(const std::string &cookiestr) {
-    std::list<Cookie> cookies;
-    int cstate = 0; //cookiestate
-    size_t pos,npos;
-    pos = 0;
-    cstate = 0;
-    while(pos < cookiestr.size()) {
-      if (cookiestr.compare(pos, 7, "expires") ==0 ||
-          cookiestr.compare(pos, 6, "domain")  ==0 ||
-          cookiestr.compare(pos, 4, "path")    ==0) {
-        cstate = 1;
-        // get the date
-        std::string key, value, s;
-        npos = cookiestr.find("; ", pos);
-        if (npos == std::string::npos) {
-          // last value
-          s = std::string(cookiestr.begin() + pos + 1, cookiestr.end());
-          pos = cookiestr.size();
-        } else {
-          s = std::string(cookiestr.begin() + pos + 1, cookiestr.begin() + npos - 1);
-          pos = npos+2;
-        }
-        keyValuePair(s, key, value);
-        if (s == "expires") {
-          DateTime dt;
-          dt.parseCookie(value);
-          for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
-            i->expires = dt;
-        } else if (s == "domain") {
-          for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
-            i->domain = value;
-        } else if (s == "path") {
-          for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
-            i->path = value;
-        }
-      } else if (cookiestr.compare(pos, 8, "httpOnly")==0) {
-        cstate = 1;
-        for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
-          i->httponly = true;
-      } else if (cookiestr.compare(pos, 6, "secure")  ==0) {
-        cstate = 1;
-        for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++)
-          i->secure = true;
-      } else if (cstate == 0) { // expect cookie
-        Cookie c;
-        std::string s;
-        npos = cookiestr.find("; ", pos);
-        if (npos == std::string::npos) {
-          // last value
-          s = std::string(cookiestr.begin() + pos, cookiestr.end());
-          pos = cookiestr.size();
-        } else {
-          s = std::string(cookiestr.begin() + pos, cookiestr.begin() + npos);
-          pos = npos+2;
-        }
-        keyValuePair(s, c.name, c.value);
-        cookies.push_back(c);
-      } else if (cstate == 1) {
-        // ignore crap
-        break;
-      }
-    }
-
-    // store cookies
-    for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++) {
-      request->cookies[i->name] = *i;
-    }
-  };
-
 
 };

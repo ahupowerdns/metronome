@@ -108,6 +108,16 @@ try
     ss.store(req.parameters["name"], atoi(req.parameters["timestamp"].c_str()), 
 	     atof(req.parameters["value"].c_str()));
   }
+  else if(req.parameters["do"]=="get-all") {  
+    StatStorage ss("./stats");
+    auto vals = ss.retrieve(req.parameters["name"]);
+    ostringstream body;
+    body.setf(std::ios::fixed);    
+    for(const auto& v: vals) {
+      body<<v.timestamp<<'\t'<<v.value<<'\n';
+    }
+    resp.body=body.str();
+  }
   else if(req.parameters["do"]=="retrieve") {
       //    dumpRequest(req);
     StatStorage ss("./stats");
@@ -120,7 +130,6 @@ try
 
     double begin = atoi(req.parameters["begin"].c_str());
     double end = atoi(req.parameters["end"].c_str());
-
 
     body<<req.parameters["callback"]<<"({ raw: {";
     bool first=true;

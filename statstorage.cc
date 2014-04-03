@@ -10,18 +10,6 @@ StatStorage::StatStorage(const string& fname) : d_root(fname)
 {
 }
 
-struct Val { 
-  uint32_t timestamp;
-  float value;
-  bool operator<(const Val& rhs) const
-  {
-    return timestamp < rhs.timestamp;
-  }
-  bool operator<(int64_t rhs) const
-  {
-    return timestamp < rhs;
-  }
-} __attribute__((packed));
 
 void StatStorage::store(const string& name, uint32_t timestamp, float value)
 {
@@ -33,7 +21,7 @@ void StatStorage::store(const string& name, uint32_t timestamp, float value)
   FILE* fp=fopen(fname.c_str(), "a");
   if(!fp)
     unixDie("Opening '"+fname+"'");
-  Val val({timestamp, value});  
+  StatStorage::Val val({timestamp, value});  
   if(fwrite(&val, 1, sizeof(val), fp) != sizeof(val)) {
     fclose(fp);
     throw runtime_error("Failed to store datum in "+fname+", may be corrupted now");
@@ -50,33 +38,50 @@ static uint64_t filesize(int fd)
   return 0;
 }
 
-
-vector<StatStorage::Datum> StatStorage::retrieve(const std::string& name, time_t begin, time_t end, int number)
+vector<StatStorage::Val> StatStorage::retrieveVals(const std::string& name)
 {
+  vector<StatStorage::Val> values;
 
-  vector<Datum> ret;
   if(name.find("/") != string::npos)
-    return ret;
+    return values;
 
   string fname=d_root+"/"+name;
   FILE* fp=fopen(fname.c_str(), "r");
   if(!fp) {
     if(errno!=ENOENT)
       unixDie("Opening '"+fname+"'");
-    return ret;
+    return values;
   }
   auto size = filesize(fileno(fp));
 
-  vector<Val> values(size/sizeof(Val));
+  values.resize(size/sizeof(StatStorage::Val));
   //  cerr<<"Filesize: "<<size<<", "<<values.size()<<endl;
-  if(fread(&values[0], sizeof(Val), values.size(), fp) != values.size()) {
+  if(fread(&values[0], sizeof(StatStorage::Val), values.size(), fp) != values.size()) {
     fclose(fp);
     unixDie("Reading from '"+fname+"'");
   }
   fclose(fp);
 
   sort(values.begin(), values.end());
- 
+  return values;
+}
+
+vector<StatStorage::Datum> StatStorage::retrieve(const std::string& name)
+{
+  auto vals = retrieveVals(name);
+  vector<Datum> ret;
+  for(const auto& val : vals) {
+    ret.push_back({val.timestamp, val.value});
+  }
+  return ret;
+}
+
+vector<StatStorage::Datum> StatStorage::retrieve(const std::string& name, time_t begin, time_t end, int number)
+{
+  vector<Val> values=retrieveVals(name);
+  vector<Datum> ret;
+  if(values.empty())
+    return ret;
   auto beginIter = lower_bound(values.begin(), values.end(), (int64_t)begin);
   auto endIter = lower_bound(values.begin(), values.end(), (int64_t)end);
   

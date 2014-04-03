@@ -99,6 +99,7 @@ namespace YaHTTP {
         if (arl.feed(std::string(buf, is.gcount())) == true) return; // completed
       }
     }
+    if (arl.ready()) arl.finalize();
   };
 
   void Request::write(std::ostream &os) const {
@@ -149,7 +150,7 @@ namespace YaHTTP {
       if (buffer[pos-1]=='\r')
         cr=1;
       std::string line(buffer.begin(), buffer.begin()+pos-cr); // exclude CRLF
-      buffer.erase(buffer.begin(), buffer.begin()+pos+1+cr); // remove line from buffer including CRLF
+      buffer.erase(buffer.begin(), buffer.begin()+pos+1); // remove line from buffer including CRLF
 
       if (state == 0) { // startup line
         std::string ver;
@@ -237,11 +238,7 @@ namespace YaHTTP {
 
     if (chunk_size!=0) return false; // need more data
 
-    bodybuf.flush();
-    request->body = bodybuf.str();
-    bodybuf.str("");
-
-    return true;
+    return ready();
   };
 
   bool AsyncResponseLoader::feed(const std::string &somedata) {
@@ -337,6 +334,13 @@ namespace YaHTTP {
     if (chunk_size!=0) return false; // need more data
 
     return ready();
+  };
+
+  void AsyncRequestLoader::finalize() {
+    bodybuf.flush();
+    request->body = bodybuf.str();
+    bodybuf.str("");
+    this->request = NULL;
   };
 
   void AsyncResponseLoader::finalize() {

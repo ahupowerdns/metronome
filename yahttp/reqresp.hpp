@@ -89,6 +89,14 @@ namespace YaHTTP {
 
   class AsyncRequestLoader {
   public:
+    AsyncRequestLoader() {
+      state = 0;
+      chunked = false;
+      chunk_size = 0;
+      maxbody = 0;
+      this->request = NULL;
+    };
+
     AsyncRequestLoader(Request *request) {
       state = 0;
       chunked = false;
@@ -96,7 +104,17 @@ namespace YaHTTP {
       maxbody = 0;
       this->request = request;
     };
+
+    void restart(Request *request) {
+      state = 0;
+      chunked = false;
+      chunk_size = 0;
+      maxbody = 0;
+      this->request = request;      
+    };
     bool feed(const std::string &somedata);
+    bool ready() { return state > 1 && (maxbody < 0 || static_cast<unsigned long>(maxbody) >= bodybuf.str().size()); };
+    void finalize();
   private:
     Request *request;
     int state;

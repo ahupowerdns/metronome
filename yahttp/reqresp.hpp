@@ -73,6 +73,13 @@ namespace YaHTTP {
       maxbody = -1;
       this->response = response;
     };
+    void restart(Request *request) {
+      state = 0;
+      chunked = false;
+      chunk_size = 0;
+      maxbody = 0;
+      this->response = response;
+    };
     bool feed(const std::string &somedata);
     bool ready() { return state > 1 && (maxbody < 0 || static_cast<unsigned long>(maxbody) >= bodybuf.str().size()); };
     void finalize();

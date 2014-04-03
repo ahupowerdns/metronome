@@ -19,7 +19,6 @@ public:
       return timestamp < t;
     }
   };
-  
   std::vector<Datum> retrieve(const std::string& name, time_t begin, time_t end, int number=-1);
   std::vector<Datum> retrieve(const std::string& name);
 
@@ -40,3 +39,8 @@ private:
 
   std::vector<Val> retrieveVals(const std::string& name);
 };
+
+inline bool operator<(double t, const StatStorage::Datum& d)
+{
+  return t < d.timestamp;
+}

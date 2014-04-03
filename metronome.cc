@@ -81,6 +81,18 @@ vector<StatStorage::Datum> nonNegativeDerivative(const vector<StatStorage::Datum
   return ret;
 }
 
+double smooth(const vector<StatStorage::Datum>& vals, uint32_t timestamp, int window)
+{
+  auto from = upper_bound(vals.begin(), vals.end(), timestamp-window/2.0);
+  auto to = upper_bound(vals.begin(), vals.end(), timestamp+window/2.0);
+  double total=0;
+
+  for(auto iter = from ; iter != to; ++iter) {
+    total += iter->value; // we could so some weighing here if we wanted
+  }
+  return total/(to-from);
+}
+
 void startWebserverThread(int sock, ComboAddress remote)
 try
 {
@@ -114,7 +126,7 @@ try
     ostringstream body;
     body.setf(std::ios::fixed);    
     for(const auto& v: vals) {
-      body<<v.timestamp<<'\t'<<v.value<<'\n';
+      body<<v.timestamp<<'\t'<<v.value<<'\t'<<smooth(vals, v.timestamp, 60)<<'\t'<<smooth(vals, v.timestamp, 512)<<'\n';
     }
     resp.body=body.str();
   }
@@ -136,8 +148,6 @@ try
     map<string,vector<StatStorage::Datum> > derivative;
     for(const auto& name : names) {
       auto vals = ss.retrieve(name, begin, end);
-      CSplineSignalInterpolator<StatStorage::Datum> csi(vals);
-
       if(!first) 
 	body<<',';
       first=false;
@@ -146,13 +156,14 @@ try
       int count=0;
       vector<StatStorage::Datum> derived;
       uint32_t prevt=0;
-      for(double t = begin ; t < end; t+= (end-begin)/200) {
+      double step = (end-begin)/100.0;
+      for(double t = begin ; t < end; t+= step) {
 	if(count) {
 	  body<<',';
-	  float val = (csi(t)-csi(prevt))/(t-prevt);
+	  float val = (smooth(vals, t, step)-smooth(vals, prevt, step))/(step);
 	  derived.push_back({prevt, val});
 	}
-	body<<"["<<(uint32_t)t<<','<<csi(t)<<']';   
+	body<<"["<<(uint32_t)t<<','<<smooth(vals, t, step)<<']';   
 	count++; 
 	prevt=t;
       }

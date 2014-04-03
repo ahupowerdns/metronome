@@ -34,7 +34,7 @@ function showStuff(comconfig, config, where) {
     qstring+= metrics.join(',');
 
     var epoch = (new Date).getTime()/1000;
-    qstring+="&begin="+(epoch+comconfig.beginTime)+"&end="+(epoch+50);
+    qstring+="&begin="+(epoch+comconfig.beginTime)+"&end="+(epoch);
 
     $.getJSON(qstring, 
 	      function(fullseries) {	      

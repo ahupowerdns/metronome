@@ -1,10 +1,8 @@
 $(document).ready(function() {
-    moment().format();
-      
     $.ajaxSetup({ cache: false });
     
-    var hostname='localhost';
-    var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -7*3600 };
+    var hostname='micro';
+    var comconfig = { url: "http://127.0.0.1:8000/", beginTime: -3600 };
 
     var config1 = { items: [ 
         { name: "pdns."+hostname+".recursor.questions", legend: "Questions/s" }, 

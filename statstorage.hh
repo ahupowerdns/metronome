@@ -7,12 +7,12 @@ class StatStorage
 {
 public:
   StatStorage(const std::string& root);
-  void store(const std::string& name, time_t timestamp, double value);
+  void store(const std::string& name, uint32_t timestamp, float value);
   
   struct Datum
   {
-    time_t timestamp;
-    double value;
+    uint32_t timestamp;
+    float value;
     bool operator<(double t) const
     {
       return timestamp < t;

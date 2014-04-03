@@ -136,13 +136,14 @@ try
       body<< '"' << name << "\": [";
       int count=0;
       vector<StatStorage::Datum> derived;
-      int64_t prevt=0;
+      uint32_t prevt=0;
       for(double t = begin ; t < end; t+= (end-begin)/200) {
 	if(count) {
 	  body<<',';
-	  derived.push_back({prevt, (csi(t)-csi(prevt))/(t-prevt)});
+	  float val = (csi(t)-csi(prevt))/(t-prevt);
+	  derived.push_back({prevt, val});
 	}
-	body<<"["<<(int64_t)t<<','<<(int64_t)csi(t)<<']';   
+	body<<"["<<(uint32_t)t<<','<<csi(t)<<']';   
 	count++; 
 	prevt=t;
       }

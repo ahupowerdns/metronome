@@ -11,8 +11,8 @@ StatStorage::StatStorage(const string& fname) : d_root(fname)
 }
 
 struct Val { 
-  int64_t timestamp;
-  double value;
+  uint32_t timestamp;
+  float value;
   bool operator<(const Val& rhs) const
   {
     return timestamp < rhs.timestamp;
@@ -23,7 +23,7 @@ struct Val {
   }
 } __attribute__((packed));
 
-void StatStorage::store(const string& name, time_t timestamp, double value)
+void StatStorage::store(const string& name, uint32_t timestamp, float value)
 {
   if(name.find("/") != string::npos)
     return;
@@ -33,7 +33,7 @@ void StatStorage::store(const string& name, time_t timestamp, double value)
   FILE* fp=fopen(fname.c_str(), "a");
   if(!fp)
     unixDie("Opening '"+fname+"'");
-  Val val({(int64_t)timestamp, value});  
+  Val val({timestamp, value});  
   if(fwrite(&val, 1, sizeof(val), fp) != sizeof(val)) {
     fclose(fp);
     throw runtime_error("Failed to store datum in "+fname+", may be corrupted now");
@@ -82,7 +82,7 @@ vector<StatStorage::Datum> StatStorage::retrieve(const std::string& name, time_t
   
   ret.reserve(endIter- beginIter);
   for(auto iter = beginIter; iter != endIter; ++iter) {
-    ret.push_back({(time_t)iter->timestamp, iter->value});
+    ret.push_back({iter->timestamp, iter->value});
   }
   return ret;
 }

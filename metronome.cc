@@ -86,8 +86,23 @@ double smooth(const vector<StatStorage::Datum>& vals, uint32_t timestamp, int wi
   auto from = upper_bound(vals.begin(), vals.end(), timestamp-window/2.0);
   auto to = upper_bound(vals.begin(), vals.end(), timestamp+window/2.0);
   double total=0;
-  if(to==from)
-    return 0;
+  if(to==from) {
+    to=from=lower_bound(vals.begin(), vals.end(), timestamp);
+    if(from==vals.end()) {
+      return 0;
+    }
+    
+    if(from != vals.begin())
+      --from;
+    else {
+      return from->value;
+    }
+
+    cerr<<"from: "<<from->timestamp<<endl;
+    cerr<<"      "<<timestamp<<endl;
+    cerr<<"to:   "<<to->timestamp<<endl;
+    return from->value + (to->value-from->value)*(timestamp - from->timestamp)/(to->timestamp - from->timestamp);
+  }
   for(auto iter = from ; iter != to; ++iter) {
     total += iter->value; // we could so some weighing here if we wanted
   }
@@ -163,6 +178,8 @@ try
 	if(count) {
 	  body<<',';
 	  float val = (smooth(vals, t, 2*step)-smooth(vals, prevt, 2*step))/(step);
+	  if(val < 0)
+	    val=0;
 	  derived.push_back({prevt, val});
 	}
 	body<<"["<<(uint32_t)t<<','<<smooth(vals, t, 2*step)<<']';   

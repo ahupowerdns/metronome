@@ -170,7 +170,8 @@ try
 	prevt=t;
       }
       body<<"]";
-      derived.push_back({prevt, derived.rbegin()->value});
+      if(!derived.empty())
+        derived.push_back({prevt, derived.rbegin()->value});
       derivative[name]=derived;
     }
     body<<"}, derivative: {  ";

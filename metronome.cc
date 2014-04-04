@@ -2,6 +2,7 @@
 #include "iputils.hh"
 #include "statstorage.hh"
 #include <thread>
+#include <mutex>
 
 using namespace std;
 
@@ -80,34 +81,44 @@ vector<StatStorage::Datum> nonNegativeDerivative(const vector<StatStorage::Datum
   ret.push_back({in.rbegin()->timestamp, ret.rbegin()->value});
   return ret;
 }
-
-double smooth(const vector<StatStorage::Datum>& vals, uint32_t timestamp, int window)
+//std::mutex m;
+double smooth(const vector<StatStorage::Datum>& vals, double timestamp, int window)
 {
   auto from = upper_bound(vals.begin(), vals.end(), timestamp-window/2.0);
   auto to = upper_bound(vals.begin(), vals.end(), timestamp+window/2.0);
-  double total=0;
-  if(to==from) {
-    to=from=lower_bound(vals.begin(), vals.end(), timestamp);
-    if(from==vals.end()) {
-      return 0;
-    }
-    
-    if(from != vals.begin())
-      --from;
-    else {
-      return from->value;
-    }
 
-    cerr<<"from: "<<from->timestamp<<endl;
-    cerr<<"      "<<timestamp<<endl;
-    cerr<<"to:   "<<to->timestamp<<endl;
-    return from->value + (to->value-from->value)*(timestamp - from->timestamp)/(to->timestamp - from->timestamp);
-  }
+  if(from == vals.end())
+    return 0;
+  if(from != vals.begin())
+    --from;
+
+  if(to != vals.end())
+    ++to;
+  if(to != vals.end())
+    ++to;
+
+  double xySum=0, xSum=0, ySum=0, x2Sum=0; 
+  int n=0;
+  //  m.lock();
+  cout.setf(std::ios::fixed);    
+  //  cout<<"Desired timestamp:   "<<timestamp<<endl;
   for(auto iter = from ; iter != to; ++iter) {
-    total += iter->value; // we could so some weighing here if we wanted
+    //    cout<<"\tConsidering: "<<(iter->timestamp)<<"\t"<<iter->value<<endl;
+    double adjT = iter->timestamp - timestamp;
+    xySum += (adjT) * iter-> value;
+    xSum += (adjT);
+    ySum += iter->value;
+    x2Sum += adjT* adjT;
+    n++;
   }
-  
-  return total/(to-from);
+
+  double beta = (xySum - (xSum*ySum)/n)   /  (x2Sum - xSum*xSum/n);
+  double alpha = ySum / n - beta*xSum/n;
+
+  double ret= alpha; // + beta*timestamp;
+  //  cout<<n<<", "<<alpha<<", "<<beta<<" -> "<<ret<<endl;
+  // m.unlock();
+  return ret;
 }
 
 void startWebserverThread(int sock, ComboAddress remote)
@@ -174,6 +185,7 @@ try
       vector<StatStorage::Datum> derived;
       uint32_t prevt=0;
       double step = (end-begin)/100.0;
+      //      cout<<"step: "<<step<<endl;
       for(double t = begin ; t < end; t+= step) {
 	if(count) {
 	  body<<',';

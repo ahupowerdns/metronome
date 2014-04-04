@@ -1,8 +1,9 @@
+var updateEverything = function(){}
 $(document).ready(function() {
     $.ajaxSetup({ cache: false });
     
-    var hostname='arathorn';
-    var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -7200 };
+    var hostname='osgiliath';
+    var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -3*3600 };
 
     var config1 = { items: [ 
         { name: "pdns."+hostname+".recursor.questions", legend: "Questions/s" }, 
@@ -20,6 +21,15 @@ $(document).ready(function() {
         { name: "pdns."+hostname+".recursor.answers100-1000", legend: "100-1000ms answers/s"}
 
     ]};
+
+    var config2a = { renderer: 'stack', items: [ 
+            { name: "pdns."+hostname+".recursor.servfail-answers", legend: "SERVFAIL answers/s"},
+            	{ name: "pdns."+hostname+".recursor.nxdomain-answers", legend: "NXDOMAIN answers/s"},
+        { name: "pdns."+hostname+".recursor.noerror-answers", legend: "Normal answers/s"}
+
+
+    ]};
+
 
     var config3 ={ renderer: "stack", items: [ 
         { metrics: ["pdns."+hostname+".recursor.user-msec"], legend: "User CPU%",
@@ -81,6 +91,7 @@ $(document).ready(function() {
     {
 	showStuff(comconfig, config1, "#hier1");
 	showStuff(comconfig, config2, "#hier2");
+	showStuff(comconfig, config2a, "#hier2a");	
 	showStuff(comconfig, config3, "#hier3");
 	showStuff(comconfig, config3a, "#hier3a");	
 	showStuff(comconfig, config3b, "#hier3b");	
@@ -92,7 +103,7 @@ $(document).ready(function() {
 	showStuff(comconfig, config8, "#hier8");
 	showStuff(comconfig, config9, "#hier9");	
     }
-    showAll();
-
-    setInterval(function() { showAll(); } ,5000);    
+    updateEverything = function() { comconfig.beginTime = parseInt($("#duration").val()); ; showAll(); };    
+    updateEverything();
+    setInterval(updateEverything, 5000);    
 });

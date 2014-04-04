@@ -47,11 +47,27 @@
 }
 
 </style>
-<h1>PowerDNS</h1>
+
+
+
+<table width="600"><tr><td><h1>PowerDNS</h1></td><td align="right">
+<form action="">
+<select id="duration" onChange="updateEverything();" name="duration">
+<option value="-600">10 Minutes</option>
+<option value="-900">15 Minutes</option>
+<option value="-3600">1 Hour</option>
+<option value="-7200" selected="selected">2 Hours</option>
+<option value="-43200">12 Hours</option>
+<option value="-86400">1 Day</option>
+</select>
+</form>
+</td></tr></table>
 <h2>Recursor</h2>
 <div id="hier1"></div>
 <br/><br/>
 <div id="hier2"></div>
+<br/><br/>
+<div id="hier2a"></div>
 <br/><br/>
 <div id="hier3"></div>
 <br/><br/>

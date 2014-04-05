@@ -19,7 +19,6 @@
         top: 25px;
         position: relative;
         font-family: Arial, Helvetica, sans-serif;
-
 }
                 
 .chart {
@@ -49,19 +48,29 @@
 </style>
 
 
-
-<table width="600"><tr><td><h1>PowerDNS</h1></td><td align="right">
 <form action="">
+<table width="600"><tr><td><h1>PowerDNS</h1></td>
+<td align="right">
+
+<select id="server" onChange="updateEverything();" name="server">
+</select>
+</td>
+<td align="right">
+
 <select id="duration" onChange="updateEverything();" name="duration">
 <option value="-600">10 Minutes</option>
 <option value="-900">15 Minutes</option>
 <option value="-3600">1 Hour</option>
 <option value="-7200" selected="selected">2 Hours</option>
+<option value="-7200">4 Hours</option>
+<option value="-7200">6 Hours</option>
 <option value="-43200">12 Hours</option>
 <option value="-86400">1 Day</option>
+<option value="-604800">1 Week</option>
 </select>
-</form>
+
 </td></tr></table>
+</form>
 <h2>Recursor</h2>
 <div id="hier1"></div>
 <br/><br/>

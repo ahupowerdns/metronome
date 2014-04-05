@@ -15,8 +15,30 @@ function percentalizer(r, d)
 	return 0;
 }
 
-function showStuff(comconfig, config, where) {
+function getServers(comconfig, destination) 
+{
+    var qstring =comconfig.url+"?do=get-metrics&callback=?&name";
 
+    $.getJSON(qstring, 
+	      function(data) {	      
+		  var theservers={};
+		  $.each(data.metrics, function(a, b) {
+		      var parts = b.split('.');
+		      var name = parts[1]+'.'+parts[2];
+		      theservers[name]=1;
+		  });
+		  var ret=[];
+		  $.each(theservers, function(a,b) {
+		      ret.push(a);
+		  });
+		  ret.sort();
+		  destination(ret);
+	      });
+}
+	     
+
+
+function showStuff(comconfig, config, where) {
     var items = config.items;
 
     var qstring =comconfig.url+"?do=retrieve&callback=?&name=";

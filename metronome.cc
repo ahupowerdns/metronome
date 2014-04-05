@@ -52,19 +52,6 @@ void dumpRequest(const YaHTTP::Request& req)
   cout<<"Method: "<<req.method<<endl;
 }
 
-vector<StatStorage::Datum> nonNegativeDerivative(const vector<StatStorage::Datum>& in)
-{
-  vector<StatStorage::Datum> ret;
-  if(in.empty())
-    return ret;
-
-  for(auto iter = in.cbegin()+1; iter != in.cend(); ++iter) {
-    ret.push_back({(iter-1)->timestamp, (iter->value - (iter-1)->value)/(iter->timestamp - (iter-1)->timestamp)});
-  }
-  ret.push_back({in.rbegin()->timestamp, ret.rbegin()->value});
-  return ret;
-}
-//std::mutex m;
 double smooth(const vector<StatStorage::Datum>& vals, double timestamp, int window)
 {
   auto from = upper_bound(vals.begin(), vals.end(), timestamp-window/2.0);
@@ -125,21 +112,35 @@ try
   req.load(str);
 
   YaHTTP::Response resp(req);
+  ostringstream body;
 
   if(req.parameters["do"]=="store") {
     StatStorage ss("./stats");
     ss.store(req.parameters["name"], atoi(req.parameters["timestamp"].c_str()), 
 	     atof(req.parameters["value"].c_str()));
   }
+  else if(req.parameters["do"]=="get-metrics") {  
+    StatStorage ss("./stats");
+    resp.headers["Content-Type"]= "application/json";
+    resp.headers["Access-Control-Allow-Origin"]= "*";
+    body<<req.parameters["callback"]<<"(";
+    body<<"{ \"metrics\": [";
+    auto metrics = ss.getMetrics();
+    for(const auto& metric : metrics)  {
+      if(&metric != &metrics[0]) 
+	body<<',';
+      body<<'\''<<metric<<'\'';
+    }
+    body << "]});";
+  }
   else if(req.parameters["do"]=="get-all") {  
     StatStorage ss("./stats");
     auto vals = ss.retrieve(req.parameters["name"]);
-    ostringstream body;
+
     body.setf(std::ios::fixed);    
     for(const auto& v: vals) {
       body<<v.timestamp<<'\t'<<v.value<<'\t'<<smooth(vals, v.timestamp, 60)<<'\t'<<smooth(vals, v.timestamp, 512)<<'\n';
     }
-    resp.body=body.str();
   }
   else if(req.parameters["do"]=="retrieve") {
       //    dumpRequest(req);
@@ -148,13 +149,14 @@ try
     stringtok(names, req.parameters["name"], ",");
     resp.headers["Content-Type"]= "application/json";
     resp.headers["Access-Control-Allow-Origin"]= "*";
-    ostringstream body;
+
     body.setf(std::ios::fixed);
 
     double begin = atoi(req.parameters["begin"].c_str());
     double end = atoi(req.parameters["end"].c_str());
 
-    body<<req.parameters["callback"]<<"({ raw: {";
+    body<<req.parameters["callback"]<<"(";
+    body<<"{ raw: {";
     bool first=true;
     map<string,vector<StatStorage::Datum> > derivative;
     for(const auto& name : names) {
@@ -201,14 +203,11 @@ try
 	count++; 
       }
       body<<"]";
-
     }
-
     body <<"}});";
-    resp.body=body.str();
   }
 
-
+  resp.body=body.str();
   ostringstream ostr;
   ostr << resp;
   
@@ -219,9 +218,9 @@ try
 catch(exception& e) {
   cerr<<"Dying because of error: "<<e.what()<<endl;
 }
+
 void webServerThread(int sock)
 {
-
   for(;;) {
     ComboAddress remote("::");
     int client=SAccept(sock, remote);
@@ -237,8 +236,7 @@ void webServerThread(int sock)
 void launchWebserver()
 {
   ComboAddress localWeb("::", 8000);
-  int s = SSocket(localWeb.sin4.sin_family,
-		 SOCK_STREAM, 0);
+  int s = SSocket(localWeb.sin4.sin_family, SOCK_STREAM, 0);
 
   SSetsockopt(s, SOL_SOCKET, SO_REUSEADDR, 1);
   SBind(s, localWeb);
@@ -249,10 +247,10 @@ void launchWebserver()
 }
 
 int main(int argc, char** argv)
+try
 {
   ComboAddress localCarbon("::", 2003);
-  int s = SSocket(localCarbon.sin4.sin_family,
-		 SOCK_STREAM, 0);
+  int s = SSocket(localCarbon.sin4.sin_family, SOCK_STREAM, 0);
 
   SSetsockopt(s, SOL_SOCKET, SO_REUSEADDR, 1);
   SBind(s, localCarbon);
@@ -269,9 +267,9 @@ int main(int argc, char** argv)
       thread t1(startCarbonThread, client, remote);
       t1.detach();
     }
-  }
-		 
-
-  YaHTTP::Response resp;
-
+  }		 
+}
+catch(exception& e) {
+  cerr<<"Fatal error: "<<e.what()<<endl;
+  exit(EXIT_FAILURE);
 }

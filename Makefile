@@ -4,7 +4,7 @@ VERSION=0.1
 
 
 ifeq ($(CXX),clang++)
-	CXX2011FLAGS=-std=c++11
+	CXX2011FLAGS=-std=c++11 -stdlib=libc++
 endif
 
 CXXFLAGS?=-Wall -O3 -ggdb -I.  -pthread -MMD -MP  $(CXX2011FLAGS) # -Wno-unused-local-typedefs 

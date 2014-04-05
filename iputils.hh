@@ -406,4 +406,5 @@ inline int writen(int fd, const std::string& str)
 {
   return writen(fd, str.c_str(), str.size());
 }
+bool sockGetLine(int sock, string* ret);
 #endif

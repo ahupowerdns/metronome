@@ -153,3 +153,21 @@ int makeIPv4sockaddr(const std::string& str, struct sockaddr_in* ret)
   }
   return -1;
 }
+
+bool sockGetLine(int sock, string* ret)
+{
+  ret->clear();
+  char c;
+  int err;
+  for(;;) {
+    err=read(sock, &c, 1);
+    if(err < 0)
+      throw runtime_error("Error reading from socket: "+string(strerror(errno)));
+    if(!err)
+      break;
+    ret->append(1, c);
+    if(c=='\n')
+      break;
+  }
+  return !ret->empty();
+}

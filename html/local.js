@@ -1,7 +1,7 @@
 var updateEverything = function(){}
 $(document).ready(function() {
     $.ajaxSetup({ cache: false });
-    var comconfig = { url: "http://127.0.0.1:8000/", beginTime: -3*3600 };
+    var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -3*3600 };
     
     function showAll()
     {
@@ -74,7 +74,15 @@ $(document).ready(function() {
 
 	var config7 = { items: [ 
             { name: "pdns."+servername+".udp-queries", legend: "Questions/s" }, 
-            { name: "pdns."+servername+".udp-answers", legend: "All outqueries/s"}]};
+            { name: "pdns."+servername+".udp-answers", legend: "Answers/s"}]};
+
+	var config7a = { items: [ 
+            { name: "pdns."+servername+".tcp-queries", legend: "TCP Questions/s" }, 
+            { name: "pdns."+servername+".tcp-answers", legend: "TCP Answers/s"}]};
+
+	var config7b = { items: [ 
+            { name: "pdns."+servername+".qsize-q", legend: "DB Queue", kind: "gauge"}
+            ]};
 
 
 	var config8 = { items: [ 
@@ -102,23 +110,17 @@ $(document).ready(function() {
 	    showStuff(comconfig, config4, "#hier4");
 	    showStuff(comconfig, config5, "#hier5");
 	    showStuff(comconfig, config6, "#hier6");
-	    $("#hier7").html("");
-	    $("#hier8").html("");
-	    $("#hier9").html("");
+	    $("#auth").hide();
+	    $("#recursor").show();
 	}
 	if(servername.split('.')[1]=="auth") {
 	    showStuff(comconfig, config7, "#hier7");
+	    showStuff(comconfig, config7a, "#hier7a");	    
+	    showStuff(comconfig, config7b, "#hier7b");	    	    
 	    showStuff(comconfig, config8, "#hier8");
 	    showStuff(comconfig, config9, "#hier9");
-	    $("#hier1").html("");
-	    $("#hier2").html("");
-	    $("#hier2a").html("");
-	    $("#hier3").html("");
-	    $("#hier3a").html("");
-	    $("#hier3b").html("");
-	    $("#hier4").html("");
-	    $("#hier5").html("");
-	    $("#hier6").html("");
+	    $("#auth").show();
+	    $("#recursor").hide();
 	}	
 
     }

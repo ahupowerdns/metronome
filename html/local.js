@@ -71,41 +71,56 @@ $(document).ready(function() {
             { name: "pdns."+servername+".cache-entries", legend: "Cache entries", kind: "gauge"}, 
             { name: "pdns."+servername+".packetcache-entries", legend: "Packetcache entries", kind: "gauge"}]};
 
-/*
+
 	var config7 = { items: [ 
-            { name: "pdns."+servername+".auth.udp-queries", legend: "Questions/s" }, 
-            { name: "pdns."+servername+".auth.udp-answers", legend: "All outqueries/s"}]};
+            { name: "pdns."+servername+".udp-queries", legend: "Questions/s" }, 
+            { name: "pdns."+servername+".udp-answers", legend: "All outqueries/s"}]};
 
 
 	var config8 = { items: [ 
             { 
-		metrics: ["pdns."+servername+".auth.packetcache-hit","pdns."+servername+".auth.packetcache-miss"], 
+		metrics: ["pdns."+servername+".packetcache-hit","pdns."+servername+".packetcache-miss"], 
 		legend: "% packet cache hitrate", 
 		formula: percentalizer
 	    }]};    
 
 	var config9 = { items: [ 
             { 
-		metrics: ["pdns."+servername+".auth.query-cache-hit","pdns."+servername+".auth.query-cache-miss"], 
+		metrics: ["pdns."+servername+".query-cache-hit","pdns."+servername+".query-cache-miss"], 
 		legend: "% query cache hitrate", 
 		formula: percentalizer
  	    }]};    
 
-*/
-	showStuff(comconfig, config1, "#hier1");
-	showStuff(comconfig, config2, "#hier2");
-	showStuff(comconfig, config2a, "#hier2a");	
-	showStuff(comconfig, config3, "#hier3");
-	showStuff(comconfig, config3a, "#hier3a");	
-	showStuff(comconfig, config3b, "#hier3b");	
-	showStuff(comconfig, config4, "#hier4");
-	showStuff(comconfig, config5, "#hier5");
-	showStuff(comconfig, config6, "#hier6");
-/*
-	showStuff(comconfig, config7, "#hier7");
-	showStuff(comconfig, config8, "#hier8");
-	showStuff(comconfig, config9, "#hier9");	
-*/
+	
+	if(servername.split('.')[1]=="recursor") { 
+	    showStuff(comconfig, config1, "#hier1");
+	    showStuff(comconfig, config2, "#hier2");
+	    showStuff(comconfig, config2a, "#hier2a");	
+	    showStuff(comconfig, config3, "#hier3");
+	    showStuff(comconfig, config3a, "#hier3a");	
+	    showStuff(comconfig, config3b, "#hier3b");	
+	    showStuff(comconfig, config4, "#hier4");
+	    showStuff(comconfig, config5, "#hier5");
+	    showStuff(comconfig, config6, "#hier6");
+	    $("#hier7").html("");
+	    $("#hier8").html("");
+	    $("#hier9").html("");
+	}
+	if(servername.split('.')[1]=="auth") {
+	    showStuff(comconfig, config7, "#hier7");
+	    showStuff(comconfig, config8, "#hier8");
+	    showStuff(comconfig, config9, "#hier9");
+	    $("#hier1").html("");
+	    $("#hier2").html("");
+	    $("#hier2a").html("");
+	    $("#hier3").html("");
+	    $("#hier3a").html("");
+	    $("#hier3b").html("");
+	    $("#hier4").html("");
+	    $("#hier5").html("");
+	    $("#hier6").html("");
+	}	
+
     }
     updateEverything = function() { comconfig.beginTime = parseInt($("#duration").val()); ; showAll(); };    
   

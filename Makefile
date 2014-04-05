@@ -1,6 +1,12 @@
 -include sysdeps/$(shell uname).inc
 
 VERSION=0.1
+
+
+ifeq ($(CXX),clang++)
+	CXX2011FLAGS=-std=c++11
+endif
+
 CXXFLAGS?=-Wall -O3 -ggdb -I.  -pthread -MMD -MP  $(CXX2011FLAGS) # -Wno-unused-local-typedefs 
 CFLAGS=-Wall -I.  -O3 -MMD -MP
 LDFLAGS=$(CXX2011FLAGS) -pthread   # -Wl,-Bstatic -lstdc++ -lgcc -lz -Wl,-Bdynamic -static-libgcc -lm -lc

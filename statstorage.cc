@@ -4,6 +4,7 @@
 #include <sys/stat.h>
 #include <algorithm>
 #include <iostream>
+#include <dirent.h>
 using namespace std;
 
 StatStorage::StatStorage(const string& fname) : d_root(fname)
@@ -36,6 +37,27 @@ static uint64_t filesize(int fd)
     return buf.st_size;
   }
   return 0;
+}
+
+vector<string> StatStorage::getMetrics()
+{
+  DIR *dir = opendir(d_root.c_str());
+  if(!dir)
+    unixDie("Listing metrics from statistics storage");
+  struct dirent entry, *result=0;
+  vector<string> ret;
+  for(;;) {
+    if(readdir_r(dir, &entry, &result)) {
+      closedir(dir);
+      unixDie("Reading directory entry");
+    }
+    if(!result)
+      break;
+    if(result->d_name[0] != '.')
+      ret.push_back(result->d_name);
+  }
+  closedir(dir);
+  return ret;
 }
 
 vector<StatStorage::Val> StatStorage::retrieveVals(const std::string& name)

@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <limits>
+#include <tuple>
 
 //! make your own, not thread safe
 class StatStorage
@@ -18,10 +19,14 @@ public:
     {
       return timestamp < t;
     }
+    bool operator==(const Datum &rhs) const
+    {
+      return std::tie(rhs.timestamp, rhs.value) == std::tie(timestamp, value);
+    }
   };
   std::vector<Datum> retrieve(const std::string& name, time_t begin, time_t end, int number=-1);
   std::vector<Datum> retrieve(const std::string& name);
-
+  std::vector<std::string> getMetrics();
 private:
   std::string d_root;
   struct Val { 

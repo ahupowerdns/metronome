@@ -13,7 +13,10 @@
 <script src="engine.js"></script>
 <script src="local.js"></script>
 <body>                                                                  
-
+<a href="https://github.com/ahuPowerDNS/metronome"><img style="position: absolute; top: 0;
+right: 0; border: 0;"
+src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"
+alt="Fork me on GitHub"></a>
 <style>
 .chart_container {
         top: 25px;
@@ -49,7 +52,7 @@
 
 
 <form action="">
-<table width="600"><tr><td><h1>PowerDNS</h1></td>
+<table width="600"><tr><td><img src="https://www.powerdns.com/img/powerdns-logo-220px.png"/></td>
 <td align="right">
 
 <select id="server" onChange="updateEverything();" name="server">
@@ -58,7 +61,6 @@
 <td align="right">
 
 <select id="duration" onChange="updateEverything();" name="duration">
-<option value="-600">10 Minutes</option>
 <option value="-900">15 Minutes</option>
 <option value="-3600">1 Hour</option>
 <option value="-7200" selected="selected">2 Hours</option>
@@ -66,6 +68,7 @@
 <option value="-21600">6 Hours</option>
 <option value="-43200">12 Hours</option>
 <option value="-86400">1 Day</option>
+<option value="-172800">2 Days</option>
 <option value="-604800">1 Week</option>
 </select>
 
@@ -106,7 +109,12 @@
 <br/><br/>
 <div id="hier9"></div>
 </div>
+
+<div>
+<br/><br/>
+<p></p><p></p>
 <hr/>
 Built with <a href="https://github.com/ahupowerdns/metronome/">Metronome</a>.
+</div>
 </body>                                                                 
 </html>

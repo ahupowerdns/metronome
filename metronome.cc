@@ -113,7 +113,7 @@ try
 
   YaHTTP::Response resp(req);
   ostringstream body;
-
+  
   if(req.parameters["do"]=="store") {
     StatStorage ss("./stats");
     ss.store(req.parameters["name"], atoi(req.parameters["timestamp"].c_str()), 
@@ -206,7 +206,10 @@ try
     }
     body <<"}});";
   }
-
+  else {
+    resp.status=404;
+    body<<"404 File not found"<<endl;
+  }
   resp.body=body.str();
   ostringstream ostr;
   ostr << resp;

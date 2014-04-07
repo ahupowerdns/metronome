@@ -69,9 +69,12 @@ double smooth(const vector<StatStorage::Datum>& vals, double timestamp, int wind
 
   double xySum=0, xSum=0, ySum=0, x2Sum=0; 
   int n=0;
-  //  m.lock();
-  cout.setf(std::ios::fixed);    
+  
+  // cout.setf(std::ios::fixed);    
   //  cout<<"Desired timestamp:   "<<timestamp<<endl;
+  if(to - from == 1) {
+    return from->value;
+  }
   for(auto iter = from ; iter != to; ++iter) {
     //    cout<<"\tConsidering: "<<(iter->timestamp)<<"\t"<<iter->value<<endl;
     double adjT = iter->timestamp - timestamp;
@@ -81,13 +84,13 @@ double smooth(const vector<StatStorage::Datum>& vals, double timestamp, int wind
     x2Sum += adjT* adjT;
     n++;
   }
-
+  
   double beta = (xySum - (xSum*ySum)/n)   /  (x2Sum - xSum*xSum/n);
   double alpha = ySum / n - beta*xSum/n;
 
   double ret= alpha; // + beta*timestamp;
   //  cout<<n<<", "<<alpha<<", "<<beta<<" -> "<<ret<<endl;
-  // m.unlock();
+
   return ret;
 }
 
@@ -104,7 +107,7 @@ try
     input.append(line);
   }
   close(sock);
-  cerr<<"Did not receive full request"<<endl;
+  cerr<<"Did not receive full request, got "<<input.size()<<" bytes"<<endl;
   return;
  ok:;
   YaHTTP::Request req;

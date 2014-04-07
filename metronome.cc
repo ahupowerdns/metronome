@@ -3,15 +3,25 @@
 #include "statstorage.hh"
 #include <thread>
 #include <mutex>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <signal.h>
+#include <syslog.h>
+#include <fcntl.h>
+#include <boost/program_options.hpp>
+
+namespace po = boost::program_options;
+po::variables_map g_vm;
+bool g_verbose;
+bool g_console;
 
 using namespace std;
-
 
 void startCarbonThread(int sock, ComboAddress remote)
 try
 {
   StatStorage ss("./stats");
-  cout<<"Got connection from "<<remote.toStringWithPort()<<endl;
+  infolog("Got connection from %s", remote.toStringWithPort());
   string line;
 
   int numStored=0;
@@ -27,12 +37,12 @@ try
     ss.store(parts[0], atoi(parts[2].c_str()), atof(parts[1].c_str()));
     numStored++;
   }
-  cout<<"Closing connection, stored "<<numStored<<" data"<<endl;
+  infolog("Closing connection with %s, stored %d data", numStored);
   close(sock);
 }
 catch(exception& e)
 {
-  cerr<<"Exception: "<<e.what()<<endl;
+  errlog("Exception: %s", e.what());
   writen(sock, string("Error: ")+e.what()+"\n");
   close(sock);
 }
@@ -51,6 +61,25 @@ void dumpRequest(const YaHTTP::Request& req)
   cout<<"Body: "<<req.body<<endl;
   cout<<"Method: "<<req.method<<endl;
 }
+
+static void daemonize(void)
+{
+  if(fork())
+    _exit(0); // bye bye
+  
+  setsid(); 
+
+  int i=open("/dev/null",O_RDWR); /* open stdin */
+  if(i < 0) 
+    ; // L<<Logger::Critical<<"Unable to open /dev/null: "<<stringerror()<<endl;
+  else {
+    dup2(i,0); /* stdin */
+    dup2(i,1); /* stderr */
+    dup2(i,2); /* stderr */
+    close(i);
+  }
+}
+
 
 double smooth(const vector<StatStorage::Datum>& vals, double timestamp, int window)
 {
@@ -98,7 +127,7 @@ void startWebserverThread(int sock, ComboAddress remote)
 try
 {
   string line;
-  //  cout<<"Got web connection from "<<remote.toStringWithPort()<<endl;
+  infolog("Got web connection from %s", remote.toStringWithPort());
 
   string input;
   while(sockGetLine(sock, &line)) {
@@ -107,7 +136,7 @@ try
     input.append(line);
   }
   close(sock);
-  cerr<<"Did not receive full request, got "<<input.size()<<" bytes"<<endl;
+  warnlog("Did not receive full request, got %ld bytes", input.size());
   return;
  ok:;
   YaHTTP::Request req;
@@ -222,7 +251,8 @@ try
   close(sock);
 }
 catch(exception& e) {
-  cerr<<"Dying because of error: "<<e.what()<<endl;
+  errlog("Dying because of error: %s", e.what());
+  // exit deamon?
 }
 
 void webServerThread(int sock)
@@ -235,35 +265,70 @@ void webServerThread(int sock)
       t1.detach();
     }
     else 
-      cerr<<"Error from accept: "<<strerror(errno)<<endl;
+      errlog("Error from accept: %s", strerror(errno));
   }
 }
 
 void launchWebserver()
 {
-  ComboAddress localWeb("::", 8000);
+  ComboAddress localWeb(g_vm["webserver-address"].as<string>(), 8000);
   int s = SSocket(localWeb.sin4.sin_family, SOCK_STREAM, 0);
 
   SSetsockopt(s, SOL_SOCKET, SO_REUSEADDR, 1);
   SBind(s, localWeb);
   SListen(s, 10);
-  cout<<"Launched webserver on "<<localWeb.toStringWithPort()<<endl;
+  warnlog("Launched webserver on %s", localWeb.toStringWithPort());
   thread t1(webServerThread, s);
   t1.detach();
+}
+
+void processCommandLine(int argc, char **argv)
+{
+  po::options_description desc("Allowed options");
+  desc.add_options()
+    ("help,h", "produce help message")
+    ("carbon-address", po::value<string>()->default_value("[::]:2003"), "Accept carbon data on this address")
+    ("webserver-address", po::value<string>()->default_value("[::]:8000"), "Provide HTTP service on this address")
+    ("quiet", po::value<bool>()->default_value(true), "don't be too noisy")
+    ("daemon", po::value<bool>()->default_value(true), "run in background")
+    ("stats-directory", po::value<string>()->default_value("./stats"), "Store/access statistics from this directory");
+
+  po::store(po::command_line_parser(argc, argv).options(desc).run(), g_vm);
+  po::notify(g_vm);
+  if(g_vm.count("help")) {
+    cout<<desc<<endl;
+    exit(EXIT_SUCCESS);
+  }
 }
 
 int main(int argc, char** argv)
 try
 {
-  ComboAddress localCarbon("::", 2003);
+  signal(SIGPIPE, SIG_IGN);
+  openlog("metronome", LOG_PID, LOG_DAEMON);
+  
+  processCommandLine(argc, argv);
+  g_console=true;
+  ComboAddress localCarbon(g_vm["carbon-address"].as<string>(), 2003);
   int s = SSocket(localCarbon.sin4.sin_family, SOCK_STREAM, 0);
 
   SSetsockopt(s, SOL_SOCKET, SO_REUSEADDR, 1);
   SBind(s, localCarbon);
   SListen(s, 10);
-  cout<<"Launched Carbon functionality on "<<localCarbon.toStringWithPort()<<endl;
+  warnlog("Launched Carbon functionality on %s", localCarbon.toStringWithPort());
 
   launchWebserver();
+
+  if(g_vm["daemon"].as<bool>())  {
+    g_console=false;
+    daemonize();
+    warnlog("daemonizing as %d", getpid());
+  }
+  else {
+    infolog("Running in the %s", "foreground");
+
+  }
+
   
   int client;
   ComboAddress remote=localCarbon;
@@ -276,6 +341,6 @@ try
   }		 
 }
 catch(exception& e) {
-  cerr<<"Fatal error: "<<e.what()<<endl;
+  errlog("Fatal error: %s", e.what());
   exit(EXIT_FAILURE);
 }

@@ -20,7 +20,7 @@ using namespace std;
 void startCarbonThread(int sock, ComboAddress remote)
 try
 {
-  StatStorage ss("./stats");
+  StatStorage ss(g_vm["stats"].as<string>());
   infolog("Got connection from %s", remote.toStringWithPort());
   string line;
 
@@ -147,12 +147,12 @@ try
   ostringstream body;
   
   if(req.parameters["do"]=="store") {
-    StatStorage ss("./stats");
+    StatStorage ss(g_vm["stats"].as<string>());
     ss.store(req.parameters["name"], atoi(req.parameters["timestamp"].c_str()), 
 	     atof(req.parameters["value"].c_str()));
   }
   else if(req.parameters["do"]=="get-metrics") {  
-    StatStorage ss("./stats");
+    StatStorage ss(g_vm["stats"].as<string>());
     resp.headers["Content-Type"]= "application/json";
     resp.headers["Access-Control-Allow-Origin"]= "*";
     body<<req.parameters["callback"]<<"(";
@@ -166,7 +166,7 @@ try
     body << "]});";
   }
   else if(req.parameters["do"]=="get-all") {  
-    StatStorage ss("./stats");
+    StatStorage ss(g_vm["stats-directory"].as<string>());
     auto vals = ss.retrieve(req.parameters["name"]);
 
     body.setf(std::ios::fixed);    
@@ -176,7 +176,7 @@ try
   }
   else if(req.parameters["do"]=="retrieve") {
       //    dumpRequest(req);
-    StatStorage ss("./stats");
+    StatStorage ss(g_vm["stats-directory"].as<string>());
     vector<string> names;
     stringtok(names, req.parameters["name"], ",");
     resp.headers["Content-Type"]= "application/json";
@@ -309,6 +309,7 @@ try
   
   processCommandLine(argc, argv);
   g_console=true;
+  g_verbose=!g_vm["quiet"].as<bool>();
   ComboAddress localCarbon(g_vm["carbon-address"].as<string>(), 2003);
   int s = SSocket(localCarbon.sin4.sin_family, SOCK_STREAM, 0);
 
@@ -318,11 +319,11 @@ try
   warnlog("Launched Carbon functionality on %s", localCarbon.toStringWithPort());
 
   launchWebserver();
-
+  
   if(g_vm["daemon"].as<bool>())  {
-    g_console=false;
     daemonize();
     warnlog("daemonizing as %d", getpid());
+    g_console=false;
   }
   else {
     infolog("Running in the %s", "foreground");

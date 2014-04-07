@@ -20,7 +20,7 @@ using namespace std;
 void startCarbonThread(int sock, ComboAddress remote)
 try
 {
-  StatStorage ss(g_vm["stats"].as<string>());
+  StatStorage ss(g_vm["stats-directory"].as<string>());
   infolog("Got connection from %s", remote.toStringWithPort());
   string line;
 
@@ -37,7 +37,7 @@ try
     ss.store(parts[0], atoi(parts[2].c_str()), atof(parts[1].c_str()));
     numStored++;
   }
-  infolog("Closing connection with %s, stored %d data", numStored);
+  infolog("Closing connection with %s, stored %d data", remote.toStringWithPort() % numStored);
   close(sock);
 }
 catch(exception& e)
@@ -147,12 +147,12 @@ try
   ostringstream body;
   
   if(req.parameters["do"]=="store") {
-    StatStorage ss(g_vm["stats"].as<string>());
+    StatStorage ss(g_vm["stats-directory"].as<string>());
     ss.store(req.parameters["name"], atoi(req.parameters["timestamp"].c_str()), 
 	     atof(req.parameters["value"].c_str()));
   }
   else if(req.parameters["do"]=="get-metrics") {  
-    StatStorage ss(g_vm["stats"].as<string>());
+    StatStorage ss(g_vm["stats-directory"].as<string>());
     resp.headers["Content-Type"]= "application/json";
     resp.headers["Access-Control-Allow-Origin"]= "*";
     body<<req.parameters["callback"]<<"(";

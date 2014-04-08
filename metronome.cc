@@ -258,8 +258,8 @@ try
   close(sock);
 }
 catch(exception& e) {
-  errlog("Dying because of error: %s", e.what());
-  // exit deamon?
+  errlog("Web connection thread terminated because of error: %s", e.what());
+  close(sock);
 }
 
 void webServerThread(int sock)

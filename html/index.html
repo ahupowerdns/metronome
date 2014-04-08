@@ -4,6 +4,7 @@
 <script src="js/jquery-1.8.3.min.js"></script>        
 <script src="js/d3.v3.js"></script>        
 <script src="js/rickshaw.min.js"></script>        
+<script src="js/purl.js"></script>
 
 <link type="text/css" rel="stylesheet" href="graph.css">
 <link type="text/css" rel="stylesheet" href="detail.css">
@@ -55,12 +56,12 @@ alt="Fork me on GitHub"></a>
 <table width="600"><tr><td><img src="https://www.powerdns.com/img/powerdns-logo-220px.png"/></td>
 <td align="right">
 
-<select id="server" onChange="updateEverything();" name="server">
+<select id="server" onChange="updateFromForm();" name="server">
 </select>
 </td>
 <td align="right">
 
-<select id="duration" onChange="updateEverything();" name="duration">
+<select id="duration" onChange="updateFromForm();" name="duration">
 <option value="-900">15 Minutes</option>
 <option value="-3600">1 Hour</option>
 <option value="-7200" selected="selected">2 Hours</option>

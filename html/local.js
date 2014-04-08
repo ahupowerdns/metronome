@@ -1,8 +1,9 @@
 var updateEverything = function(){}
 $(document).ready(function() {
     $.ajaxSetup({ cache: false });
-    var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -3*3600 };
     
+    var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -3*3600 };
+
     function showAll()
     {
 	var servername=$("#server").val();
@@ -124,7 +125,21 @@ $(document).ready(function() {
 	}	
 
     }
-    updateEverything = function() { comconfig.beginTime = parseInt($("#duration").val()); ; showAll(); };    
+   
+    
+    updateEverything = function() { 
+
+	comconfig.beginTime = parseInt($("#duration").val());
+
+	showAll(); 
+    };    
+
+    updateFromForm = function() {
+	var stateObj = { servername: $("#server").val(), beginTime: parseInt($("#duration").val()) };
+	history.pushState(stateObj, "Metronome", "?server="+stateObj.servername+"&beginTime="+stateObj.beginTime);
+	updateEverything();
+    }
+
   
     getServers(comconfig, function(servers) { 
 	var ret="";
@@ -132,6 +147,13 @@ $(document).ready(function() {
 	    ret+= "<option value='"+b+"'>"+b+"</option>";
 	});
 	$("#server").html(ret);
+
+	if($.url().param('server') != undefined) {
+	    $("#server").val($.url().param('server'));
+	}
+	if($.url().param('beginTime') != undefined)
+	    $("#duration").val($.url().param('beginTime'));
+
 	updateEverything();
 	setInterval(updateEverything, 5000);    
     });

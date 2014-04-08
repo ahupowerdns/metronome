@@ -21,7 +21,7 @@ void startCarbonThread(int sock, ComboAddress remote)
 try
 {
   StatStorage ss(g_vm["stats-directory"].as<string>());
-  infolog("Got connection from %s", remote.toStringWithPort());
+  infolog("Got carbon connection from %s", remote.toStringWithPort());
   string line;
 
   int numStored=0;
@@ -126,128 +126,135 @@ double smooth(const vector<StatStorage::Datum>& vals, double timestamp, int wind
 void startWebserverThread(int sock, ComboAddress remote)
 try
 {
-  string line;
   infolog("Got web connection from %s", remote.toStringWithPort());
 
-  string input;
-  while(sockGetLine(sock, &line)) {
-    if(line.empty() || line=="\n" || line=="\r\n") // XXX NO
-      goto ok;
-    input.append(line);
-  }
-  close(sock);
-  warnlog("Did not receive full request, got %ld bytes", input.size());
-  return;
- ok:;
-  YaHTTP::Request req;
-  istringstream str(input);
-  req.load(str);
-
-  YaHTTP::Response resp(req);
-  ostringstream body;
-  
-  if(req.parameters["do"]=="store") {
-    StatStorage ss(g_vm["stats-directory"].as<string>());
-    ss.store(req.parameters["name"], atoi(req.parameters["timestamp"].c_str()), 
-	     atof(req.parameters["value"].c_str()));
-  }
-  else if(req.parameters["do"]=="get-metrics") {  
-    StatStorage ss(g_vm["stats-directory"].as<string>());
-    resp.headers["Content-Type"]= "application/json";
-    resp.headers["Access-Control-Allow-Origin"]= "*";
-    body<<req.parameters["callback"]<<"(";
-    body<<"{ \"metrics\": [";
-    auto metrics = ss.getMetrics();
-    for(const auto& metric : metrics)  {
-      if(&metric != &metrics[0]) 
-	body<<',';
-      body<<'\''<<metric<<'\'';
+  for(int numrequests=0;;++numrequests) {
+    string input, line;
+    while(sockGetLine(sock, &line)) {
+      if(line.empty() || line=="\n" || line=="\r\n") // XXX NO
+	goto ok;
+      input.append(line);
     }
-    body << "]});";
-  }
-  else if(req.parameters["do"]=="get-all") {  
-    StatStorage ss(g_vm["stats-directory"].as<string>());
-    auto vals = ss.retrieve(req.parameters["name"]);
-
-    body.setf(std::ios::fixed);    
-    for(const auto& v: vals) {
-      body<<v.timestamp<<'\t'<<v.value<<'\t'<<smooth(vals, v.timestamp, 60)<<'\t'<<smooth(vals, v.timestamp, 512)<<'\n';
+    close(sock);
+    if(input.size()) {
+      warnlog("Did not receive full request, got %ld bytes", input.size());
     }
-  }
-  else if(req.parameters["do"]=="retrieve") {
-      //    dumpRequest(req);
-    StatStorage ss(g_vm["stats-directory"].as<string>());
-    vector<string> names;
-    stringtok(names, req.parameters["name"], ",");
-    resp.headers["Content-Type"]= "application/json";
-    resp.headers["Access-Control-Allow-Origin"]= "*";
-
-    body.setf(std::ios::fixed);
-
-    double begin = atoi(req.parameters["begin"].c_str());
-    double end = atoi(req.parameters["end"].c_str());
-
-    body<<req.parameters["callback"]<<"(";
-    body<<"{ raw: {";
-    bool first=true;
-    map<string,vector<StatStorage::Datum> > derivative;
-    for(const auto& name : names) {
-      auto vals = ss.retrieve(name, begin, end);
-      if(!first) 
-	body<<',';
-      first=false;
+    else {
+      infolog("EOF from %s after %d requests", remote.toStringWithPort() % numrequests);
+    }
+    return;
+  ok:;
+    YaHTTP::Request req;
+    istringstream str(input);
+    req.load(str);
     
-      body<< '"' << name << "\": [";
-      int count=0;
-      vector<StatStorage::Datum> derived;
-      uint32_t prevt=0;
-      double step = (end-begin)/100.0;
-      //      cout<<"step: "<<step<<endl;
-      for(double t = begin ; t < end; t+= step) {
-	if(count) {
+    YaHTTP::Response resp(req);
+    ostringstream body;
+    
+    if(req.parameters["do"]=="store") {
+      StatStorage ss(g_vm["stats-directory"].as<string>());
+      ss.store(req.parameters["name"], atoi(req.parameters["timestamp"].c_str()), 
+	       atof(req.parameters["value"].c_str()));
+    }
+    else if(req.parameters["do"]=="get-metrics") {  
+      StatStorage ss(g_vm["stats-directory"].as<string>());
+      resp.headers["Content-Type"]= "application/json";
+      resp.headers["Access-Control-Allow-Origin"]= "*";
+      body<<req.parameters["callback"]<<"(";
+      body<<"{ \"metrics\": [";
+      auto metrics = ss.getMetrics();
+      for(const auto& metric : metrics)  {
+	if(&metric != &metrics[0]) 
 	  body<<',';
-	  float val = (smooth(vals, t, 2*step)-smooth(vals, prevt, 2*step))/(step);
-	  if(val < 0)
-	    val=0;
-	  derived.push_back({prevt, val});
+	body<<'\''<<metric<<'\'';
+      }
+      body << "]});";
+    }
+    else if(req.parameters["do"]=="get-all") {  
+      StatStorage ss(g_vm["stats-directory"].as<string>());
+      auto vals = ss.retrieve(req.parameters["name"]);
+      
+      body.setf(std::ios::fixed);    
+      for(const auto& v: vals) {
+	body<<v.timestamp<<'\t'<<v.value<<'\t'<<smooth(vals, v.timestamp, 60)<<'\t'<<smooth(vals, v.timestamp, 512)<<'\n';
+      }
+    }
+    else if(req.parameters["do"]=="retrieve") {
+      //    dumpRequest(req);
+      StatStorage ss(g_vm["stats-directory"].as<string>());
+      vector<string> names;
+      stringtok(names, req.parameters["name"], ",");
+      resp.headers["Content-Type"]= "application/json";
+      resp.headers["Access-Control-Allow-Origin"]= "*";
+      
+      body.setf(std::ios::fixed);
+      
+      double begin = atoi(req.parameters["begin"].c_str());
+      double end = atoi(req.parameters["end"].c_str());
+      
+      body<<req.parameters["callback"]<<"(";
+      body<<"{ raw: {";
+      bool first=true;
+      map<string,vector<StatStorage::Datum> > derivative;
+      for(const auto& name : names) {
+	auto vals = ss.retrieve(name, begin, end);
+	if(!first) 
+	  body<<',';
+	first=false;
+	
+	body<< '"' << name << "\": [";
+	int count=0;
+	vector<StatStorage::Datum> derived;
+	uint32_t prevt=0;
+	double step = (end-begin)/100.0;
+	//      cout<<"step: "<<step<<endl;
+	for(double t = begin ; t < end; t+= step) {
+	  if(count) {
+	    body<<',';
+	    float val = (smooth(vals, t, 2*step)-smooth(vals, prevt, 2*step))/(step);
+	    if(val < 0)
+	      val=0;
+	    derived.push_back({prevt, val});
+	  }
+	  body<<"["<<(uint32_t)t<<','<<smooth(vals, t, 2*step)<<']';   
+	  count++; 
+	  prevt=t;
 	}
-	body<<"["<<(uint32_t)t<<','<<smooth(vals, t, 2*step)<<']';   
-	count++; 
-	prevt=t;
+	body<<"]";
+	if(!derived.empty())
+	  derived.push_back({prevt, derived.rbegin()->value});
+	derivative[name]=derived;
       }
-      body<<"]";
-      if(!derived.empty())
-        derived.push_back({prevt, derived.rbegin()->value});
-      derivative[name]=derived;
-    }
-    body<<"}, derivative: {  ";
-    first=true;
-    for(const auto& deriv: derivative) {
-      if(!first)
-	body<<',';
-      first=false;
-      body<< '"' << deriv.first << "\": [";
-      int count=0;
-      for(auto iter = deriv.second.begin(); iter !=deriv.second.end(); ++iter) {
-	if(count) 
+      body<<"}, derivative: {  ";
+      first=true;
+      for(const auto& deriv: derivative) {
+	if(!first)
 	  body<<',';
-	body<<"["<<iter->timestamp<<','<<iter->value<<']';   
-	count++; 
+	first=false;
+	body<< '"' << deriv.first << "\": [";
+	int count=0;
+	for(auto iter = deriv.second.begin(); iter !=deriv.second.end(); ++iter) {
+	  if(count) 
+	    body<<',';
+	  body<<"["<<iter->timestamp<<','<<iter->value<<']';   
+	  count++; 
+	}
+	body<<"]";
       }
-      body<<"]";
+      body <<"}});";
     }
-    body <<"}});";
+    else {
+      resp.status=404;
+      body<<"404 File not found"<<endl;
+    }
+    resp.body=body.str();
+    resp.headers["Content-Length"]=boost::lexical_cast<string>(resp.body.length());
+    resp.headers["Connection"]="Keep-Alive";
+    ostringstream ostr;
+    ostr << resp;
+    
+    writen(sock, ostr.str());
   }
-  else {
-    resp.status=404;
-    body<<"404 File not found"<<endl;
-  }
-  resp.body=body.str();
-  ostringstream ostr;
-  ostr << resp;
-  
-  writen(sock, ostr.str());
-
   close(sock);
 }
 catch(exception& e) {

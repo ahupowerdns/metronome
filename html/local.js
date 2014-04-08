@@ -2,7 +2,7 @@ var updateEverything = function(){}
 $(document).ready(function() {
     $.ajaxSetup({ cache: false });
     
-    var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -3*3600 };
+    var comconfig = { url: "http://localhost:8080/", beginTime: -3*3600 };
 
     $(window).bind('popstate',  
 		   function(event) {
@@ -123,7 +123,7 @@ $(document).ready(function() {
 	    showStuff(comconfig, config3b, "#hier3b");	
 	    showStuff(comconfig, config4, "#hier4");
 	    showStuff(comconfig, config5, "#hier5");
-	    showStuff(comconfig, config6, "#hier6");
+	    showStuff(comconfig, config6, "#hier6"); 
 	    $("#auth").hide();
 	    $("#recursor").show();
 	}

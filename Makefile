@@ -21,7 +21,7 @@ all: $(PROGRAMS)
 
 .PHONY:	check
 
-metronome: metronome.o reqresp.o iputils.o statstorage.o 
+metronome: metronome.o reqresp.o iputils.o statstorage.o interpolate.o
 	$(CXX)  $^ $(LDFLAGS) -o $@
 
 install: metronome

@@ -6,7 +6,6 @@ $(document).ready(function() {
 
     $(window).bind('popstate',  
 		   function(event) {
-		       console.log(event.originalEvent.state);
 		       if(event.originalEvent.state != undefined) {
 			   $("#server").val(event.originalEvent.state.server);
 			   $("#duration").val(event.originalEvent.state.beginTime);
@@ -40,9 +39,7 @@ $(document).ready(function() {
 	var config2a = { renderer: 'stack', items: [ 
             { name: "pdns."+servername+".servfail-answers", legend: "SERVFAIL answers/s"},
             { name: "pdns."+servername+".nxdomain-answers", legend: "NXDOMAIN answers/s"},
-            { name: "pdns."+servername+".noerror-answers", legend: "Normal answers/s"}
-	    
-	    
+            { name: "pdns."+servername+".noerror-answers", legend: "Normal answers/s"}	    
 	]};
 	
 	
@@ -110,6 +107,12 @@ $(document).ready(function() {
 		formula: percentalizer
  	    }]};    
 
+	var config10 = { items: [ 
+		{name: "pdns."+servername+".query-cache-miss", legend: "Database queries/s"}
+	]};
+		
+ 	       
+
 	
 	if(servername.split('.')[1]=="recursor") { 
 	    showStuff(comconfig, config1, "#hier1");
@@ -130,17 +133,14 @@ $(document).ready(function() {
 	    showStuff(comconfig, config7b, "#hier7b");	    	    
 	    showStuff(comconfig, config8, "#hier8");
 	    showStuff(comconfig, config9, "#hier9");
+	    showStuff(comconfig, config10, "#hier10");
 	    $("#auth").show();
 	    $("#recursor").hide();
 	}	
-
     }
    
-    
     updateEverything = function() { 
-
 	comconfig.beginTime = parseInt($("#duration").val());
-
 	showAll(); 
     };    
 

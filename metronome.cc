@@ -8,6 +8,7 @@
 #include <signal.h>
 #include <syslog.h>
 #include <fcntl.h>
+#include "interpolate.hh"
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
@@ -81,13 +82,13 @@ static void daemonize(void)
 }
 
 
-double smooth(const vector<StatStorage::Datum>& vals, double timestamp, int window)
+pair<double,double> smooth(const vector<StatStorage::Datum>& vals, double timestamp, int window)
 {
   auto from = upper_bound(vals.begin(), vals.end(), timestamp-window/2.0);
   auto to = upper_bound(vals.begin(), vals.end(), timestamp+window/2.0);
 
   if(from == vals.end())
-    return 0;
+    return {0,0};
   if(from != vals.begin())
     --from;
 
@@ -96,31 +97,17 @@ double smooth(const vector<StatStorage::Datum>& vals, double timestamp, int wind
   if(to != vals.end())
     ++to;
 
-  double xySum=0, xSum=0, ySum=0, x2Sum=0; 
-  int n=0;
-  
   // cout.setf(std::ios::fixed);    
   //  cout<<"Desired timestamp:   "<<timestamp<<endl;
   if(to - from == 1) {
-    return from->value;
+    return {from->value, 0};
   }
+  vector<InterpolateDatum> id;
+  id.reserve(to-from);
   for(auto iter = from ; iter != to; ++iter) {
-    //    cout<<"\tConsidering: "<<(iter->timestamp)<<"\t"<<iter->value<<endl;
-    double adjT = iter->timestamp - timestamp;
-    xySum += (adjT) * iter-> value;
-    xSum += (adjT);
-    ySum += iter->value;
-    x2Sum += adjT* adjT;
-    n++;
+    id.push_back({(double)iter->timestamp, iter->value});
   }
-  
-  double beta = (xySum - (xSum*ySum)/n)   /  (x2Sum - xSum*xSum/n);
-  double alpha = ySum / n - beta*xSum/n;
-
-  double ret= alpha; // + beta*timestamp;
-  //  cout<<n<<", "<<alpha<<", "<<beta<<" -> "<<ret<<endl;
-
-  return ret;
+  return interpolate(id, 3, timestamp);
 }
 
 void startWebserverThread(int sock, ComboAddress remote)
@@ -176,7 +163,8 @@ try
       
       body.setf(std::ios::fixed);    
       for(const auto& v: vals) {
-	body<<v.timestamp<<'\t'<<v.value<<'\t'<<smooth(vals, v.timestamp, 60)<<'\t'<<smooth(vals, v.timestamp, 512)<<'\n';
+	auto s = smooth(vals, v.timestamp, 60);
+	body<<v.timestamp<<'\t'<<v.value<<'\t'<<s.first<<'\t'<<s.second<<'\n';
       }
     }
     else if(req.parameters["do"]=="retrieve") {
@@ -205,24 +193,20 @@ try
 	body<< '"' << name << "\": [";
 	int count=0;
 	vector<StatStorage::Datum> derived;
-	uint32_t prevt=0;
+
 	double step = (end-begin)/100.0;
 	//      cout<<"step: "<<step<<endl;
 	for(double t = begin ; t < end; t+= step) {
+	  auto inst = smooth(vals, t, 1.5*step);
+
 	  if(count) {
 	    body<<',';
-	    float val = (smooth(vals, t, 2*step)-smooth(vals, prevt, 2*step))/(step);
-	    if(val < 0)
-	      val=0;
-	    derived.push_back({prevt, val});
 	  }
-	  body<<"["<<(uint32_t)t<<','<<smooth(vals, t, 2*step)<<']';   
+	  body<<"["<<(uint32_t)t<<','<<inst.first<<']';   
+	  derived.push_back({(uint32_t)t, inst.second > 0 ? (float)inst.second : 0});
 	  count++; 
-	  prevt=t;
 	}
 	body<<"]";
-	if(!derived.empty())
-	  derived.push_back({prevt, derived.rbegin()->value});
 	derivative[name]=derived;
       }
       body<<"}, derivative: {  ";

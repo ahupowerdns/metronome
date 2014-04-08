@@ -218,7 +218,11 @@ try
 	    body<<',';
 	  }
 	  body<<"["<<(uint32_t)t<<','<<inst.first<<']';   
-	  derived.push_back({(uint32_t)t, inst.second > 0 ? (float)inst.second : 0});
+	  if(t + step >= vals.rbegin()->timestamp && t - vals.rbegin()->timestamp < 60 && !derived.empty()) {
+	    derived.push_back({(uint32_t)t, derived.rbegin()->value});
+	  }
+	  else
+	    derived.push_back({(uint32_t)t, inst.second > 0 ? (float)inst.second : 0});
 	  count++; 
 	}
 	body<<"]";

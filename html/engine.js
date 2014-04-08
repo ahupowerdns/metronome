@@ -55,7 +55,7 @@ function showStuff(comconfig, config, where) {
 
     qstring+= metrics.join(',');
 
-    var epoch = (new Date).getTime()/1000 - 5; // so we prevent asking for data not there
+    var epoch = (new Date).getTime()/1000;
     qstring+="&begin="+(epoch+comconfig.beginTime)+"&end="+(epoch)+"&datapoints="+comconfig.datapoints;
 
     $.getJSON(qstring, 

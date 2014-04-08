@@ -87,24 +87,36 @@ pair<double,double> smooth(const vector<StatStorage::Datum>& vals, double timest
   auto from = upper_bound(vals.begin(), vals.end(), timestamp-window/2.0);
   auto to = upper_bound(vals.begin(), vals.end(), timestamp+window/2.0);
 
-  if(from == vals.end())
+  //  cout <<"Initial find for timestamp "<<timestamp<<", left side of window at: "<< timestamp-window/2.0 <<endl;
+  
+  if(from == vals.end()) {
     return {0,0};
-  if(from != vals.begin())
+  }
+  if(from != vals.begin()) {
     --from;
+    //cout<<"Lowered left once to "<<from->timestamp<<endl;
+  }
 
-  if(to != vals.end())
+  if(to != vals.end()) {
     ++to;
-  if(to != vals.end())
+    //    cout<<"Raised right once to "<<to->timestamp<<endl;
+  }
+  if(to != vals.end()) {
     ++to;
+    //    cout<<"Raised right again to "<<to->timestamp<<endl;
+  }
 
   // cout.setf(std::ios::fixed);    
   //  cout<<"Desired timestamp:   "<<timestamp<<endl;
-  if(to - from == 1) {
+  //  cout<<"Num considered: "<<(to-from)<<endl;
+  if(to - from == 1) { 
     return {from->value, 0};
   }
+  
   vector<InterpolateDatum> id;
   id.reserve(to-from);
   for(auto iter = from ; iter != to; ++iter) {
+    //    cout << '\t'<< iter->timestamp - timestamp<<endl;
     id.push_back({(double)iter->timestamp, iter->value});
   }
   return interpolate(id, 3, timestamp);
@@ -179,13 +191,16 @@ try
       
       double begin = atoi(req.parameters["begin"].c_str());
       double end = atoi(req.parameters["end"].c_str());
-      
+      int datapoints = atoi(req.parameters["datapoints"].c_str());
+      if(!datapoints)
+	datapoints=100;
       body<<req.parameters["callback"]<<"(";
       body<<"{ raw: {";
       bool first=true;
       map<string,vector<StatStorage::Datum> > derivative;
       for(const auto& name : names) {
-	auto vals = ss.retrieve(name, begin, end);
+	// little bit of margin so interpolation has chance to work
+	auto vals = ss.retrieve(name, begin - (end-begin)/20.0, end + (end-begin)/20.0);
 	if(!first) 
 	  body<<',';
 	first=false;
@@ -194,9 +209,9 @@ try
 	int count=0;
 	vector<StatStorage::Datum> derived;
 
-	double step = (end-begin)/100.0;
-	//      cout<<"step: "<<step<<endl;
-	for(double t = begin ; t < end; t+= step) {
+	double step = (end-begin)/datapoints;
+	//cout<<"step: "<<step<<", "<<datapoints<<endl;
+	for(double t = begin ; t < end ; t+= step) {
 	  auto inst = smooth(vals, t, 1.5*step);
 
 	  if(count) {

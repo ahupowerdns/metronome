@@ -2,7 +2,7 @@ var updateEverything = function(){}
 $(document).ready(function() {
     $.ajaxSetup({ cache: false });
     
-    var comconfig = { url: "http://localhost:8080/", beginTime: -3*3600 };
+    var comconfig = { url: "http://localhost:8000/", beginTime: -3*3600, datapoints: 100 };
 
     $(window).bind('popstate',  
 		   function(event) {
@@ -123,7 +123,7 @@ $(document).ready(function() {
 	    showStuff(comconfig, config3b, "#hier3b");	
 	    showStuff(comconfig, config4, "#hier4");
 	    showStuff(comconfig, config5, "#hier5");
-	    showStuff(comconfig, config6, "#hier6"); 
+	    showStuff(comconfig, config6, "#hier6");  
 	    $("#auth").hide();
 	    $("#recursor").show();
 	}
@@ -138,9 +138,14 @@ $(document).ready(function() {
 	    $("#recursor").hide();
 	}	
     }
-   
+    var interval;     
     updateEverything = function() { 
 	comconfig.beginTime = parseInt($("#duration").val());
+
+	if(interval != undefined)
+	    clearInterval(interval);
+	interval = setInterval(updateEverything, -comconfig.beginTime*1000/comconfig.datapoints);    
+	console.log("New interval: ", -comconfig.beginTime*1000/comconfig.datapoints);
 	showAll(); 
     };    
 
@@ -150,7 +155,7 @@ $(document).ready(function() {
 	updateEverything();
     }
 
-  
+
     getServers(comconfig, function(servers) { 
 	var ret="";
 	$.each(servers, function(a,b) {
@@ -168,7 +173,6 @@ $(document).ready(function() {
 	history.replaceState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
 
 	updateEverything();
-	setInterval(updateEverything, 5000);    
     });
  
 });

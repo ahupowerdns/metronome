@@ -7,25 +7,36 @@ Mini-graphite so we can ship pdnscontrol w/o depending on graphite.
 
 For example, to submit RX bytes for eth0:
 
-while true; 
-do
-	VAL=$(ip -s link ls eth0 | grep RX -A 1 | tail -1 | awk '{print $1}')
-	wget -q --post-data="" "http://127.0.0.1:8000/?do=store&name=rxbytes&timestamp=$(date +%s)&value=$VAL" -O /dev/null
-	sleep 1
-done
+    while true; 
+    do
+        VAL=$(ip -s link ls eth0 | grep RX -A 1 | tail -1 | awk '{print $1}')
+        wget -q --post-data="" "http://127.0.0.1:8000/?do=store&name=rxbytes&timestamp=$(date +%s)&value=$VAL" -O /dev/null
+        sleep 1
+    done
 
 To retrieve data:
 
-$ wget http://127.0.0.1:8000/?do=retrieve&name=rxbytes&begin=0&end=$(date +%s)&callback=jsonp
+    $ wget http://127.0.0.1:8000/?do=retrieve&name=rxbytes&begin=0&end=$(date +%s)&callback=jsonp
 
 This delivers a JSONP callback with your values in there. 
 
 To view, try html/index.html
 
+Installing
+==========
+
+    $ make
+    $ ./metronome --help
+    $ mkdir stats
+    $ ./metronome --stats-directory=./stats
+
+Next, host the 'html/' directory somewhere on a webserver, and edit 'html/local.js' so
+it knows the Webserver IP address of metronome (port 8000 on :: by default).
+
 Thanks to
 =========
-Aki Tuomi for the excellent yahttp on https://github.com/cmouse/yahttp
-Rickshaw (for now) for the graphs. And a cast of thousands for C++2011.
+Aki Tuomi for the excellent [yahttp](https://github.com/cmouse/yahttp), 
+[Rickshaw](http://code.shutterstock.com/rickshaw/) for the graphs. [Eigen](http://eigen.tuxfamily.org) for the math. And a cast of thousands for C++2011.
 
 status
 ======

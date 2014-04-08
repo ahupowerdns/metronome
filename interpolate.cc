@@ -66,10 +66,10 @@ namespace {
   }
 }
 
-pair<double, double> interpolate(const vector<InterpolateDatum>& input, int order, double x)
+pair<double, double> interpolate(const vector<InterpolateDatum>& input, unsigned int order, double x)
 {
   /*
-  cerr<<"Got "<<input.size()<<" data points for order "<<order<<endl;
+
   cerr<<"Input: ";
   for(const auto& f : input) {
     cerr<<"("<<f.x<<", "<<f.y<<") ";
@@ -78,6 +78,11 @@ pair<double, double> interpolate(const vector<InterpolateDatum>& input, int orde
   */
   double factor;
   auto norm = normalize(input, &x, &factor);
+
+  if(input.size() < order) {
+    order = input.size()-1;
+  }
+
   /*
   cerr<<"Normalized: ";
   for(auto f : norm) {
@@ -89,8 +94,8 @@ pair<double, double> interpolate(const vector<InterpolateDatum>& input, int orde
   VectorXd b(norm.size()); 
   for(unsigned int i=0;i < norm.size(); ++i) {
     auto res = func(norm[i].x, order); // evaluate all functions on our x values
-    double sig= cos(1.5*norm[i].x);    // inverse weight it appears, optional
-    for(int j=0; j < order; ++j)
+    double sig= cos(1.0*norm[i].x);    // inverse weight it appears, optional
+    for(unsigned int j=0; j < order; ++j)
       aa(i,j)=res[j]*sig;
     b(i)=norm[i].y*sig;
   }

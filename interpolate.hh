@@ -11,4 +11,4 @@ struct InterpolateDatum
   }
 };
 
-std::pair<double, double> interpolate(const std::vector<InterpolateDatum>& input, int order, double x);
+std::pair<double, double> interpolate(const std::vector<InterpolateDatum>& input, unsigned int order, double x);

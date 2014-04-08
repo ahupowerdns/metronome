@@ -27,6 +27,7 @@ Installing
 Either install libeigen3-dev (Debian, Ubuntu), or:
 
     $ wget http://bitbucket.org/eigen/eigen/get/3.2.1.tar.bz2
+    $ tar xf 3.2.1.tar.bz2
     $ ln -s eigen-eigen-*/Eigen .
 
 Then:

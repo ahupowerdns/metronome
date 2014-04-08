@@ -4,6 +4,16 @@ $(document).ready(function() {
     
     var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -3*3600 };
 
+    $(window).bind('popstate',  
+		   function(event) {
+		       console.log(event.originalEvent.state);
+		       if(event.originalEvent.state != undefined) {
+			   $("#server").val(event.originalEvent.state.server);
+			   $("#duration").val(event.originalEvent.state.beginTime);
+			   updateEverything();
+		       }
+		   });
+
     function showAll()
     {
 	var servername=$("#server").val();
@@ -135,8 +145,8 @@ $(document).ready(function() {
     };    
 
     updateFromForm = function() {
-	var stateObj = { servername: $("#server").val(), beginTime: parseInt($("#duration").val()) };
-	history.pushState(stateObj, "Metronome", "?server="+stateObj.servername+"&beginTime="+stateObj.beginTime);
+	var stateObj = { server: $("#server").val(), beginTime: parseInt($("#duration").val()) };
+	history.pushState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
 	updateEverything();
     }
 
@@ -153,6 +163,9 @@ $(document).ready(function() {
 	}
 	if($.url().param('beginTime') != undefined)
 	    $("#duration").val($.url().param('beginTime'));
+	
+	var stateObj = { server: $("#server").val(), beginTime: parseInt($("#duration").val()) };
+	history.replaceState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
 
 	updateEverything();
 	setInterval(updateEverything, 5000);    

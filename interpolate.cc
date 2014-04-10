@@ -57,6 +57,15 @@ namespace {
     auto ret = input;
     sort(ret.begin(), ret.end());
     double low = ret.begin()->x, high = ret.rbegin()->x;
+    if(low == high) {
+      for(auto& d : ret) {
+	d.x = 0;
+      }
+      *x=0;
+      *factor=0;
+      return ret;
+    }
+    
     for(auto& d : ret) {
       d.x = -1.0 + 2.0*(d.x-low)/(high-low);
     }

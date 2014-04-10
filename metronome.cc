@@ -1,6 +1,7 @@
 #include "yahttp.hpp"
 #include "iputils.hh"
 #include "statstorage.hh"
+#include <fenv.h>
 #include <thread>
 #include <mutex>
 #include <sys/types.h>

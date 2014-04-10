@@ -2,7 +2,7 @@ var updateEverything = function(){}
 $(document).ready(function() {
     $.ajaxSetup({ cache: false });
     
-    var comconfig = { url: "http://localhost:8000/", beginTime: -3*3600, datapoints: 100 };
+    var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -3*3600, datapoints: 100 };
 
     $(window).bind('popstate',  
 		   function(event) {

@@ -1,7 +1,6 @@
-#include "reqresp.hpp"
+#include "yahttp.hpp"
 
 namespace YaHTTP {
-
   void Request::build(const std::string &method, const std::string &url, const std::string &params) {
     this->method = method;
     std::transform(this->method.begin(), this->method.end(), this->method.begin(), ::toupper);
@@ -23,24 +22,24 @@ namespace YaHTTP {
   Request::Request(const Response &resp) {
     method = resp.method;
     url = resp.url;
-    cookies = resp.cookies;
+    jar = resp.jar;
   };
   Request::Request(const Request &req) {
     method = req.method;
     url = req.url;
     parameters = req.parameters;
     headers = req.headers;
-    cookies = req.cookies;
+    jar = req.jar;
     body = req.body;
   };
   Request::~Request() {};
 
-  Response::Response() : status(0) {};
+  Response::Response() {};
   Response::Response(const Request &req) {
     headers["connection"] = "close";
     method = req.method;
     url = req.url;
-    cookies = req.cookies;
+    jar = req.jar;
     status = 200;
   };
   Response::Response(const Response &resp) {
@@ -48,7 +47,7 @@ namespace YaHTTP {
     url = resp.url;
     parameters = resp.parameters;
     headers = resp.headers;
-    cookies = resp.cookies;
+    jar = resp.jar;
     body = resp.body;
     status = resp.status;
     statusText = resp.statusText;
@@ -65,7 +64,7 @@ namespace YaHTTP {
         if (arl.feed(std::string(buf, is.gcount())) == true) return; // completed
       }
     }
-    // FIXME: parse cookies
+    if (arl.ready()) arl.finalize();
   };
 
   void Response::write(std::ostream &os) const { 
@@ -82,6 +81,10 @@ namespace YaHTTP {
       os << Utility::camelizeHeader(iter->first) << ": " << iter->second << "\r\n";
       iter++;
     }
+    if (jar.cookies.size() > 0) { // write cookies
+      for(strcookie_map_t::const_iterator i = jar.cookies.begin(); i != jar.cookies.end(); i++)
+        os << "Set-Cookie: " << i->second.str() << "\r\n";
+    }
     os << "\r\n";
     os << body;
   };
@@ -96,6 +99,7 @@ namespace YaHTTP {
         if (arl.feed(std::string(buf, is.gcount())) == true) return; // completed
       }
     }
+    if (arl.ready()) arl.finalize();
   };
 
   void Request::write(std::ostream &os) const {
@@ -105,6 +109,10 @@ namespace YaHTTP {
       os << Utility::camelizeHeader(iter->first) << ": " << iter->second << "\r\n";
       iter++;
     }
+    if (jar.cookies.size() > 0) { // write cookies
+      for(strcookie_map_t::const_iterator i = jar.cookies.begin(); i != jar.cookies.end(); i++) 
+        os << "Cookie: " << i->second.str() << "\r\n";
+    } 
     os << "\r\n";
     if (body.size()>0) {
       os << body;
@@ -136,10 +144,14 @@ namespace YaHTTP {
 
     buffer.append(somedata);
     while(state < 2) {
-      // need to find newline in buffer
-      if ((pos = buffer.find("\r\n")) == std::string::npos) return false;
-      std::string line(buffer.begin(), buffer.begin()+pos); // exclude CRLF
-      buffer.erase(buffer.begin(), buffer.begin()+pos+2); // remove line from buffer including CRLF
+      int cr=0;
+      // need to find CRLF in buffer
+      if ((pos = buffer.find_first_of("\n")) == std::string::npos) return false;
+      if (buffer[pos-1]=='\r')
+        cr=1;
+      std::string line(buffer.begin(), buffer.begin()+pos-cr); // exclude CRLF
+      buffer.erase(buffer.begin(), buffer.begin()+pos+1); // remove line from buffer including CRLF
+
       if (state == 0) { // startup line
         std::string ver;
         std::string tmpurl;
@@ -170,14 +182,18 @@ namespace YaHTTP {
         key = line.substr(0, pos);
         value = line.substr(pos+2);
         std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-        request->headers[key] = value;
+        if (key == "cookie") {
+          request->jar.parseCookieHeader(value);
+        } else {
+          if (request->headers.find(key) != request->headers.end()) {
+            request->headers[key] = request->headers[key] + ";" + value;
+          } else {
+            request->headers[key] = value;
+          }
+        }
       }
     }
 
-    // skip body for GET
-    if (request->method == "GET")
-      return true;
-       
     // do we have content-length? 
     if (!chunked) {
       if (request->headers.find("content-length") != request->headers.end()) {
@@ -222,24 +238,21 @@ namespace YaHTTP {
 
     if (chunk_size!=0) return false; // need more data
 
-    if (!chunked && bodybuf.str().size() < maxbody) {
-      return false; // need more data
-    }
-
-    bodybuf.flush();
-    request->body = bodybuf.str();
-    bodybuf.str("");
-    return true;
+    return ready();
   };
 
   bool AsyncResponseLoader::feed(const std::string &somedata) {
     size_t pos;
     buffer.append(somedata);
     while(state < 2) {
+      int cr=0;
       // need to find CRLF in buffer
-      if ((pos = buffer.find("\r\n")) == std::string::npos) return false;
-      std::string line(buffer.begin(), buffer.begin()+pos); // exclude CRLF
-      buffer.erase(buffer.begin(), buffer.begin()+pos+2); // remove line from buffer including CRLF
+      if ((pos = buffer.find_first_of("\n")) == std::string::npos) return false;
+      if (buffer[pos-1]=='\r') 
+        cr=1;
+      std::string line(buffer.begin(), buffer.begin()+pos-cr); // exclude CRLF
+      buffer.erase(buffer.begin(), buffer.begin()+pos+cr); // remove line from buffer including CRLF
+
       if (state == 0) { // startup line
         std::string ver;
         std::istringstream iss(line);
@@ -260,9 +273,31 @@ namespace YaHTTP {
           throw ParseError("Malformed header line");
         key = line.substr(0, pos);
         value = line.substr(pos+2);
-        std::transform(key.begin(), key.end(), key.begin(), ::tolower);
-        response->headers[key] = value;
+        std::transform(key.begin(), key.end(), key.begin(), ::tolower); 
+        // is it already defined
+
+        if (key == "set-cookie") {
+          response->jar.parseCookieHeader(value);
+        } else {
+          if (response->headers.find(key) != response->headers.end()) {
+            response->headers[key] = response->headers[key] + ";" + value;
+          } else {
+            response->headers[key] = value;
+          }
+        }
       }
+    }
+
+    // check for expected body size
+    maxbody = -1;
+    if (!chunked) {
+      if (response->headers.find("content-length") != response->headers.end()) {
+        std::istringstream maxbodyS(response->headers["content-length"]);
+        maxbodyS >> maxbody;
+      }
+      if (maxbody < 1) return true; // guess there isn't anything left.
+      if (maxbody > YAHTTP_MAX_RESPONSE_SIZE)
+        throw ParseError("Respnse size exceeded");
     }
 
     if (buffer.size() == 0) return false;
@@ -288,7 +323,7 @@ namespace YaHTTP {
           buffer.erase(buffer.begin(), buffer.begin()+chunk_size+1);
           bodybuf << buf;
           chunk_size = 0;
-          if (buffer.size() == 0) return false; // just in case
+          if (buffer.size() == 0) break; // just in case
         }
       } else {
         bodybuf << buffer;
@@ -298,9 +333,20 @@ namespace YaHTTP {
 
     if (chunk_size!=0) return false; // need more data
 
+    return ready();
+  };
+
+  void AsyncRequestLoader::finalize() {
+    bodybuf.flush();
+    request->body = bodybuf.str();
+    bodybuf.str("");
+    this->request = NULL;
+  };
+
+  void AsyncResponseLoader::finalize() {
     bodybuf.flush();
     response->body = bodybuf.str();
     bodybuf.str("");
-    return true;
   };
+
 };

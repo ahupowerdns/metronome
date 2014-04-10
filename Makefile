@@ -7,10 +7,10 @@ ifeq ($(CXX),clang++)
 	CXX2011FLAGS=-std=c++11 -stdlib=libc++
 endif
 
-CXXFLAGS?=-Wall -O3 -ggdb -I.  -pthread -MMD -MP  $(CXX2011FLAGS) # -Wno-unused-local-typedefs 
+CXXFLAGS?=-Wall -O3 -ggdb -I. -I yahttp/yahttp  -pthread -MMD -MP  $(CXX2011FLAGS) # -Wno-unused-local-typedefs 
 CFLAGS=-Wall -I.  -O3 -MMD -MP
-LDFLAGS+=$(CXX2011FLAGS) -pthread   # -Wl,-Bstatic -lstdc++ -lgcc -lz -Wl,-Bdynamic -static-libgcc -lm -lc
-# CHEAT_ARG := $(shell ./update-git-hash-if-necessary)
+LDFLAGS+=$(CXX2011FLAGS) -pthread  -Wl,-Bstatic $(LIBRARIES) -lstdc++ -lgcc -lz -Wl,-Bdynamic -static-libgcc -lm -lc
+CHEAT_ARG := $(shell ./update-git-hash-if-necessary)
 
 SHIPPROGRAMS=metronome
 PROGRAMS=$(SHIPPROGRAMS) 
@@ -21,8 +21,8 @@ all: $(PROGRAMS)
 
 .PHONY:	check
 
-metronome: metronome.o reqresp.o iputils.o statstorage.o interpolate.o
-	$(CXX)  $^ $(LDFLAGS) -o $@
+metronome: metronome.o yahttp/yahttp/reqresp.o iputils.o statstorage.o interpolate.o
+	$(CC) $^ $(LDFLAGS) -o $@
 
 install: metronome
 	mkdir -p $(DESTDIR)/usr/bin/
@@ -35,8 +35,8 @@ clean:
 package: all
 	rm -rf dist
 	DESTDIR=dist make install
-	fpm -s dir -f -t rpm -n antonie -v 1.g$(shell cat githash) -C dist .
-	fpm -s dir -f -t deb -n antonie -v 1.g$(shell cat githash) -C dist .	
+	fpm -s dir -f -t rpm -n metronome -v 1.g$(shell cat githash) -C dist .
+	fpm -s dir -f -t deb -n metronome -v 1.g$(shell cat githash) -C dist .	
 	rm -rf dist
 
 codedocs: codedocs/html/index.html

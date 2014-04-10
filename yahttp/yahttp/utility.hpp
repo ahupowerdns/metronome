@@ -1,13 +1,142 @@
 #ifndef _YAHTTP_UTILITY_HPP
 #define _YAHTTP_UTILITY_HPP 1
 
-#include <string>
-#include <algorithm>
-#include <cstdio>
-#include <map>
-#include <locale>
-
 namespace YaHTTP {
+  static const char *MONTHS[] = {0,"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec",0};
+  static const char *DAYS[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+
+  class DateTime {
+  public:
+     bool isSet;
+
+     int year;
+
+     int month;
+     int day;
+     int wday;
+
+     int hours;
+     int minutes;
+     int seconds;
+
+     int utc_offset;
+
+     DateTime() { 
+       initialize();
+     };
+
+     void initialize() {
+       isSet = false; 
+     };
+
+     void setLocal() {
+       fromLocaltime(time((time_t*)NULL)); 
+     };
+
+     void setGm() {
+       fromGmtime(time((time_t*)NULL));
+     }
+
+     void fromLocaltime(time_t t) {
+#ifdef HAVE_LOCALTIME_R
+       struct tm tm;
+       localtime_r(&t, &tm);
+       fromTm(&tm);
+#else
+       struct tm *tm;
+       tm = localtime(&t);
+       fromTm(tm);
+#endif
+     };
+
+     void fromGmtime(time_t t) {
+#ifdef HAVE_GMTIME_R
+       struct tm tm;
+       gmtime_r(&t, &tm);
+       fromTm(&tm);
+#else
+       struct tm *tm;
+       tm = gmtime(&t);
+       fromTm(tm);
+#endif
+     };
+
+     void fromTm(const struct tm *tm) {
+       year = tm->tm_year + 1900;
+       month = tm->tm_mon + 1;
+       day = tm->tm_mday;
+       hours = tm->tm_hour;
+       minutes = tm->tm_min;
+       seconds = tm->tm_sec;
+       wday = tm->tm_wday;
+       utc_offset = tm->tm_gmtoff;
+     };
+
+     void validate() const {
+       if (wday < 0 || wday > 6) throw "Invalid date";
+       if (month < 1 || month > 12) throw "Invalid date";
+       if (year < 0) throw "Invalid date";
+       if (hours < 0 || hours > 23 ||
+           minutes < 0 || minutes > 59 ||
+           seconds < 0 || seconds > 60) throw "Invalid date";
+     }
+
+     std::string rfc_str() const {
+       std::ostringstream oss;
+       validate();
+       oss << DAYS[wday] << ", " << day << " " << MONTHS[month] << " " << year << " " << hours 
+         << ":" << minutes << ":" << seconds << " ";
+       if (utc_offset>0) oss << "+";
+       else oss << "-";
+       int tmp_off = ( utc_offset < 0 ? utc_offset*-1 : utc_offset ); 
+       oss << std::setfill('0') << std::setw(2) << (tmp_off/3600);
+       oss << std::setfill('0') << std::setw(2) << (tmp_off%3600)/60;
+
+       return oss.str(); 
+     };
+ 
+     std::string cookie_str() const {
+       std::ostringstream oss;
+       validate();
+       oss << day << "-" << MONTHS[month] << "-" << month << " " << hours
+         << ":" << minutes << ":" << seconds << " GMT";
+       return oss.str();
+     }
+ 
+     void parse822(const std::string &rfc822_date) {
+       char *pos;
+       struct tm tm;
+       if ( (pos = strptime(rfc822_date.c_str(), "%a, %j %b %Y %T %z", &tm)) != NULL) {
+          fromTm(&tm);
+       } else {
+          throw "Unparseable date";
+       }
+     };
+
+     void parseCookie(const std::string &cookie_date) {
+       char *pos;
+       struct tm tm;
+       if ( (pos = strptime(cookie_date.c_str(), "%j-%b-%Y %T %Z", &tm)) != NULL) {
+          fromTm(&tm);
+       } else {
+          throw "Unparseable date";
+       }
+     };
+
+     int unixtime() const {
+       struct tm tm;
+       tm.tm_year = year-1900;
+       tm.tm_mon = month-1;
+       tm.tm_mday = day;
+       tm.tm_hour = hours;
+       tm.tm_min = minutes;
+       tm.tm_sec = seconds;
+       tm.tm_gmtoff = utc_offset;
+       return mktime(&tm);
+     }
+     
+  };
+ 
   class Utility {
   public:
     static std::string decodeURL(const std::string& component) {
@@ -47,7 +176,7 @@ namespace YaHTTP {
         if (*iter != '+' && !(encodeSlash == false || *iter == '/') && !std::isalnum(*iter)) {
           // replace with different thing
           pos = std::distance(result.begin(), iter);
-          ::snprintf(repl,3,"%02x", *iter);
+          std::snprintf(repl,3,"%02x", *iter);
           result = result.replace(pos, 1, "%", 1).insert(pos+1, repl, 2);
           iter = result.begin() + pos + 2;
         }

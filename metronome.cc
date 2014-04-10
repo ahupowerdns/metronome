@@ -218,7 +218,7 @@ try
 	    body<<',';
 	  }
 	  body<<"["<<(uint32_t)t<<','<<inst.first<<']';   
-	  if(t + step >= vals.rbegin()->timestamp && t - vals.rbegin()->timestamp < 60 && !derived.empty() && !vals.empty()) {
+	  if(!vals.empty() && t + step >= vals.rbegin()->timestamp && t - vals.rbegin()->timestamp < 60 && !derived.empty()) {
 	    derived.push_back({(uint32_t)t, derived.rbegin()->value});
 	  }
 	  else
@@ -315,6 +315,10 @@ int main(int argc, char** argv)
 try
 {
   signal(SIGPIPE, SIG_IGN);
+#ifdef __linux__
+  feenableexcept(FE_DIVBYZERO | FE_INVALID); 
+#endif 
+
   openlog("metronome", LOG_PID, LOG_DAEMON);
   
   processCommandLine(argc, argv);

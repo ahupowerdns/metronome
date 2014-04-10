@@ -218,7 +218,7 @@ try
 	    body<<',';
 	  }
 	  body<<"["<<(uint32_t)t<<','<<inst.first<<']';   
-	  if(t + step >= vals.rbegin()->timestamp && t - vals.rbegin()->timestamp < 60 && !derived.empty()) {
+	  if(t + step >= vals.rbegin()->timestamp && t - vals.rbegin()->timestamp < 60 && !derived.empty() && !vals.empty()) {
 	    derived.push_back({(uint32_t)t, derived.rbegin()->value});
 	  }
 	  else

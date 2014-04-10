@@ -3,7 +3,8 @@ metronome
 
 Mini-graphite so we can ship pdnscontrol w/o depending on graphite.
 
-'metronome' implements the carbon protocol, plus accepts submissions via POST:
+'metronome' implements the carbon protocol, so anything that can feed Graphite can feed metronome. 
+We also accept submissions via POST:
 
 For example, to submit RX bytes for eth0:
 

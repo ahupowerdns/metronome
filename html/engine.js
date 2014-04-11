@@ -1,3 +1,4 @@
+"use strict";
 
 function coordinateTransform(series)
 {
@@ -43,7 +44,7 @@ function showStuff(comconfig, config, where) {
 
     var qstring =comconfig.url+"?do=retrieve&callback=?&name=";
     var metrics=[];
-    for(item in items) {
+    for(var item in items) {
 	if(items[item].name != undefined)
 	    metrics.push(items[item].name);
 	if(items[item].metrics != undefined) {
@@ -78,7 +79,7 @@ function showStuff(comconfig, config, where) {
 		      });
 		  });
 		  //		      console.log("Grouped", grouped);
-		  for(num in items) {
+		  for(var num in items) {
 		      var series;
 		      if(items[num].kind=="gauge")
 			  series = fullseries.raw;

@@ -1,3 +1,5 @@
+"use strict";
+
 var updateEverything = function(){}
 $(document).ready(function() {
     $.ajaxSetup({ cache: false });
@@ -139,17 +141,17 @@ $(document).ready(function() {
 	}	
     }
     var interval;     
-    updateEverything = function() { 
+    window.updateEverything = function() { 
 	comconfig.beginTime = parseInt($("#duration").val());
 
 	if(interval != undefined)
 	    clearInterval(interval);
 	interval = setInterval(updateEverything, -comconfig.beginTime*1000/comconfig.datapoints);    
-	console.log("New interval: ", -comconfig.beginTime*1000/comconfig.datapoints);
+	// console.log("New interval: ", -comconfig.beginTime*1000/comconfig.datapoints);
 	showAll(); 
     };    
 
-    updateFromForm = function() {
+    window.updateFromForm = function() {
 	var stateObj = { server: $("#server").val(), beginTime: parseInt($("#duration").val()) };
 	history.pushState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
 	updateEverything();

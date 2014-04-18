@@ -44,6 +44,12 @@ $(document).ready(function() {
             { name: "pdns."+servername+".noerror-answers", legend: "Normal answers/s"}	    
 	]};
 	
+	var config2b = { items: [ 
+            { name: "pdns."+servername+".tcp-questions", legend: "TCP/IP questions/s"},
+            { name: "pdns."+servername+".tcp-outqueries", legend: "TCP/IP outqueries/s"},
+            { name: "pdns."+servername+".tcp-client-overflow", legend: "TCP/IP overflows/s"}	    
+	]};
+
 	
 	var config3 ={ renderer: "stack", items: [ 
             { metrics: ["pdns."+servername+".user-msec"], legend: "User CPU%",
@@ -120,6 +126,7 @@ $(document).ready(function() {
 	    showStuff(comconfig, config1, "#hier1");
 	    showStuff(comconfig, config2, "#hier2");
 	    showStuff(comconfig, config2a, "#hier2a");	
+	    showStuff(comconfig, config2b, "#hier2b");	
 	    showStuff(comconfig, config3, "#hier3");
 	    showStuff(comconfig, config3a, "#hier3a");	
 	    showStuff(comconfig, config3b, "#hier3b");	

@@ -148,4 +148,15 @@ function showStuff(comconfig, config, div) {
 	      });	
 }
 
+function setupMetronomeHTML(where, configs)
+{  
+  var ret=[];
+  $(where).html("");
+  for(var a in configs) {
+    var div = $('<div style="height: 300px;"/>');
+    $(where).append(div);
+    ret.push([configs[a], div]);
+  }
+  return ret;
+}
      

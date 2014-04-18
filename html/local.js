@@ -12,7 +12,7 @@ $(document).ready(function() {
 		       if(event.originalEvent.state != undefined) {
 			   $("#server").val(event.originalEvent.state.server);
 			   $("#duration").val(event.originalEvent.state.beginTime);
-			   var ret = configAll(recursordivconfig, authdivconfig);
+			   var ret = configAll();
 			   recursordivconfig=ret[0];
 			   authdivconfig=ret[1];
 
@@ -126,22 +126,10 @@ $(document).ready(function() {
 		
  	       
 	var recconfigs=[config1, config2, config2a, config2b, config3, config3a, config3b, config4, config5, config6];
-	var recursordivconfigs=[], authdivconfigs=[]
-	$("#recursor").html("");
-	for(var a in recconfigs) {
-	    var div = $('<div style="height: 300px;"/>');
-	    $("#recursor").append(div);
-	    recursordivconfigs.push([recconfigs[a], div]);
-	}
-
-	$("#auth").html("");
 	var authconfigs=[config7, config7a, config7b, config8, config9, config10];
-	for(var a in authconfigs) {
-	    var div = $('<div style="height: 300px;"/>');
-	    $("#auth").append(div);
-	    authdivconfigs.push([authconfigs[a], div]);
-	}
-
+	
+	var recursordivconfigs=setupMetronomeHTML("#recursor", recconfigs);
+	var authdivconfigs=setupMetronomeHTML("#auth", authconfigs);
 
 	return [recursordivconfigs, authdivconfigs];
     }
@@ -182,10 +170,9 @@ $(document).ready(function() {
     };    
 
     window.updateFromForm = function() {
-	var ret = configAll(recursordivconfig, authdivconfig);
+	var ret = configAll();
 	recursordivconfig=ret[0];
 	authdivconfig=ret[1];
-	console.log(recursordivconfig);
 
 	var stateObj = { server: $("#server").val(), beginTime: parseInt($("#duration").val()) };
 	history.pushState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
@@ -209,7 +196,7 @@ $(document).ready(function() {
 	
 	var stateObj = { server: $("#server").val(), beginTime: parseInt($("#duration").val()) };
 	history.replaceState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
-	var configs = configAll(recursordivconfig, authdivconfig);
+	var configs = configAll();
 	recursordivconfig=configs[0];
 	authdivconfig=configs[1];
 

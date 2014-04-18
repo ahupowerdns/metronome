@@ -116,9 +116,16 @@ pair<double,double> smooth(const vector<StatStorage::Datum>& vals, double timest
   
   vector<InterpolateDatum> id;
   id.reserve(to-from);
+  bool hadReset=false;
   for(auto iter = from ; iter != to; ++iter) {
     //    cout << '\t'<< iter->timestamp - timestamp<<endl;
     id.push_back({(double)iter->timestamp, iter->value});
+    if(iter != from && iter->value < prev(iter)->value)
+      hadReset=true;
+  }
+  if(hadReset) {
+    auto ret = interpolate(id, 3, timestamp);
+    return make_pair(ret.first > 0 ? ret.first : 0, 0);
   }
   return interpolate(id, 3, timestamp);
 }

@@ -120,6 +120,7 @@ function showStuff(comconfig, config, div) {
 		      width: 550, 
 		      height: 250, 
                       renderer: config.renderer || 'multi',
+		      padding: { top: 0.05 },
 		      series: plotseries
                       
 		  });
@@ -142,8 +143,24 @@ function showStuff(comconfig, config, div) {
                       graph: graph,
                       element: div.find(".legend")[0]
                   } );		      
+
+
 	
 		  graph.render();
+
+		  var hoverDetail = new Rickshaw.Graph.HoverDetail( {
+		      graph: graph,
+
+		      formatter: function(series, x, y) {			  
+			  var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
+			  var content = swatch + series.name + ": " + y.toFixed(2);
+			  return content;
+		      },
+		      xFormatter: function(x) {
+			  return new Date( x * 1000 ).toString();
+		      }
+		  } );
+
 		  
 	      });	
 }

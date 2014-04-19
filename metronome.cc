@@ -262,7 +262,7 @@ try
   close(sock);
 }
 catch(exception& e) {
-  errlog("Web connection thread terminated because of error: %s", e.what());
+  errlog("Web connection thread for %s terminated because of error: %s", remote.toStringWithPort() % e.what());
   close(sock);
 }
 

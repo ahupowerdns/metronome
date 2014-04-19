@@ -37,9 +37,14 @@ function getServers(comconfig, destination)
 	      });
 }
 	     
+function showStuff(comconfig, configs)
+{
+    $.each(configs, function(key, val) {
+	showGraph(comconfig, val);
+    });
+}
 
-
-function showStuff(comconfig, config, div) {
+function showGraph(comconfig, config) {
     var items = config.items;
 
     var qstring =comconfig.url+"?do=retrieve&callback=?&name=";
@@ -113,10 +118,10 @@ function showStuff(comconfig, config, div) {
 		  for(num in items) {
 		      plotseries.push( { color: colors[num], data: toplot[num], name: items[num].legend, renderer: 'line'});
 		  }
-		  div.html('<div class="chart_container"><div class="y_axis"></div><div class="chart"></div><div class="legend"></div>');
+		  config.div.html('<div class="chart_container"><div class="y_axis"></div><div class="chart"></div><div class="legend"></div>');
 
 		  var graph = new Rickshaw.Graph( {
-		      element: div.find(".chart")[0], 
+		      element: config.div.find(".chart")[0], 
 		      width: 550, 
 		      height: 250, 
                       renderer: config.renderer || 'multi',
@@ -136,12 +141,12 @@ function showStuff(comconfig, config, div) {
 		      orientation: 'left',
 		      tickFormat:
 		      Rickshaw.Fixtures.Number.formatKMBT,
-		      element: div.find(".y_axis")[0]
+		      element: config.div.find(".y_axis")[0]
 		  } );
 		  
 		  var legend = new Rickshaw.Graph.Legend( {
                       graph: graph,
-                      element: div.find(".legend")[0]
+                      element: config.div.find(".legend")[0]
                   } );		      
 
 
@@ -170,9 +175,9 @@ function setupMetronomeHTML(where, configs)
   var ret=[];
   $(where).html("");
   for(var a in configs) {
-    var div = $('<div style="height: 300px;"/>');
-    $(where).append(div);
-    ret.push([configs[a], div]);
+    configs[a].div = $('<div style="height: 300px;"/>');
+    $(where).append(configs[a].div);
+    ret.push(configs[a]);
   }
   return ret;
 }

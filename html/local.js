@@ -5,23 +5,28 @@ $(document).ready(function() {
     $.ajaxSetup({ cache: false });
     
     var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -3*3600, datapoints: 100 };
+    var recursordivconfig=[], authdivconfig=[];
 
     $(window).bind('popstate',  
 		   function(event) {
 		       if(event.originalEvent.state != undefined) {
 			   $("#server").val(event.originalEvent.state.server);
 			   $("#duration").val(event.originalEvent.state.beginTime);
+			   var ret = configAll();
+			   recursordivconfig=ret[0];
+			   authdivconfig=ret[1];
+
 			   updateEverything();
 		       }
 		   });
 
-    function showAll()
+    function configAll()
     {
 	var servername=$("#server").val();
 	if(servername=='')
 	    return;
 
-	var config1 = { items: [ 
+	var config1 = { where: 'recursor1', items: [ 
             { name: "pdns."+servername+".servfail-answers", legend: "Servfail answers/s"},
             { name: "pdns."+servername+".questions", legend: "Questions/s" }, 
             { name: "pdns."+servername+".all-outqueries", legend: "All outqueries/s"}
@@ -44,6 +49,12 @@ $(document).ready(function() {
             { name: "pdns."+servername+".noerror-answers", legend: "Normal answers/s"}	    
 	]};
 	
+	var config2b = { items: [ 
+            { name: "pdns."+servername+".tcp-questions", legend: "TCP/IP questions/s"},
+            { name: "pdns."+servername+".tcp-outqueries", legend: "TCP/IP outqueries/s"},
+            { name: "pdns."+servername+".tcp-client-overflow", legend: "TCP/IP overflows/s"}	    
+	]};
+
 	
 	var config3 ={ renderer: "stack", items: [ 
             { metrics: ["pdns."+servername+".user-msec"], legend: "User CPU%",
@@ -114,44 +125,55 @@ $(document).ready(function() {
 	]};
 		
  	       
-
+	var recconfigs=[config1, config2, config2a, config2b, config3, config3a, config3b, config4, config5, config6];
+	var authconfigs=[config7, config7a, config7b, config8, config9, config10];
 	
+	var recursordivconfigs=setupMetronomeHTML("#recursor", recconfigs);
+	var authdivconfigs=setupMetronomeHTML("#auth", authconfigs);
+
+	return [recursordivconfigs, authdivconfigs];
+    }
+
+    function showAll(recursordivconfigs, authdivconfigs)
+    {
+	var servername=$("#server").val();
+	if(servername=='')
+	    return;
+
 	if(servername.split('.')[1]=="recursor") { 
-	    showStuff(comconfig, config1, "#hier1");
-	    showStuff(comconfig, config2, "#hier2");
-	    showStuff(comconfig, config2a, "#hier2a");	
-	    showStuff(comconfig, config3, "#hier3");
-	    showStuff(comconfig, config3a, "#hier3a");	
-	    showStuff(comconfig, config3b, "#hier3b");	
-	    showStuff(comconfig, config4, "#hier4");
-	    showStuff(comconfig, config5, "#hier5");
-	    showStuff(comconfig, config6, "#hier6");  
+	    for(var a in recursordivconfigs) {
+		showStuff(comconfig, recursordivconfigs[a][0], recursordivconfigs[a][1]);
+	    }
 	    $("#auth").hide();
 	    $("#recursor").show();
 	}
-	if(servername.split('.')[1]=="auth") {
-	    showStuff(comconfig, config7, "#hier7");
-	    showStuff(comconfig, config7a, "#hier7a");	    
-	    showStuff(comconfig, config7b, "#hier7b");	    	    
-	    showStuff(comconfig, config8, "#hier8");
-	    showStuff(comconfig, config9, "#hier9");
-	    showStuff(comconfig, config10, "#hier10");
+	else if(servername.split('.')[1]=="auth") { 
+	    for(var a in authdivconfigs) {
+		showStuff(comconfig, authdivconfigs[a][0], authdivconfigs[a][1]);
+	    }
 	    $("#auth").show();
 	    $("#recursor").hide();
-	}	
+	}
+
     }
+    
     var interval;     
+
     window.updateEverything = function() { 
 	comconfig.beginTime = parseInt($("#duration").val());
-
+	
 	if(interval != undefined)
 	    clearInterval(interval);
 	interval = setInterval(updateEverything, -comconfig.beginTime*1000/comconfig.datapoints);    
 	// console.log("New interval: ", -comconfig.beginTime*1000/comconfig.datapoints);
-	showAll(); 
+	showAll(recursordivconfig, authdivconfig); 
     };    
 
     window.updateFromForm = function() {
+	var ret = configAll();
+	recursordivconfig=ret[0];
+	authdivconfig=ret[1];
+
 	var stateObj = { server: $("#server").val(), beginTime: parseInt($("#duration").val()) };
 	history.pushState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
 	updateEverything();
@@ -159,6 +181,7 @@ $(document).ready(function() {
 
 
     getServers(comconfig, function(servers) { 
+
 	var ret="";
 	$.each(servers, function(a,b) {
 	    ret+= "<option value='"+b+"'>"+b+"</option>";
@@ -173,6 +196,9 @@ $(document).ready(function() {
 	
 	var stateObj = { server: $("#server").val(), beginTime: parseInt($("#duration").val()) };
 	history.replaceState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
+	var configs = configAll();
+	recursordivconfig=configs[0];
+	authdivconfig=configs[1];
 
 	updateEverything();
     });

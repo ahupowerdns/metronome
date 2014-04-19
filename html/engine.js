@@ -39,7 +39,7 @@ function getServers(comconfig, destination)
 	     
 
 
-function showStuff(comconfig, config, where) {
+function showStuff(comconfig, config, div) {
     var items = config.items;
 
     var qstring =comconfig.url+"?do=retrieve&callback=?&name=";
@@ -58,6 +58,7 @@ function showStuff(comconfig, config, where) {
 
     var epoch = (new Date).getTime()/1000;
     qstring+="&begin="+(epoch+comconfig.beginTime)+"&end="+(epoch)+"&datapoints="+comconfig.datapoints;
+
 
     $.getJSON(qstring, 
 	      function(fullseries) {	      
@@ -105,7 +106,6 @@ function showStuff(comconfig, config, where) {
 
 
 		  //		      console.log(grouped);		      
-		  $(where).html('<div class="chart_container"><div class="y_axis"></div><div class="chart"></div><div class="legend"></div>');
 
 		  var plotseries=[];
 		  var colors=['red', 'steelblue', 'green', 'yellow', 'purple', 'orange', 'black'];
@@ -113,9 +113,10 @@ function showStuff(comconfig, config, where) {
 		  for(num in items) {
 		      plotseries.push( { color: colors[num], data: toplot[num], name: items[num].legend, renderer: 'line'});
 		  }
-		  
+		  div.html('<div class="chart_container"><div class="y_axis"></div><div class="chart"></div><div class="legend"></div>');
+
 		  var graph = new Rickshaw.Graph( {
-		      element: $(where + " .chart")[0], 
+		      element: div.find(".chart")[0], 
 		      width: 550, 
 		      height: 250, 
                       renderer: config.renderer || 'multi',
@@ -134,15 +135,28 @@ function showStuff(comconfig, config, where) {
 		      orientation: 'left',
 		      tickFormat:
 		      Rickshaw.Fixtures.Number.formatKMBT,
-		      element: $(where+" .y_axis")[0]
+		      element: div.find(".y_axis")[0]
 		  } );
 		  
 		  var legend = new Rickshaw.Graph.Legend( {
                       graph: graph,
-                      element: $(where+ " .legend")[0]
+                      element: div.find(".legend")[0]
                   } );		      
-		  graph.render();		    
+	
+		  graph.render();
+		  
 	      });	
 }
 
+function setupMetronomeHTML(where, configs)
+{  
+  var ret=[];
+  $(where).html("");
+  for(var a in configs) {
+    var div = $('<div style="height: 300px;"/>');
+    $(where).append(div);
+    ret.push([configs[a], div]);
+  }
+  return ret;
+}
      

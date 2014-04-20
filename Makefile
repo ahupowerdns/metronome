@@ -12,7 +12,7 @@ CFLAGS=-Wall -I.  -O3 -MMD -MP
 LDFLAGS+=$(CXX2011FLAGS) -pthread  -Wl,-Bstatic $(LIBRARIES) -lstdc++ -lgcc -lz -Wl,-Bdynamic -static-libgcc -lm -lc
 CHEAT_ARG := $(shell ./update-git-hash-if-necessary)
 
-SHIPPROGRAMS=metronome
+SHIPPROGRAMS=metronome msubmit
 PROGRAMS=$(SHIPPROGRAMS) 
 
 all: $(PROGRAMS)
@@ -23,6 +23,10 @@ all: $(PROGRAMS)
 
 metronome: metronome.o yahttp/yahttp/reqresp.o iputils.o statstorage.o interpolate.o
 	$(CC) $^ $(LDFLAGS) -o $@
+
+msubmit: msubmit.o iputils.o
+	$(CC) $^ $(LDFLAGS) -o $@
+
 
 install: metronome
 	mkdir -p $(DESTDIR)/usr/bin/

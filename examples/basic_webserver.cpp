@@ -73,7 +73,7 @@ public:
   // handle a request
   void handle(ServerRequestResponse &rr) {
     if (rr.state == 0) {
-      rr.arl.restart(&rr.req);
+      rr.arl.initialize(&rr.req);
       rr.state = 1;
     }
 
@@ -99,8 +99,13 @@ public:
     } else if (rr.req.url.path == "/style.css") {
       rr.resp = rr.req;
       rr.resp.status = 200;
-      rr.resp.body = "body { font-family: verdana; font-size: 12pt; }; h1 { font-family: \"lucida console\"; font-size: 12pt; };";
       rr.resp.headers["content-type"] = "text/css; charset=utf-8";
+      rr.resp.renderer = YaHTTP::HTTPDocument::SendFileRender("style.css");
+    } else if (rr.req.url.path == "/bg.jpg") {
+      rr.resp = rr.req;
+      rr.resp.status = 200;
+      rr.resp.headers["content-type"] = "image/jpeg";
+      rr.resp.renderer = YaHTTP::HTTPDocument::SendFileRender("bg.jpg");
     } else {
       rr.resp = rr.req;
       rr.resp.status = 404;

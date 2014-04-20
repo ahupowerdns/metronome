@@ -1,10 +1,12 @@
 namespace YaHTTP {
+  /*! Implements a single cookie */
   class Cookie {
   public:
      Cookie() {
        secure = false;
        httponly = false;
-     };
+       name = value = "";
+     }; //!< Set the cookie to empty value
 
      Cookie(const Cookie &rhs) {
        domain = rhs.domain;
@@ -13,16 +15,16 @@ namespace YaHTTP {
        httponly = rhs.httponly;
        name = rhs.name;
        value = rhs.value;
-     };
+     }; //<! Copy cookie values
 
-     DateTime expires;
-     std::string domain;
-     std::string path;
-     bool httponly;
-     bool secure;
+     DateTime expires; /*!< Expiration date */
+     std::string domain; /*!< Domain where cookie is valid */
+     std::string path; /*!< Path where the cookie is valid */
+     bool httponly; /*!< Whether the cookie is for server use only */
+     bool secure; /*!< Whether the cookie is for HTTPS only */
  
-     std::string name;
-     std::string value;
+     std::string name; /*!< Cookie name */
+     std::string value; /*!< Cookie value */
 
      std::string str() const {
        std::ostringstream oss;
@@ -38,7 +40,7 @@ namespace YaHTTP {
        if (httponly)
          oss << "; httpOnly";
        return oss.str();
-     };
+     }; //!< Stringify the cookie
   };
 
   class CookieJar {

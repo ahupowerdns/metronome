@@ -4,15 +4,14 @@ var updateEverything = function(){}
 $(document).ready(function() {
     $.ajaxSetup({ cache: false });
     
-    var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -3*3600, datapoints: 100 };
-    var serviceHier={};
-    var current;
+    var m = new Metronome( {url: "http://xs.powerdns.com:8000/", datapoints: 150 });
+
     $(window).bind('popstate',  
 		   function(event) {
 		       if(event.originalEvent.state != undefined) {
 			   $("#server").val(event.originalEvent.state.server);
 			   $("#duration").val(event.originalEvent.state.beginTime);
-			   current = configAll();
+			   configAll();
 			   updateEverything();
 		       }
 		   });
@@ -21,14 +20,13 @@ $(document).ready(function() {
     {
 	var servername=$("#server").val();
 	if(servername=='')
-	    return [];
+	    return;
 
 	var config1 = { items: [ 
             { name: servername+".servfail-answers", legend: "Servfail answers/s"},
             { name: servername+".questions", legend: "Questions/s" }, 
             { name: servername+".all-outqueries", legend: "All outqueries/s"}
-        ]};
-	
+        ]};	
 	
 	var config2 = { renderer: 'stack', items: [ 
             { name: servername+".answers-slow", legend: "Slow answers/s"},
@@ -74,14 +72,14 @@ $(document).ready(function() {
             { 
 		metrics: [servername+".packetcache-hits",servername+".packetcache-misses"], 
 		legend: "% packetcache hitrate", 
-		formula: percentalizer
+		formula: m.percentalizer
 	    }]};    
 
 	var config5 = { items: [ 
             { 
 		metrics: [servername+".cache-hits",servername+".cache-misses"], 
 		legend: "% cache hitrate", 
-		formula: percentalizer
+		formula: m.percentalizer
 	    }]};    
 
 
@@ -107,14 +105,14 @@ $(document).ready(function() {
             { 
 		metrics: [servername+".packetcache-hit",servername+".packetcache-miss"], 
 		legend: "% packet cache hitrate", 
-		formula: percentalizer
+		formula: m.percentalizer
 	    }]};    
 
 	var config9 = { items: [ 
             { 
 		metrics: [servername+".query-cache-hit",servername+".query-cache-miss"], 
 		legend: "% query cache hitrate", 
-		formula: percentalizer
+		formula: m.percentalizer
  	    }]};    
 
 	var config10 = { items: [ 
@@ -130,8 +128,6 @@ $(document).ready(function() {
 	    configs=[config7, config7a, config7b, config8, config9, config10];
 	}
 	else if(components[0]=="system" && components[2]=="network") { 
-	    console.log(components);
-
 	    configs=[ { 
 		items: [ 
 		    {name: servername+".udp.in-errors", legend: "UDP Input error/s"},
@@ -140,9 +136,8 @@ $(document).ready(function() {
 		    {name: servername+".udp.noport-errors", legend: "UDP Noport error/s"}
 		]
 	    }];
-	    var interfaces=[];
-	    
-            var interfaces=listMetricsAt(serviceHier, components[0], components[1], components[2], "interfaces");
+
+            var interfaces=m.listMetricsAt(components[0], components[1], components[2], "interfaces");
             $.each(interfaces, function(key, val) {
 		configs.push({
 		items: [ 
@@ -150,7 +145,6 @@ $(document).ready(function() {
 		    { name: servername+".interfaces."+val+".rx_bytes", legend: val+" RX bits/s", bytesToBits: true},
 		    ]
 		});
-
 		configs.push({items: [ 
 		    { name: servername+".interfaces."+val+".tx_packets", legend: val+" TX packets/s"},
 		    { name: servername+".interfaces."+val+".rx_packets", legend: val+" RX packets/s"},
@@ -159,28 +153,23 @@ $(document).ready(function() {
 	    });		      
 	}
 	
-	return setupMetronomeHTML("#graphs", configs);	
+	m.setupGraphs("#graphs", configs);	
     }
 
-    function showAll()
-    {
-	showStuff(comconfig, current);
-    }
-    
     var interval;     
 
     window.updateEverything = function() { 
-	comconfig.beginTime = parseInt($("#duration").val());
+	m.comconfig.beginTime = parseInt($("#duration").val());
 	
 	if(interval != undefined)
 	    clearInterval(interval);
-	interval = setInterval(updateEverything, -comconfig.beginTime*1000/comconfig.datapoints);    
+	interval = setInterval(updateEverything, m.getNaturalInterval());    
 
-	showAll();
+	m.updateGraphs();
     };    
 
     window.updateFromForm = function() {
-	current = configAll();
+	configAll();
 
 	var stateObj = { server: $("#server").val(), beginTime: parseInt($("#duration").val()) };
 	history.pushState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
@@ -188,9 +177,9 @@ $(document).ready(function() {
     }
 
 
-    getServers(comconfig, function(servers, hier) { 
+    m.getAllMetrics(function() { 
 	var ret="";
-	$.each(servers, function(a,b) {
+	$.each(m.servers, function(a,b) {
 	    ret+= "<option value='"+b+"'>"+b+"</option>";
 	});
 	$("#server").html(ret);
@@ -204,9 +193,7 @@ $(document).ready(function() {
 	var stateObj = { server: $("#server").val(), beginTime: parseInt($("#duration").val()) };
 	history.replaceState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
 	
-	serviceHier=hier;
-	current=configAll();
+	configAll();
 	updateEverything();
     });
- 
 });

@@ -1,10 +1,10 @@
 "use strict";
 
-function coordinateTransform(series)
+function coordinateTransform(series, factor)
 {
     var ret=[];
     $.each(series, function(a, b) {    
-	ret.push({x: b[0], y: b[1]});
+	ret.push({x: b[0], y: factor * b[1]});
     });
     return ret;
 }
@@ -25,7 +25,7 @@ function getServers(comconfig, destination)
 		  var theservers={};
 		  $.each(data.metrics, function(a, b) {
 		      var parts = b.split('.');
-		      var name = parts[1]+'.'+parts[2];
+		      var name = parts.slice(0,3).join('.');
 		      theservers[name]=1;
 		  });
 		  var ret=[];
@@ -92,9 +92,11 @@ function showGraph(comconfig, config) {
 		      else
 			  series = fullseries.derivative;
 
-		      
+		      var factor = 1;
+		      if(items[num].bytesToBits != undefined)
+			  factor = 8;
 		      if(items[num].formula == undefined) 
-			  toplot[num] = coordinateTransform(series[items[num].name]);
+			  toplot[num] = coordinateTransform(series[items[num].name], factor);
 		      
 		  }
 
@@ -113,7 +115,7 @@ function showGraph(comconfig, config) {
 		  //		      console.log(grouped);		      
 
 		  var plotseries=[];
-		  var colors=['red', 'steelblue', 'green', 'yellow', 'purple', 'orange', 'black'];
+		  var colors=['red', 'steelblue', 'green', 'orange', 'purple', 'black', 'yellow'];
 
 		  for(num in items) {
 		      plotseries.push( { color: colors[num], data: toplot[num], name: items[num].legend, renderer: 'line'});

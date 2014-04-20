@@ -83,14 +83,12 @@ namespace YaHTTP {
 #ifdef HAVE_CPP_FUNC_PTR
     funcptr::function<size_t(std::ostream& os)> renderer;
 #endif
-    void write(std::ostream& os);
-
-    friend class AsyncLoader;
+    void write(std::ostream& os) const;
   };
 
   class Response: public HTTPDocument { 
   public:
-    Response() {};
+    Response() { this->kind = YAHTTP_TYPE_RESPONSE; };
     Response(const HTTPDocument& rhs);
     friend std::ostream& operator<<(std::ostream& os, const Response &resp);
     friend std::istream& operator>>(std::istream& is, Response &resp);
@@ -98,7 +96,7 @@ namespace YaHTTP {
 
   class Request: public HTTPDocument {
   public:
-    Request() {};
+    Request() { this->kind = YAHTTP_TYPE_REQUEST; };
     Request(const HTTPDocument& rhs);
     friend std::ostream& operator<<(std::ostream& os, const Request &resp);
     friend std::istream& operator>>(std::istream& is, Request &resp);
@@ -133,11 +131,10 @@ namespace YaHTTP {
     };
   };
 
-  template <>
-  class AsyncResponseLoader<Response>: public AsyncLoader {
+  class AsyncResponseLoader: public AsyncLoader<Response> {
   };
-  template <>
-  class AsyncRequestLoader<Request>: public AsyncLoader {
+
+  class AsyncRequestLoader: public AsyncLoader<Request> {
   };
 
 };

@@ -1,7 +1,8 @@
 #include "yahttp.hpp"
 
-template <class T>
-int YaHTTP::AsyncLoader<T>::feed(const std::string& somedata) {
+namespace YaHTTP {
+  template <class T>
+  int AsyncLoader<T>::feed(const std::string& somedata) {
     buffer.append(somedata);
     while(state < 2) {
       int cr=0;
@@ -108,66 +109,67 @@ int YaHTTP::AsyncLoader<T>::feed(const std::string& somedata) {
     if (chunk_size!=0) return false; // need more data
 
     return ready();
-};
-
-void YaHTTP::HTTPDocument::write(std::ostream& os) {
-  os << "HTTP/1.1 " << status << " ";
-  if (statusText.empty())
-    os << Utility::status2text(status);
-  else
-    os << statusText;
-  os << "\r\n";
-
-  // write headers
-  strstr_map_t::const_iterator iter = headers.begin();
-  while(iter != headers.end()) {
-    os << Utility::camelizeHeader(iter->first) << ": " << iter->second << "\r\n";
-    iter++;
-  }
-  if (jar.cookies.size() > 0) { // write cookies
-    for(strcookie_map_t::const_iterator i = jar.cookies.begin(); i != jar.cookies.end(); i++)
-      os << "Set-Cookie: " << i->second.str() << "\r\n";
-  }
-  os << "\r\n";
-  os << body;
-};
-
-std::ostream& operator<<(std::ostream& os, const YaHTTP::Response &resp) {
-  resp.write(os);
-  return os;
-};
-
-std::istream& operator>>(std::istream& is, YaHTTP::Response &resp) {
-  AsyncResponseLoader arl;
-  arl.initialize(&resp);
-  while(is.good()) {
-    char buf[1024];
-    is.read(buf, 1024);
-    if (is.gcount()) { // did we actually read anything
-      is.clear();
-      if (arl.feed(std::string(buf, is.gcount())) == true) return is; // completed
+  };
+  
+  void HTTPDocument::write(std::ostream& os) const {
+    os << "HTTP/1.1 " << status << " ";
+    if (statusText.empty())
+      os << Utility::status2text(status);
+    else
+      os << statusText;
+    os << "\r\n";
+  
+    // write headers
+    strstr_map_t::const_iterator iter = headers.begin();
+    while(iter != headers.end()) {
+      os << Utility::camelizeHeader(iter->first) << ": " << iter->second << "\r\n";
+      iter++;
     }
-  }
-  if (arl.ready()) arl.finalize();
-  return is;
-};
-
-std::ostream& operator<<(std::ostream& os, const YaHTTP::Request &req) {
-  req.write(os);
-  return os;
-};
-
-std::istream& operator>>(std::istream& is, YaHTTP::Request &req) {
-  AsyncRequestLoader arl;
-  arl.initialize(&req);
-  while(is.good()) {
-    char buf[1024];
-    is.read(buf, 1024);
-    if (is.gcount()) { // did we actually read anything
-      is.clear();
-      if (arl.feed(std::string(buf, is.gcount())) == true) return is; // completed
+    if (jar.cookies.size() > 0) { // write cookies
+      for(strcookie_map_t::const_iterator i = jar.cookies.begin(); i != jar.cookies.end(); i++)
+        os << "Set-Cookie: " << i->second.str() << "\r\n";
     }
-  }
-  if (arl.ready()) arl.finalize();
-  return is;
+    os << "\r\n";
+    os << body;
+  };
+  
+  std::ostream& operator<<(std::ostream& os, const Response &resp) {
+    resp.write(os);
+    return os;
+  };
+  
+  std::istream& operator>>(std::istream& is, Response &resp) {
+    YaHTTP::AsyncResponseLoader arl;
+    arl.initialize(&resp);
+    while(is.good()) {
+      char buf[1024];
+      is.read(buf, 1024);
+      if (is.gcount()) { // did we actually read anything
+        is.clear();
+        if (arl.feed(std::string(buf, is.gcount())) == true) return is; // completed
+      }
+    }
+    if (arl.ready()) arl.finalize();
+    return is;
+  };
+  
+  std::ostream& operator<<(std::ostream& os, const Request &req) {
+    req.write(os);
+    return os;
+  };
+  
+  std::istream& operator>>(std::istream& is, Request &req) {
+    YaHTTP::AsyncRequestLoader arl;
+    arl.initialize(&req);
+    while(is.good()) {
+      char buf[1024];
+      is.read(buf, 1024);
+      if (is.gcount()) { // did we actually read anything
+        is.clear();
+        if (arl.feed(std::string(buf, is.gcount())) == true) return is; // completed
+      }
+    }
+    if (arl.ready()) arl.finalize();
+    return is;
+  };
 };

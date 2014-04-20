@@ -5,7 +5,7 @@ $(document).ready(function() {
     $.ajaxSetup({ cache: false });
     
     var comconfig = { url: "http://xs.powerdns.com:8000/", beginTime: -3*3600, datapoints: 100 };
-
+    var serviceHier={};
     var current;
     $(window).bind('popstate',  
 		   function(event) {
@@ -122,13 +122,16 @@ $(document).ready(function() {
 	]};
 
 	var configs;
-	if(servername.split('.')[2]=="recursor") { 
+	var components = servername.split('.');
+	if(components[2]=="recursor") { 
 	    configs=[config1, config2, config2a, config2b, config3, config3a, config3b, config4, config5, config6];
 	}
-	else if(servername.split('.')[2]=="auth") { 
+	else if(components[2]=="auth") { 
 	    configs=[config7, config7a, config7b, config8, config9, config10];
 	}
-	else if(servername.split('.')[2]=="network") { 
+	else if(components[0]=="system" && components[2]=="network") { 
+	    console.log(components);
+
 	    configs=[ { 
 		items: [ 
 		    {name: servername+".udp.in-errors", legend: "UDP Input error/s"},
@@ -136,19 +139,24 @@ $(document).ready(function() {
 		    {name: servername+".udp.rcvbuf-errors", legend: "UDP RCVBuf error/s"},
 		    {name: servername+".udp.noport-errors", legend: "UDP Noport error/s"}
 		]
-	    }, {
+	    }];
+	    var interfaces=[];
+	    
+            var interfaces=listMetricsAt(serviceHier, components[0], components[1], components[2], "interfaces");
+            $.each(interfaces, function(key, val) {
+		configs.push({
 		items: [ 
-		    { name: servername+".interfaces.bond0.tx_bytes", legend: "bond0 TX bits/s", bytesToBits: true},
-		    { name: servername+".interfaces.bond0.rx_bytes", legend: "bond0 RX bits/s", bytesToBits: true},
+		    { name: servername+".interfaces."+val+".tx_bytes", legend: val+" TX bits/s", bytesToBits: true},
+		    { name: servername+".interfaces."+val+".rx_bytes", legend: val+" RX bits/s", bytesToBits: true},
 		    ]
-	    },
-		      {
-		items: [ 
-		    { name: servername+".interfaces.bond0.tx_packets", legend: "bond0 TX packets/s"},
-		    { name: servername+".interfaces.bond0.rx_packets", legend: "bond0 RX packets/s"},
+		});
+
+		configs.push({items: [ 
+		    { name: servername+".interfaces."+val+".tx_packets", legend: val+" TX packets/s"},
+		    { name: servername+".interfaces."+val+".rx_packets", legend: val+" RX packets/s"},
 		    ]
-	    }
-		    ];
+			     });
+	    });		      
 	}
 	
 	return setupMetronomeHTML("#graphs", configs);	
@@ -180,8 +188,7 @@ $(document).ready(function() {
     }
 
 
-    getServers(comconfig, function(servers) { 
-
+    getServers(comconfig, function(servers, hier) { 
 	var ret="";
 	$.each(servers, function(a,b) {
 	    ret+= "<option value='"+b+"'>"+b+"</option>";
@@ -196,7 +203,8 @@ $(document).ready(function() {
 	
 	var stateObj = { server: $("#server").val(), beginTime: parseInt($("#duration").val()) };
 	history.replaceState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
-
+	
+	serviceHier=hier;
 	current=configAll();
 	updateEverything();
     });

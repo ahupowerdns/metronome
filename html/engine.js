@@ -16,6 +16,23 @@ function percentalizer(r, d)
 	return 0;
 }
 
+function listMetricsAt(metrics)
+{
+  console.log(arguments);
+  var ref=metrics;
+  for(var i = 1; i < arguments.length; ++i) {
+    var tmp = ref[arguments[i]];
+    ref = tmp;
+  }
+  var ret=[];
+  $.each(ref, function(key, val) {
+      ret.push(key);
+    });
+  ret.sort();
+  console.log("resultaat", ret);
+  return ret;
+}
+
 function getServers(comconfig, destination) 
 {
     var qstring =comconfig.url+"?do=get-metrics&callback=?&name";
@@ -23,17 +40,27 @@ function getServers(comconfig, destination)
     $.getJSON(qstring, 
 	      function(data) {	      
 		  var theservers={};
+		  var hier={};
 		  $.each(data.metrics, function(a, b) {
 		      var parts = b.split('.');
 		      var name = parts.slice(0,3).join('.');
 		      theservers[name]=1;
+
+		      for(var i = 0; i < parts.length ; ++i) {
+			  var ref = hier;
+			  for(var j = 0 ; j < i; ++j) {
+			      if(ref[parts[j]]==undefined)
+				  ref[parts[j]]={};
+			      ref = ref[parts[j]];
+			  }
+		      }
 		  });
 		  var ret=[];
 		  $.each(theservers, function(a,b) {
 		      ret.push(a);
 		  });
 		  ret.sort();
-		  destination(ret);
+		  destination(ret, hier);
 	      });
 }
 	     
@@ -150,8 +177,6 @@ function showGraph(comconfig, config) {
                       graph: graph,
                       element: config.div.find(".legend")[0]
                   } );		      
-
-
 	
 		  graph.render();
 
@@ -167,8 +192,6 @@ function showGraph(comconfig, config) {
 			  return new Date( x * 1000 ).toString();
 		      }
 		  } );
-
-		  
 	      });	
 }
 

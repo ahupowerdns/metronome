@@ -141,6 +141,12 @@ $(document).ready(function() {
 		    { name: servername+".interfaces.bond0.tx_bytes", legend: "bond0 TX bits/s", bytesToBits: true},
 		    { name: servername+".interfaces.bond0.rx_bytes", legend: "bond0 RX bits/s", bytesToBits: true},
 		    ]
+	    },
+		      {
+		items: [ 
+		    { name: servername+".interfaces.bond0.tx_packets", legend: "bond0 TX packets/s"},
+		    { name: servername+".interfaces.bond0.rx_packets", legend: "bond0 RX packets/s"},
+		    ]
 	    }
 		    ];
 	}

@@ -1,0 +1,33 @@
+#!/bin/bash
+
+if [ "$1" == "" ]
+then
+	HOST=$(hostname -s)
+else
+	HOST=$1
+fi
+
+
+# Udp: 5956140687 951311 23693 5957118759 3751 356 0
+# UdpLite: InDatagrams NoPorts InErrors OutDatagrams RcvbufErrors SndbufErrors InCsumErrors
+#   1         2          3       4           5           6             7            8
+LINE=$(cat /proc/net/snmp | grep Udp: | grep -v InData)
+
+echo -n "system.$HOST.network.udp.rcvbuf-errors " ; echo $LINE | cut -f6 -d" "
+echo -n "system.$HOST.network.udp.sndbuf-errors " ; echo $LINE | cut -f7 -d" "
+echo -n "system.$HOST.network.udp.noport-errors " ; echo $LINE | cut -f3 -d" "
+echo -n "system.$HOST.network.udp.in-errors " ; echo $LINE | cut -f4 -d" "
+
+pushd /sys/class/net/ > /dev/null
+for a in $(find . -maxdepth 1 -follow -type d | cut -f2 -d/ | grep -v \\. )
+do
+	pushd $a/statistics > /dev/null
+	for b in *
+	do
+		echo -n "system.$HOST.network.interfaces.$a.$b "
+		cat $b
+	done
+	popd > /dev/null 
+done
+popd > /dev/null
+

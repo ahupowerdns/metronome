@@ -29,29 +29,23 @@ namespace YaHTTP {
 
   class HTTPDocument {
   public:
-    HTTPDocument() {
-#ifdef HAVE_CPP_FUNC_PTR
-      renderer = SendBodyRender(*this);
-#endif
-    };
 #ifdef HAVE_CPP_FUNC_PTR
     class SendBodyRender {
     public:
-      HTTPDocument& parent;
-      SendBodyRender(HTTPDocument &doc): parent(doc) {};
+      SendBodyRender() {};
 
-      int operator()(std::ostream& os) {
-         os << parent.body;
-         return parent.body.length();
-       };
-     };
-    class SendFileRenderer {
+      size_t operator()(const HTTPDocument *doc, std::ostream& os) const {
+        os << doc->body;
+        return doc->body.length();
+      };
+    };
+    class SendFileRender {
     public:
-      SendFileRenderer(const std::string& path) {
+      SendFileRender(const std::string& path) {
         this->path = path;
       };
   
-      size_t operator()(std::ostream& os) {
+      size_t operator()(const HTTPDocument *doc, std::ostream& os) const {
         char buf[4096];
         size_t n,k;
 
@@ -70,6 +64,19 @@ namespace YaHTTP {
       std::string path;
     };
 #endif
+    HTTPDocument() {
+#ifdef HAVE_CPP_FUNC_PTR
+      renderer = SendBodyRender();
+#endif
+    };
+    HTTPDocument(const HTTPDocument& rhs) {
+      this->url = rhs.url; this->kind = rhs.kind;
+      this->status = rhs.status; this->statusText = rhs.statusText;
+      this->method = rhs.method; this->headers = rhs.headers;
+      this->jar = rhs.jar; this->parameters = rhs.parameters;
+      this->body = rhs.body;
+      this->renderer = rhs.renderer;
+    };
     URL url;
     int kind;
     int status;
@@ -81,7 +88,7 @@ namespace YaHTTP {
     std::string body;
      
 #ifdef HAVE_CPP_FUNC_PTR
-    funcptr::function<size_t(std::ostream& os)> renderer;
+    funcptr::function<size_t(const HTTPDocument*,std::ostream&)> renderer;
 #endif
     void write(std::ostream& os) const;
   };
@@ -89,7 +96,9 @@ namespace YaHTTP {
   class Response: public HTTPDocument { 
   public:
     Response() { this->kind = YAHTTP_TYPE_RESPONSE; };
-    Response(const HTTPDocument& rhs);
+    Response(const HTTPDocument& rhs): HTTPDocument(rhs) {
+      this->kind = YAHTTP_TYPE_RESPONSE;
+    };
     friend std::ostream& operator<<(std::ostream& os, const Response &resp);
     friend std::istream& operator>>(std::istream& is, Response &resp);
   };
@@ -97,7 +106,9 @@ namespace YaHTTP {
   class Request: public HTTPDocument {
   public:
     Request() { this->kind = YAHTTP_TYPE_REQUEST; };
-    Request(const HTTPDocument& rhs);
+    Request(const HTTPDocument& rhs): HTTPDocument(rhs) {
+      this->kind = YAHTTP_TYPE_REQUEST;
+    };
     friend std::ostream& operator<<(std::ostream& os, const Request &resp);
     friend std::istream& operator>>(std::istream& is, Request &resp);
   };

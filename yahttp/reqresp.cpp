@@ -112,11 +112,15 @@ namespace YaHTTP {
   };
   
   void HTTPDocument::write(std::ostream& os) const {
-    os << "HTTP/1.1 " << status << " ";
-    if (statusText.empty())
-      os << Utility::status2text(status);
-    else
-      os << statusText;
+    if (kind == YAHTTP_TYPE_REQUEST) {
+      os << method << " " << url.path << " HTTP/1.1";
+    } else if (kind == YAHTTP_TYPE_RESPONSE) {
+      os << "HTTP/1.1 " << status << " ";
+      if (statusText.empty())
+        os << Utility::status2text(status);
+      else
+        os << statusText;
+    }
     os << "\r\n";
   
     // write headers
@@ -126,11 +130,21 @@ namespace YaHTTP {
       iter++;
     }
     if (jar.cookies.size() > 0) { // write cookies
-      for(strcookie_map_t::const_iterator i = jar.cookies.begin(); i != jar.cookies.end(); i++)
-        os << "Set-Cookie: " << i->second.str() << "\r\n";
+      for(strcookie_map_t::const_iterator i = jar.cookies.begin(); i != jar.cookies.end(); i++) {
+        if (kind == YAHTTP_TYPE_REQUEST) {
+          os << "Cookie: ";
+        } else {
+          os << "Set-Cookie: ";
+        }
+        os << i->second.str() << "\r\n";
+      }
     }
     os << "\r\n";
+#ifdef HAVE_CPP_FUNC_PTR
+    this->renderer(this, os);
+#else
     os << body;
+#endif
   };
   
   std::ostream& operator<<(std::ostream& os, const Response &resp) {

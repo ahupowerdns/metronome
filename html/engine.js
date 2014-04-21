@@ -20,6 +20,33 @@ function Metronome(comconfig)
    5) Call the updateGraphs method to actually retrieve data & draw graphs
    6) Call updateGraphs periodically (every m.getNaturalInterval() milliseconds if you want smooth transitions)
    7) Recall setupGraphs if you change what graphs you want plotted, will clear your div
+
+The graph config, as passed to setupGraphs:
+  an array of graphs, each with an 'items' field containing an array of metrics to be graphed.
+  Each metric has a 'name', which says which metric is to be graphed, plus a legend which is the human friendly name
+  Example:
+  		configs.push({items: [ 
+		    { name: "system.xs.interfaces.eth0.tx_packets", legend: "eth0 TX packets/s"},
+		    { name: "system.xs.interfaces.eth0.rx_packets", legend: "eth0 RX packets/s"},
+		    ]});
+  By default, we plot the nonNegativeDerivative of the metric. 
+  To turn bits into bytes, add 'bitsToBytes: true'.
+  
+  To stack a graph, set 'renderer: stack'.
+  
+  To do fancy things, instead of a name, add a 'metrics' field with an array of metrics. 
+  Also, set a function as the formula field. This function gets passed all the metrics you specified (in order),
+  plus their nonNegativeDerivative.  (so, we call formula(raw, derived)).
+  
+  We deliver one stock formula, 'Metronome.percentalizer', which can be used to calculate one rate as a percentage
+  of two rates. So, cache hitrates for example:
+  
+  	configs.push({ items: [ 
+            { 
+		metrics: [servername+".cache-hits",servername+".cache-misses"], 
+		legend: "% cache hitrate", 
+		formula: m.percentalizer
+	    });    
 */
 
 // Pass this to 'formula' to get two rates as a percentage of their sum rate

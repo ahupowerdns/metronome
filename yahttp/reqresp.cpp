@@ -11,7 +11,7 @@ namespace YaHTTP {
       if (buffer[pos-1]=='\r')
         cr=1;
       std::string line(buffer.begin(), buffer.begin()+pos-cr); // exclude CRLF
-      buffer.erase(buffer.begin(), buffer.begin()+pos+cr); // remove line from buffer including CRLF
+      buffer.erase(buffer.begin(), buffer.begin()+pos+cr+1); // remove line from buffer including CRLF
 
       if (state == 0) { // startup line
         if (target->kind == YAHTTP_TYPE_REQUEST) {
@@ -24,7 +24,7 @@ namespace YaHTTP {
           // uppercase the target method
           std::transform(target->method.begin(), target->method.end(), target->method.begin(), ::toupper);
           target->url.parse(tmpurl);
-          target->parameters = Utility::parseUrlParameters(target->url.parameters);
+          target->getvars = Utility::parseUrlParameters(target->url.parameters);
           state = 1;
         } else if(target->kind == YAHTTP_TYPE_RESPONSE) {
           std::string ver;
@@ -64,18 +64,21 @@ namespace YaHTTP {
     }
 
     // check for expected body size
-    maxbody = -1;
+    if (target->kind == YAHTTP_TYPE_REQUEST) maxbody = YAHTTP_MAX_REQUEST_SIZE;
+    else if (target->kind == YAHTTP_TYPE_RESPONSE) maxbody = YAHTTP_MAX_RESPONSE_SIZE; 
+    else maxbody = -1;
+
     if (!chunked) {
       if (target->headers.find("content-length") != target->headers.end()) {
         std::istringstream maxbodyS(target->headers["content-length"]);
         maxbodyS >> maxbody;
       }
       if (maxbody < 1) return true; // guess there isn't anything left.
-      if (maxbody > YAHTTP_MAX_RESPONSE_SIZE)
-        throw ParseError("Respnse size exceeded");
+      if (target->kind == YAHTTP_TYPE_REQUEST && maxbody > YAHTTP_MAX_REQUEST_SIZE) throw ParseError("Max request body size exceeded");
+      else if (target->kind == YAHTTP_TYPE_RESPONSE && maxbody > YAHTTP_MAX_RESPONSE_SIZE) throw ParseError("Max response body size exceeded");
     }
 
-    if (buffer.size() == 0) return false;
+    if (buffer.size() == 0) return ready();
 
     while(buffer.size() > 0) {
       char buf[1024] = {0};
@@ -101,7 +104,10 @@ namespace YaHTTP {
           if (buffer.size() == 0) break; // just in case
         }
       } else {
-        bodybuf << buffer;
+        if (bodybuf.str().length() + buffer.length() > maxbody) 
+          bodybuf << buffer.substr(0, maxbody - bodybuf.str().length());
+        else 
+          bodybuf << buffer;
         buffer = "";
       }
     }
@@ -111,9 +117,19 @@ namespace YaHTTP {
     return ready();
   };
   
-  void HTTPDocument::write(std::ostream& os) const {
+  void HTTPBase::write(std::ostream& os) const {
     if (kind == YAHTTP_TYPE_REQUEST) {
-      os << method << " " << url.path << " HTTP/1.1";
+      std::ostringstream getparmbuf;
+      std::string getparms;
+      // prepare URL 
+      for(strstr_map_t::const_iterator i = getvars.begin(); i != getvars.end(); i++) {
+        getparmbuf << Utility::encodeURL(i->first) << "=" << Utility::encodeURL(i->second) << "&";
+      }
+      if (getparmbuf.str().length() > 0)  
+        getparms = std::string(getparmbuf.str().begin(), getparmbuf.str().end() - 1);
+      else
+        getparms = "";
+      os << method << " " << url.path << "?" << getparms << " HTTP/1.1";
     } else if (kind == YAHTTP_TYPE_RESPONSE) {
       os << "HTTP/1.1 " << status << " ";
       if (statusText.empty())
@@ -160,10 +176,10 @@ namespace YaHTTP {
       is.read(buf, 1024);
       if (is.gcount()) { // did we actually read anything
         is.clear();
-        if (arl.feed(std::string(buf, is.gcount())) == true) return is; // completed
+        if (arl.feed(std::string(buf, is.gcount())) == true) break; // completed
       }
     }
-    if (arl.ready()) arl.finalize();
+    arl.finalize();
     return is;
   };
   
@@ -180,10 +196,10 @@ namespace YaHTTP {
       is.read(buf, 1024);
       if (is.gcount()) { // did we actually read anything
         is.clear();
-        if (arl.feed(std::string(buf, is.gcount())) == true) return is; // completed
+        if (arl.feed(std::string(buf, is.gcount())) == true) break; // completed
       }
     }
-    if (arl.ready()) arl.finalize();
+    arl.finalize();
     return is;
   };
 };

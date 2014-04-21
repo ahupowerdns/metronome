@@ -11,6 +11,12 @@ namespace funcptr = boost;
 #endif
 
 #include <fstream>
+#include <cctype>
+
+#ifndef WIN32
+#include <cstdio>
+#include <unistd.h>
+#endif
 
 #ifndef YAHTTP_MAX_REQUEST_SIZE
 #define YAHTTP_MAX_REQUEST_SIZE 2097152
@@ -27,14 +33,19 @@ namespace YaHTTP {
   typedef std::map<std::string,std::string> strstr_map_t;
   typedef std::map<std::string,Cookie> strcookie_map_t;
 
-  class HTTPDocument {
+  typedef enum {
+    urlencoded,
+    multipart
+  } postformat_t;
+
+  class HTTPBase {
   public:
 #ifdef HAVE_CPP_FUNC_PTR
     class SendBodyRender {
     public:
       SendBodyRender() {};
 
-      size_t operator()(const HTTPDocument *doc, std::ostream& os) const {
+      size_t operator()(const HTTPBase *doc, std::ostream& os) const {
         os << doc->body;
         return doc->body.length();
       };
@@ -45,7 +56,7 @@ namespace YaHTTP {
         this->path = path;
       };
   
-      size_t operator()(const HTTPDocument *doc, std::ostream& os) const {
+      size_t operator()(const HTTPBase *doc, std::ostream& os) const {
         char buf[4096];
         size_t n,k;
 
@@ -64,18 +75,21 @@ namespace YaHTTP {
       std::string path;
     };
 #endif
-    HTTPDocument() {
+    HTTPBase() {
 #ifdef HAVE_CPP_FUNC_PTR
       renderer = SendBodyRender();
 #endif
     };
-    HTTPDocument(const HTTPDocument& rhs) {
+    HTTPBase(const HTTPBase& rhs) {
       this->url = rhs.url; this->kind = rhs.kind;
       this->status = rhs.status; this->statusText = rhs.statusText;
       this->method = rhs.method; this->headers = rhs.headers;
-      this->jar = rhs.jar; this->parameters = rhs.parameters;
+      this->jar = rhs.jar; this->postvars = rhs.postvars;
+      this->getvars = rhs.getvars;
       this->body = rhs.body;
+#ifdef HAVE_CPP_FUNC_PTR
       this->renderer = rhs.renderer;
+#endif
     };
     URL url;
     int kind;
@@ -84,31 +98,62 @@ namespace YaHTTP {
     std::string method;
     strstr_map_t headers;
     CookieJar jar;
-    strstr_map_t parameters;
+    strstr_map_t postvars;
+    strstr_map_t getvars;
     std::string body;
-     
+ 
 #ifdef HAVE_CPP_FUNC_PTR
-    funcptr::function<size_t(const HTTPDocument*,std::ostream&)> renderer;
+    funcptr::function<size_t(const HTTPBase*,std::ostream&)> renderer;
 #endif
     void write(std::ostream& os) const;
+
+    strstr_map_t& GET() { return getvars; };
+    strstr_map_t& POST() { return postvars; };
+    strcookie_map_t& COOKIES() { return jar.cookies; };
   };
 
-  class Response: public HTTPDocument { 
+  class Response: public HTTPBase { 
   public:
     Response() { this->kind = YAHTTP_TYPE_RESPONSE; };
-    Response(const HTTPDocument& rhs): HTTPDocument(rhs) {
+    Response(const HTTPBase& rhs): HTTPBase(rhs) {
       this->kind = YAHTTP_TYPE_RESPONSE;
     };
     friend std::ostream& operator<<(std::ostream& os, const Response &resp);
     friend std::istream& operator>>(std::istream& is, Response &resp);
   };
 
-  class Request: public HTTPDocument {
+  class Request: public HTTPBase {
   public:
     Request() { this->kind = YAHTTP_TYPE_REQUEST; };
-    Request(const HTTPDocument& rhs): HTTPDocument(rhs) {
+    Request(const HTTPBase& rhs): HTTPBase(rhs) {
       this->kind = YAHTTP_TYPE_REQUEST;
     };
+
+    void prepareAsPost(postformat_t format = urlencoded) {
+      std::ostringstream postbuf;
+      if (format == urlencoded) {
+        for(strstr_map_t::const_iterator i = POST().cbegin(); i != POST().cend(); i++) {
+          postbuf << Utility::encodeURL(i->first) << "=" << Utility::encodeURL(i->second) << "&";
+        }
+        // remove last bit
+        if (postbuf.str().length()>0) 
+          body = std::string(postbuf.str().begin(), postbuf.str().end()-1);
+        else
+          body = "";
+        headers["content-type"] = "application/x-www-form-urlencoded; charset=utf-8";
+      } else if (format == multipart) {
+        headers["content-type"] = "multipart/form-data; boundary=YaHTTP-12ca543";
+        for(strstr_map_t::const_iterator i = POST().cbegin(); i != POST().cend(); i++) {
+          postbuf << "--YaHTTP-12ca543\r\nContent-Disposition: form-data; name=\"" << Utility::encodeURL(i->first) << "; charset=UTF-8\r\n\r\n"
+            << Utility::encodeURL(i->second) << "\r\n";
+        }
+      }
+
+      // set method and change headers
+      method = "POST";
+      headers["content-length"] = body.length();
+    };
+
     friend std::ostream& operator<<(std::ostream& os, const Request &resp);
     friend std::istream& operator>>(std::istream& is, Request &resp);
   };
@@ -133,10 +178,18 @@ namespace YaHTTP {
       pos = 0; state = 0; this->target = target; 
     };
     int feed(const std::string& somedata);
-    bool ready() { return state > 1 && (maxbody < 0 || static_cast<unsigned long>(maxbody) >= bodybuf.str().size()); };
+    bool ready() { return state > 1 && (maxbody < 0 || bodybuf.str().size() >= static_cast<unsigned long>(maxbody)); };
     void finalize() {
       bodybuf.flush();
-      target->body = bodybuf.str();
+      if (ready()) {
+        strstr_map_t::iterator pos = target->headers.find("content-type");
+        if (pos != target->headers.end() && Utility::iequals(pos->second, "application/x-www-form-urlencoded", 32)) {
+          target->postvars = Utility::parseUrlParameters(bodybuf.str());
+          target->body = "";
+        } else {
+          target->body = bodybuf.str();
+        }
+      }
       bodybuf.str("");
       this->target = NULL;
     };

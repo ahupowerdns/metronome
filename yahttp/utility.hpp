@@ -306,6 +306,20 @@ namespace YaHTTP {
       return parameter_map;
     };
 
+    static bool iequals(const std::string& a, const std::string& b, size_t length) {
+      std::string::const_iterator ai, bi;
+      size_t i;
+      for(ai = a.begin(), bi = b.begin(), i = 0; ai != a.end() && bi != b.end() && i < length; ai++,bi++,i++) {
+        if (::toupper(*ai) != ::toupper(*bi)) return false;
+      }
+      return ::toupper(*ai) == ::toupper(*bi);
+    }
+
+    static bool iequals(const std::string& a, const std::string& b) {
+      if (a.size() != b.size()) return false;
+      return iequals(a,b,a.size());
+    }
+
     static void trim_right(std::string &str) {
        const std::locale &loc = std::locale::classic();
        std::string::reverse_iterator iter = str.rbegin();

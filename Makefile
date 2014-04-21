@@ -1,9 +1,9 @@
 CXX=g++
 CXXFLAGS=-fpie -fPIC -DPIE -std=c++11
 
-.PHONY: all build docs tests clean
+.PHONY: all build docs tests clean check
 
-all: build docs tests
+all: build 
 
 clean:
 	$(MAKE) -C yahttp clean
@@ -15,6 +15,8 @@ build:
 
 docs:
 	$(MAKE) -C docs all
+
+check: tests
 
 tests:
 	$(MAKE) -C tests all

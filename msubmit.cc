@@ -21,7 +21,7 @@ try
   ComboAddress remote(argv[1], 2003);
   time_t now = time(0);
 
-  int s = SSocket(AF_INET, SOCK_STREAM, 0);
+  int s = SSocket(remote.sin4.sin_family, SOCK_STREAM, 0);
   SConnect(s, remote);
   int ret;
   std::string line;

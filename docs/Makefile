@@ -6,5 +6,8 @@ all:
 check:
 	true
 
+distdir: all
+	cp -r html $(distdir)
+
 clean:
 	rm -rf html

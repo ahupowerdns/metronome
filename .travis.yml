@@ -5,6 +5,8 @@ compiler:
 before_script:
  - sudo apt-get install --no-install-recommends libboost-all-dev
 script:
- - configure
+ - autoreconf -i
+ - automake -ac
+ - ./configure
  - make
  - make check

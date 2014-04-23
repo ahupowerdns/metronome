@@ -1,3 +1,15 @@
 yahttp/libyahttp.a
 *.o
 tests/test
+*.in
+Makefile
+autom4te.cache/
+.deps
+test-driver
+missing
+compile
+depcomp
+config.*
+configure
+install-sh
+stamp-h1

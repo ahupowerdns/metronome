@@ -6,7 +6,7 @@ LDFLAGS=-fpie -g
 	$(CXX) $(CXXFLAGS) -I.. -c -o $@ $< 
 
 all: test
-	./test
+	env BOOST_TEST_LOG_LEVEL=all ./test
 
 test: ../yahttp/libyahttp.a test-main.o test-response-simple.o test-request-simple.o 
 	$(CXX) $(LDFLAGS) -o test *.o -lboost_unit_test_framework ../yahttp/libyahttp.a

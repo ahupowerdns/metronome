@@ -3,6 +3,8 @@ yahttp/libyahttp.a
 tests/test
 *.in
 Makefile
+tests/Makefile
+yahttp/Makefile
 autom4te.cache/
 .deps
 test-driver
@@ -13,3 +15,5 @@ config.*
 configure
 install-sh
 stamp-h1
+tests/*.log
+tests/*.trs

@@ -90,10 +90,15 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/yahttp/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am_test_OBJECTS = test-main.$(OBJEXT) test-request-simple.$(OBJEXT) \
-	test-response-simple.$(OBJEXT)
+am_test_OBJECTS = test-test-main.$(OBJEXT) \
+	test-test-request-simple.$(OBJEXT) \
+	test-test-response-simple.$(OBJEXT)
 test_OBJECTS = $(am_test_OBJECTS)
-test_LDADD = $(LDADD)
+am__DEPENDENCIES_1 =
+test_DEPENDENCIES = $(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1) \
+	../yahttp/libyahttp.a
+test_LINK = $(CXXLD) $(test_CXXFLAGS) $(CXXFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
 am__v_P_0 = false
@@ -110,6 +115,10 @@ DEFAULT_INCLUDES = -I. -I$(top_builddir)/yahttp
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 AM_V_CXX = $(am__v_CXX_$(V))
@@ -447,9 +456,10 @@ target_alias =
 top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
-TESTS_ENVIRONMENT = env BOOST_TEST_LOG_LEVEL=all
-test_LIBS = ../yahttp/libyahttp.a
+test_CXXFLAGS = $(RELRO_CFLASG) $(PIE_CFLAGS) -I..
+test_LDADD = $(RELRO_LDFLAGS) $(PIE_LDFLAGS) -lboost_unit_test_framework ../yahttp/libyahttp.a
 test_SOURCES = test-main.cpp test-request-simple.cpp test-response-simple.cpp
+TESTS_ENVIRONMENT = env BOOST_TEST_LOG_LEVEL=all
 all: all-am
 
 .SUFFIXES:
@@ -487,7 +497,7 @@ $(am__aclocal_m4_deps):
 
 test$(EXEEXT): $(test_OBJECTS) $(test_DEPENDENCIES) $(EXTRA_test_DEPENDENCIES) 
 	@rm -f test$(EXEEXT)
-	$(AM_V_CXXLD)$(CXXLINK) $(test_OBJECTS) $(test_LDADD) $(LIBS)
+	$(AM_V_CXXLD)$(test_LINK) $(test_OBJECTS) $(test_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -495,9 +505,9 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/test-main.Po
-include ./$(DEPDIR)/test-request-simple.Po
-include ./$(DEPDIR)/test-response-simple.Po
+include ./$(DEPDIR)/test-test-main.Po
+include ./$(DEPDIR)/test-test-request-simple.Po
+include ./$(DEPDIR)/test-test-response-simple.Po
 
 .cpp.o:
 	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -514,6 +524,48 @@ include ./$(DEPDIR)/test-response-simple.Po
 #	$(AM_V_CXX)source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+test-test-main.o: test-main.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CXXFLAGS) $(CXXFLAGS) -MT test-test-main.o -MD -MP -MF $(DEPDIR)/test-test-main.Tpo -c -o test-test-main.o `test -f 'test-main.cpp' || echo '$(srcdir)/'`test-main.cpp
+	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test-main.Tpo $(DEPDIR)/test-test-main.Po
+#	$(AM_V_CXX)source='test-main.cpp' object='test-test-main.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CXXFLAGS) $(CXXFLAGS) -c -o test-test-main.o `test -f 'test-main.cpp' || echo '$(srcdir)/'`test-main.cpp
+
+test-test-main.obj: test-main.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CXXFLAGS) $(CXXFLAGS) -MT test-test-main.obj -MD -MP -MF $(DEPDIR)/test-test-main.Tpo -c -o test-test-main.obj `if test -f 'test-main.cpp'; then $(CYGPATH_W) 'test-main.cpp'; else $(CYGPATH_W) '$(srcdir)/test-main.cpp'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test-main.Tpo $(DEPDIR)/test-test-main.Po
+#	$(AM_V_CXX)source='test-main.cpp' object='test-test-main.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CXXFLAGS) $(CXXFLAGS) -c -o test-test-main.obj `if test -f 'test-main.cpp'; then $(CYGPATH_W) 'test-main.cpp'; else $(CYGPATH_W) '$(srcdir)/test-main.cpp'; fi`
+
+test-test-request-simple.o: test-request-simple.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CXXFLAGS) $(CXXFLAGS) -MT test-test-request-simple.o -MD -MP -MF $(DEPDIR)/test-test-request-simple.Tpo -c -o test-test-request-simple.o `test -f 'test-request-simple.cpp' || echo '$(srcdir)/'`test-request-simple.cpp
+	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test-request-simple.Tpo $(DEPDIR)/test-test-request-simple.Po
+#	$(AM_V_CXX)source='test-request-simple.cpp' object='test-test-request-simple.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CXXFLAGS) $(CXXFLAGS) -c -o test-test-request-simple.o `test -f 'test-request-simple.cpp' || echo '$(srcdir)/'`test-request-simple.cpp
+
+test-test-request-simple.obj: test-request-simple.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CXXFLAGS) $(CXXFLAGS) -MT test-test-request-simple.obj -MD -MP -MF $(DEPDIR)/test-test-request-simple.Tpo -c -o test-test-request-simple.obj `if test -f 'test-request-simple.cpp'; then $(CYGPATH_W) 'test-request-simple.cpp'; else $(CYGPATH_W) '$(srcdir)/test-request-simple.cpp'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test-request-simple.Tpo $(DEPDIR)/test-test-request-simple.Po
+#	$(AM_V_CXX)source='test-request-simple.cpp' object='test-test-request-simple.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CXXFLAGS) $(CXXFLAGS) -c -o test-test-request-simple.obj `if test -f 'test-request-simple.cpp'; then $(CYGPATH_W) 'test-request-simple.cpp'; else $(CYGPATH_W) '$(srcdir)/test-request-simple.cpp'; fi`
+
+test-test-response-simple.o: test-response-simple.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CXXFLAGS) $(CXXFLAGS) -MT test-test-response-simple.o -MD -MP -MF $(DEPDIR)/test-test-response-simple.Tpo -c -o test-test-response-simple.o `test -f 'test-response-simple.cpp' || echo '$(srcdir)/'`test-response-simple.cpp
+	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test-response-simple.Tpo $(DEPDIR)/test-test-response-simple.Po
+#	$(AM_V_CXX)source='test-response-simple.cpp' object='test-test-response-simple.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CXXFLAGS) $(CXXFLAGS) -c -o test-test-response-simple.o `test -f 'test-response-simple.cpp' || echo '$(srcdir)/'`test-response-simple.cpp
+
+test-test-response-simple.obj: test-response-simple.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CXXFLAGS) $(CXXFLAGS) -MT test-test-response-simple.obj -MD -MP -MF $(DEPDIR)/test-test-response-simple.Tpo -c -o test-test-response-simple.obj `if test -f 'test-response-simple.cpp'; then $(CYGPATH_W) 'test-response-simple.cpp'; else $(CYGPATH_W) '$(srcdir)/test-response-simple.cpp'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/test-test-response-simple.Tpo $(DEPDIR)/test-test-response-simple.Po
+#	$(AM_V_CXX)source='test-response-simple.cpp' object='test-test-response-simple.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_CXXFLAGS) $(CXXFLAGS) -c -o test-test-response-simple.obj `if test -f 'test-response-simple.cpp'; then $(CYGPATH_W) 'test-response-simple.cpp'; else $(CYGPATH_W) '$(srcdir)/test-response-simple.cpp'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique

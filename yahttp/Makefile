@@ -126,7 +126,8 @@ am__v_AR_0 = @echo "  AR      " $@;
 am__v_AR_1 = 
 libyahttp_a_AR = $(AR) $(ARFLAGS)
 libyahttp_a_LIBADD =
-am_libyahttp_a_OBJECTS = reqresp.$(OBJEXT) router.$(OBJEXT)
+am_libyahttp_a_OBJECTS = libyahttp_a-reqresp.$(OBJEXT) \
+	libyahttp_a-router.$(OBJEXT)
 libyahttp_a_OBJECTS = $(am_libyahttp_a_OBJECTS)
 AM_V_P = $(am__v_P_$(V))
 am__v_P_ = $(am__v_P_$(AM_DEFAULT_VERBOSITY))
@@ -144,6 +145,10 @@ DEFAULT_INCLUDES = -I.
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
+AM_V_lt = $(am__v_lt_$(V))
+am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
+am__v_lt_0 = --silent
+am__v_lt_1 = 
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 AM_V_CXX = $(am__v_CXX_$(V))
@@ -291,6 +296,7 @@ top_build_prefix = ../
 top_builddir = ..
 top_srcdir = ..
 lib_LIBRARIES = libyahttp.a
+libyahttp_a_CXXFLAGS = $(RELRO_CFLAGS) $(PIE_CFLAGS)
 libyahttp_a_SOURCES = cookie.hpp exception.hpp reqresp.cpp reqresp.hpp router.cpp router.hpp url.hpp utility.hpp yahttp.hpp
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -385,8 +391,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-include ./$(DEPDIR)/reqresp.Po
-include ./$(DEPDIR)/router.Po
+include ./$(DEPDIR)/libyahttp_a-reqresp.Po
+include ./$(DEPDIR)/libyahttp_a-router.Po
 
 .cpp.o:
 	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
@@ -403,6 +409,34 @@ include ./$(DEPDIR)/router.Po
 #	$(AM_V_CXX)source='$<' object='$@' libtool=no \
 #	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
 #	$(AM_V_CXX_no)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
+
+libyahttp_a-reqresp.o: reqresp.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyahttp_a_CXXFLAGS) $(CXXFLAGS) -MT libyahttp_a-reqresp.o -MD -MP -MF $(DEPDIR)/libyahttp_a-reqresp.Tpo -c -o libyahttp_a-reqresp.o `test -f 'reqresp.cpp' || echo '$(srcdir)/'`reqresp.cpp
+	$(AM_V_at)$(am__mv) $(DEPDIR)/libyahttp_a-reqresp.Tpo $(DEPDIR)/libyahttp_a-reqresp.Po
+#	$(AM_V_CXX)source='reqresp.cpp' object='libyahttp_a-reqresp.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyahttp_a_CXXFLAGS) $(CXXFLAGS) -c -o libyahttp_a-reqresp.o `test -f 'reqresp.cpp' || echo '$(srcdir)/'`reqresp.cpp
+
+libyahttp_a-reqresp.obj: reqresp.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyahttp_a_CXXFLAGS) $(CXXFLAGS) -MT libyahttp_a-reqresp.obj -MD -MP -MF $(DEPDIR)/libyahttp_a-reqresp.Tpo -c -o libyahttp_a-reqresp.obj `if test -f 'reqresp.cpp'; then $(CYGPATH_W) 'reqresp.cpp'; else $(CYGPATH_W) '$(srcdir)/reqresp.cpp'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/libyahttp_a-reqresp.Tpo $(DEPDIR)/libyahttp_a-reqresp.Po
+#	$(AM_V_CXX)source='reqresp.cpp' object='libyahttp_a-reqresp.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyahttp_a_CXXFLAGS) $(CXXFLAGS) -c -o libyahttp_a-reqresp.obj `if test -f 'reqresp.cpp'; then $(CYGPATH_W) 'reqresp.cpp'; else $(CYGPATH_W) '$(srcdir)/reqresp.cpp'; fi`
+
+libyahttp_a-router.o: router.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyahttp_a_CXXFLAGS) $(CXXFLAGS) -MT libyahttp_a-router.o -MD -MP -MF $(DEPDIR)/libyahttp_a-router.Tpo -c -o libyahttp_a-router.o `test -f 'router.cpp' || echo '$(srcdir)/'`router.cpp
+	$(AM_V_at)$(am__mv) $(DEPDIR)/libyahttp_a-router.Tpo $(DEPDIR)/libyahttp_a-router.Po
+#	$(AM_V_CXX)source='router.cpp' object='libyahttp_a-router.o' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyahttp_a_CXXFLAGS) $(CXXFLAGS) -c -o libyahttp_a-router.o `test -f 'router.cpp' || echo '$(srcdir)/'`router.cpp
+
+libyahttp_a-router.obj: router.cpp
+	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyahttp_a_CXXFLAGS) $(CXXFLAGS) -MT libyahttp_a-router.obj -MD -MP -MF $(DEPDIR)/libyahttp_a-router.Tpo -c -o libyahttp_a-router.obj `if test -f 'router.cpp'; then $(CYGPATH_W) 'router.cpp'; else $(CYGPATH_W) '$(srcdir)/router.cpp'; fi`
+	$(AM_V_at)$(am__mv) $(DEPDIR)/libyahttp_a-router.Tpo $(DEPDIR)/libyahttp_a-router.Po
+#	$(AM_V_CXX)source='router.cpp' object='libyahttp_a-router.obj' libtool=no \
+#	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) \
+#	$(AM_V_CXX_no)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libyahttp_a_CXXFLAGS) $(CXXFLAGS) -c -o libyahttp_a-router.obj `if test -f 'router.cpp'; then $(CYGPATH_W) 'router.cpp'; else $(CYGPATH_W) '$(srcdir)/router.cpp'; fi`
 
 ID: $(am__tagged_files)
 	$(am__define_uniq_tagged_files); mkid -fID $$unique

@@ -47,6 +47,7 @@ namespace YaHTTP {
           throw ParseError("Malformed header line");
         key = line.substr(0, pos);
         value = line.substr(pos+2);
+        Utility::trim_right(value);
         std::transform(key.begin(), key.end(), key.begin(), ::tolower);
         // is it already defined
 
@@ -54,6 +55,15 @@ namespace YaHTTP {
             (key == "cookie" && target->kind == YAHTTP_TYPE_REQUEST)) {
           target->jar.parseCookieHeader(value);
         } else {
+          if (key == "host" && target->kind == YAHTTP_TYPE_REQUEST) {
+            // maybe it contains port? 
+            if ((pos = value.find(":")) == std::string::npos) {
+              target->url.host = value;
+            } else {
+              target->url.host = value.substr(0, pos);
+              target->url.port = ::atoi(value.substr(pos).c_str());
+            }
+          }
           if (target->headers.find(key) != target->headers.end()) {
             target->headers[key] = target->headers[key] + ";" + value;
           } else {
@@ -126,10 +136,10 @@ namespace YaHTTP {
         getparmbuf << Utility::encodeURL(i->first) << "=" << Utility::encodeURL(i->second) << "&";
       }
       if (getparmbuf.str().length() > 0)  
-        getparms = std::string(getparmbuf.str().begin(), getparmbuf.str().end() - 1);
+        getparms = "?" + std::string(getparmbuf.str().begin(), getparmbuf.str().end() - 1);
       else
         getparms = "";
-      os << method << " " << url.path << "?" << getparms << " HTTP/1.1";
+      os << method << " " << url.path << getparms << " HTTP/1.1";
     } else if (kind == YAHTTP_TYPE_RESPONSE) {
       os << "HTTP/1.1 " << status << " ";
       if (statusText.empty())
@@ -142,6 +152,7 @@ namespace YaHTTP {
     // write headers
     strstr_map_t::const_iterator iter = headers.begin();
     while(iter != headers.end()) {
+      if (iter->first == "host" && kind != YAHTTP_TYPE_REQUEST) { iter++; continue; }
       os << Utility::camelizeHeader(iter->first) << ": " << iter->second << "\r\n";
       iter++;
     }

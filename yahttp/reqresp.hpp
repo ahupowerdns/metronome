@@ -80,6 +80,7 @@ namespace YaHTTP {
       renderer = SendBodyRender();
 #endif
     };
+protected:
     HTTPBase(const HTTPBase& rhs) {
       this->url = rhs.url; this->kind = rhs.kind;
       this->status = rhs.status; this->statusText = rhs.statusText;
@@ -91,6 +92,19 @@ namespace YaHTTP {
       this->renderer = rhs.renderer;
 #endif
     };
+    HTTPBase& operator=(const HTTPBase& rhs) {
+      this->url = rhs.url; this->kind = rhs.kind;
+      this->status = rhs.status; this->statusText = rhs.statusText;
+      this->method = rhs.method; this->headers = rhs.headers;
+      this->jar = rhs.jar; this->postvars = rhs.postvars;
+      this->getvars = rhs.getvars;
+      this->body = rhs.body;
+#ifdef HAVE_CPP_FUNC_PTR
+      this->renderer = rhs.renderer;
+#endif
+      return *this;
+    };
+public:
     URL url;
     int kind;
     int status;
@@ -118,6 +132,11 @@ namespace YaHTTP {
     Response(const HTTPBase& rhs): HTTPBase(rhs) {
       this->kind = YAHTTP_TYPE_RESPONSE;
     };
+    Response& operator=(const HTTPBase& rhs) {
+      HTTPBase::operator=(rhs);
+      this->kind = YAHTTP_TYPE_RESPONSE;
+      return *this;
+    }
     friend std::ostream& operator<<(std::ostream& os, const Response &resp);
     friend std::istream& operator>>(std::istream& is, Response &resp);
   };
@@ -128,7 +147,11 @@ namespace YaHTTP {
     Request(const HTTPBase& rhs): HTTPBase(rhs) {
       this->kind = YAHTTP_TYPE_REQUEST;
     };
-
+    Request& operator=(const HTTPBase& rhs) {
+      HTTPBase::operator=(rhs);
+      this->kind = YAHTTP_TYPE_REQUEST;
+      return *this;
+    }
     void prepareAsPost(postformat_t format = urlencoded) {
       std::ostringstream postbuf;
       if (format == urlencoded) {
@@ -185,10 +208,8 @@ namespace YaHTTP {
         strstr_map_t::iterator pos = target->headers.find("content-type");
         if (pos != target->headers.end() && Utility::iequals(pos->second, "application/x-www-form-urlencoded", 32)) {
           target->postvars = Utility::parseUrlParameters(bodybuf.str());
-          target->body = "";
-        } else {
-          target->body = bodybuf.str();
         }
+        target->body = bodybuf.str();
       }
       bodybuf.str("");
       this->target = NULL;

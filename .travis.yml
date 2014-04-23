@@ -3,8 +3,9 @@ compiler:
   - gcc
   - clang
 before_script:
- - sudo apt-get install --no-install-recommends libboost-all-dev
+ - sudo apt-get install --no-install-recommends libboost-test-dev
 script:
+ - aclocal -Im4
  - autoreconf -i
  - automake -ac
  - ./configure

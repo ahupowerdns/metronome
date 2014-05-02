@@ -73,19 +73,21 @@ namespace YaHTTP {
       }
     }
 
+    minbody = 0;
     // check for expected body size
     if (target->kind == YAHTTP_TYPE_REQUEST) maxbody = YAHTTP_MAX_REQUEST_SIZE;
     else if (target->kind == YAHTTP_TYPE_RESPONSE) maxbody = YAHTTP_MAX_RESPONSE_SIZE; 
     else maxbody = -1;
-
+   
     if (!chunked) {
       if (target->headers.find("content-length") != target->headers.end()) {
         std::istringstream maxbodyS(target->headers["content-length"]);
-        maxbodyS >> maxbody;
+        maxbodyS >> minbody;
+        maxbody = minbody;
       }
-      if (maxbody < 1) return true; // guess there isn't anything left.
-      if (target->kind == YAHTTP_TYPE_REQUEST && maxbody > YAHTTP_MAX_REQUEST_SIZE) throw ParseError("Max request body size exceeded");
-      else if (target->kind == YAHTTP_TYPE_RESPONSE && maxbody > YAHTTP_MAX_RESPONSE_SIZE) throw ParseError("Max response body size exceeded");
+      if (minbody < 1) return true; // guess there isn't anything left.
+      if (target->kind == YAHTTP_TYPE_REQUEST && minbody > YAHTTP_MAX_REQUEST_SIZE) throw ParseError("Max request body size exceeded");
+      else if (target->kind == YAHTTP_TYPE_RESPONSE && minbody > YAHTTP_MAX_RESPONSE_SIZE) throw ParseError("Max response body size exceeded");
     }
 
     if (buffer.size() == 0) return ready();

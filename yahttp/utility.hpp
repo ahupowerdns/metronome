@@ -173,7 +173,7 @@ namespace YaHTTP {
       char repl[3];
       size_t pos;
       for(std::string::iterator iter = result.begin(); iter != result.end(); iter++) {
-        if (*iter != '+' && !(encodeSlash == false || *iter == '/') && !std::isalnum(*iter)) {
+        if (*iter != '+' && *iter != '.' && !(encodeSlash == false || *iter == '/' || *iter == '&') && !std::isalnum(*iter)) {
           // replace with different thing
           pos = std::distance(result.begin(), iter);
           std::snprintf(repl,3,"%02x", *iter);

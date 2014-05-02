@@ -81,6 +81,7 @@ public:
       char buf[4096];
       size_t r;
       r = ::read(rr.id, buf, sizeof(buf));
+
       if (r>0) {
         rr.arl.feed(std::string(buf,r)); 
       }
@@ -100,12 +101,12 @@ public:
       rr.resp = rr.req;
       rr.resp.status = 200;
       rr.resp.headers["content-type"] = "text/css; charset=utf-8";
-      rr.resp.renderer = YaHTTP::HTTPDocument::SendFileRender("style.css");
+      rr.resp.renderer = YaHTTP::HTTPBase::SendFileRender("style.css");
     } else if (rr.req.url.path == "/bg.jpg") {
       rr.resp = rr.req;
       rr.resp.status = 200;
       rr.resp.headers["content-type"] = "image/jpeg";
-      rr.resp.renderer = YaHTTP::HTTPDocument::SendFileRender("bg.jpg");
+      rr.resp.renderer = YaHTTP::HTTPBase::SendFileRender("bg.jpg");
     } else {
       rr.resp = rr.req;
       rr.resp.status = 404;

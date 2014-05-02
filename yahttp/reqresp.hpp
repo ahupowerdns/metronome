@@ -86,7 +86,7 @@ protected:
       this->status = rhs.status; this->statusText = rhs.statusText;
       this->method = rhs.method; this->headers = rhs.headers;
       this->jar = rhs.jar; this->postvars = rhs.postvars;
-      this->getvars = rhs.getvars;
+      this->params = rhs.params; this->getvars = rhs.getvars;
       this->body = rhs.body;
 #ifdef HAVE_CPP_FUNC_PTR
       this->renderer = rhs.renderer;
@@ -97,7 +97,7 @@ protected:
       this->status = rhs.status; this->statusText = rhs.statusText;
       this->method = rhs.method; this->headers = rhs.headers;
       this->jar = rhs.jar; this->postvars = rhs.postvars;
-      this->getvars = rhs.getvars;
+      this->params = rhs.params; this->getvars = rhs.getvars;
       this->body = rhs.body;
 #ifdef HAVE_CPP_FUNC_PTR
       this->renderer = rhs.renderer;
@@ -114,6 +114,7 @@ public:
     CookieJar jar;
     strstr_map_t postvars;
     strstr_map_t getvars;
+    strstr_map_t params;
     std::string body;
  
 #ifdef HAVE_CPP_FUNC_PTR

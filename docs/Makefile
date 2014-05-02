@@ -1,4 +1,4 @@
-.PHONY: all clean check
+.PHONY: all clean check distclean
 
 all:
 	doxygen yahttp.cfg
@@ -11,3 +11,5 @@ distdir: all
 
 clean:
 	rm -rf html
+
+distclean: clean

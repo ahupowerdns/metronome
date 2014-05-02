@@ -1,19 +1,25 @@
-#if __cplusplus > 199711L
+#ifndef _YAHTTP_ROUTER_HPP
+#define _YAHTTP_ROUTER_HPP 1
+
+#ifdef HAVE_CXX11
 #include <functional>
 #include <tuple>
 #define HAVE_CPP_FUNC_PTR
+#define IGNORE std::ignore
 namespace funcptr = std;
 #else
 #ifdef HAVE_BOOST
 #include <boost/function.hpp>
-#include <boost/tuple.hpp>
+#include <boost/tuple/tuple.hpp>
+#define IGNORE boost::tuples::ignore
 namespace funcptr = boost;
 #define HAVE_CPP_FUNC_PTR
 #else
-#error "You need to use either BOOST=yes or have C++11 capable compiler for router"
+#warn "You need to configure with boost or have C++11 capable compiler for router"
 #endif
 #endif
 
+#ifdef HAVE_CPP_FUNC_PTR
 #include <vector>
 #include <utility>
 
@@ -47,3 +53,6 @@ namespace YaHTTP {
     TRouteList routes;
   };
 };
+#endif
+
+#endif

@@ -1,4 +1,4 @@
-#if __cplusplus > 199711L
+#ifdef HAVE_CXX11
 #include <functional>
 #define HAVE_CPP_FUNC_PTR
 namespace funcptr = std;
@@ -156,7 +156,7 @@ public:
     void prepareAsPost(postformat_t format = urlencoded) {
       std::ostringstream postbuf;
       if (format == urlencoded) {
-        for(strstr_map_t::const_iterator i = POST().cbegin(); i != POST().cend(); i++) {
+        for(strstr_map_t::const_iterator i = POST().begin(); i != POST().end(); i++) {
           postbuf << Utility::encodeURL(i->first) << "=" << Utility::encodeURL(i->second) << "&";
         }
         // remove last bit
@@ -167,7 +167,7 @@ public:
         headers["content-type"] = "application/x-www-form-urlencoded; charset=utf-8";
       } else if (format == multipart) {
         headers["content-type"] = "multipart/form-data; boundary=YaHTTP-12ca543";
-        for(strstr_map_t::const_iterator i = POST().cbegin(); i != POST().cend(); i++) {
+        for(strstr_map_t::const_iterator i = POST().begin(); i != POST().end(); i++) {
           postbuf << "--YaHTTP-12ca543\r\nContent-Disposition: form-data; name=\"" << Utility::encodeURL(i->first) << "; charset=UTF-8\r\n\r\n"
             << Utility::encodeURL(i->second) << "\r\n";
         }

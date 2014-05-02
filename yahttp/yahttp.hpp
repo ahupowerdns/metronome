@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <list>
 
+#include "yahttp-config.h"
 #include "url.hpp"
 #include "utility.hpp"
 #include "exception.hpp"

@@ -12,6 +12,7 @@ missing
 compile
 depcomp
 config.*
+yahttp-config.h
 configure
 install-sh
 stamp-h1

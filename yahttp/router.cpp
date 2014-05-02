@@ -33,7 +33,7 @@ namespace YaHTTP {
       int pos1,pos2,k1,k2,k3;
       std::string pname;
       std::string method, url;
-      std::tie(method, url, handler, std::ignore) = *i;
+      funcptr::tie(method, url, handler, IGNORE) = *i;
     
       if (method.empty() == false && req->method != method) continue; // no match on method
       // see if we can't match the url
@@ -52,7 +52,7 @@ namespace YaHTTP {
             // this matches whatever comes after it, basically end of string
             pos2 = req->url.path.size();
             matched = true;
-            params[pname] = std::tie(pos1,pos2);
+            params[pname] = funcptr::tie(pos1,pos2);
             k1 = url.size();
             k2 = req->url.path.size();
             break;
@@ -60,7 +60,7 @@ namespace YaHTTP {
             // match until url[k1]
             while(k2 < req->url.path.size() && req->url.path[k2] != url[k1+1]) k2++;
             pos2 = k2;
-            params[pname] = std::tie(pos1,pos2);
+            params[pname] = funcptr::tie(pos1,pos2);
           }
           k2--;
         }
@@ -87,7 +87,7 @@ namespace YaHTTP {
 
     for(std::map<std::string, TDelim>::iterator i = params.begin(); i != params.end(); i++) {
       int p1,p2;
-      std::tie(p1,p2) = i->second;
+      funcptr::tie(p1,p2) = i->second;
       req->params[i->first] = std::string(req->url.path.begin() + p1, req->url.path.begin() + p2);
     }
 
@@ -96,7 +96,11 @@ namespace YaHTTP {
 
   void Router::printRoutes(std::ostream &os) {
     for(TRouteList::iterator i = routes.begin(); i != routes.end(); i++) {
+#ifdef HAVE_CXX11
       os << std::get<0>(*i) << "    " << std::get<1>(*i) << "    " << std::get<3>(*i) << std::endl;
+#else
+      os << i->get<0>() << "    " << i->get<1>() << "    " << i->get<3>() << std::endl;
+#endif
     } 
   };
 
@@ -107,7 +111,11 @@ namespace YaHTTP {
 
     bool found = false;
     for(TRouteList::iterator i = routes.begin(); !found && i != routes.end(); i++) {
+#ifdef HAVE_CXX11
       if (std::get<3>(*i) == name) { mask = std::get<1>(*i); method = std::get<0>(*i); found = true; }
+#else
+      if (i->get<3>() == name) { mask = i->get<1>(); method = i->get<0>(); found = true; }
+#endif
     }
 
     if (!found)

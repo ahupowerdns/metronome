@@ -8,7 +8,7 @@
 using namespace boost;
 
 
-BOOST_AUTO_TEST_SUITE(test_request_get)
+BOOST_AUTO_TEST_SUITE(test_request)
 
 BOOST_AUTO_TEST_CASE(test_request_parse_get)
 {

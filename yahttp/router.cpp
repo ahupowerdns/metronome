@@ -12,9 +12,9 @@ namespace YaHTTP {
     bool isopen=false;
     // add into vector
     for(std::string::const_iterator i = url.begin(); i != url.end(); i++) {
-       if (*i == '<' && isopen) throw std::runtime_error("Invalid URL mask, cannot have < after <");
+       if (*i == '<' && isopen) throw Error("Invalid URL mask, cannot have < after <");
        if (*i == '<') isopen = true;
-       if (*i == '>' && !isopen) throw std::runtime_error("Invalid URL mask, cannot have > without < first");
+       if (*i == '>' && !isopen) throw Error("Invalid URL mask, cannot have > without < first");
        if (*i == '>') isopen = false;
     }
     std::transform(method2.begin(), method2.end(), method2.begin(), ::toupper); 
@@ -119,7 +119,7 @@ namespace YaHTTP {
     }
 
     if (!found)
-      throw std::runtime_error("Route not found");
+      throw Error("Route not found");
 
     for(k1=0,k3=0;k1<mask.size();k1++) {
       if (mask[k1] == '<') {

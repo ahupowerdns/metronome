@@ -3,11 +3,9 @@ compiler:
   - gcc
   - clang
 before_script:
- - sudo apt-get install --no-install-recommends libboost-test-dev
+ - sudo apt-get install --no-install-recommends libboost-test-dev doxygen
 script:
- - aclocal -Im4
- - autoreconf -i
- - automake -ac
+ - ./autogen.sh
  - ./configure
  - make
  - make check

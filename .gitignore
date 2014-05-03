@@ -20,3 +20,5 @@ tests/*.log
 tests/*.trs
 .libs
 *~
+*.la
+*.lo

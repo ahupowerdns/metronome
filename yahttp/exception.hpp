@@ -16,6 +16,18 @@ namespace YaHTTP {
     }
     const std::string reason;
   };
+  class Error: public std::exception {
+  public:
+    Error() {};
+    Error(const std::string& reason): reason(reason) {};
+    virtual ~Error() throw() {};
+
+    virtual const char* what() const throw()
+    {
+      return reason.c_str();
+    }
+    const std::string reason;
+  };
 };
 
 #endif

@@ -4,18 +4,6 @@
 #include <exception>
 
 namespace YaHTTP {
-  class ParseError: public std::exception {
-  public:
-    ParseError() {};
-    ParseError(const std::string& reason): reason(reason) {};
-    virtual ~ParseError() throw() {}; 
-
-    virtual const char* what() const throw()
-    {
-      return reason.c_str();
-    }
-    const std::string reason;
-  };
   class Error: public std::exception {
   public:
     Error() {};
@@ -27,6 +15,11 @@ namespace YaHTTP {
       return reason.c_str();
     }
     const std::string reason;
+  };
+  class ParseError: public YaHTTP::Error {
+  public:
+    ParseError() {};
+    ParseError(const std::string& reason): Error(reason) {};
   };
 };
 

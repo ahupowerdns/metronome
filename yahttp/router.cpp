@@ -5,7 +5,7 @@ namespace YaHTTP {
   typedef funcptr::tuple<int,int> TDelim;
 
   // router is defined here.
-  Router Router::router;
+  YaHTTP::Router Router::router;
 
   void Router::map(const std::string& method, const std::string& url, THandlerFunction handler, const std::string& name) {
     std::string method2 = method;
@@ -21,7 +21,7 @@ namespace YaHTTP {
     routes.push_back(funcptr::make_tuple(method2, url, handler, name));
   };
 
-  void Router::route(Request *req, Response *resp) {
+  bool Router::route(Request *req, Response *resp) {
     std::map<std::string, TDelim> params;
     int pos1,pos2;
     std::string pname;
@@ -82,7 +82,7 @@ namespace YaHTTP {
         matched = true;
     }
 
-    if (!matched) { return; } // no route
+    if (!matched) { return false; } // no route
     req->params.clear();    
 
     for(std::map<std::string, TDelim>::iterator i = params.begin(); i != params.end(); i++) {
@@ -91,7 +91,7 @@ namespace YaHTTP {
       req->params[i->first] = std::string(req->url.path.begin() + p1, req->url.path.begin() + p2);
     }
 
-    handler(req,resp);
+    return handler(req,resp);
   };
 
   void Router::printRoutes(std::ostream &os) {

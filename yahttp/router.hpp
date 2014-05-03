@@ -24,33 +24,44 @@ namespace funcptr = boost;
 #include <utility>
 
 namespace YaHTTP {
-  typedef funcptr::function <bool(Request* req, Response* resp)> THandlerFunction;
-  typedef funcptr::tuple<std::string, std::string, THandlerFunction, std::string> TRoute;
-  typedef std::vector<TRoute> TRouteList;
+  typedef funcptr::function <bool(Request* req, Response* resp)> THandlerFunction; //!< Handler function pointer 
+  typedef funcptr::tuple<std::string, std::string, THandlerFunction, std::string> TRoute; //!< Route tuple (method, urlmask, handler, name)
+  typedef std::vector<TRoute> TRouteList; //!< List of routes in order of evaluation
 
+  /*! Implements simple router.
+
+This class implements a router for masked urls. The URL mask syntax is as of follows
+
+/<masked>/url<number>/<hi>.<format>
+
+You can use <*param> to denote that everything will be matched and consumed into the parameter, including slash (/). Use <*> to denote that URL 
+is consumed but not stored. Note that only path is matched, scheme, host and url parameters are ignored. 
+   */
   class Router {
   private:
-    Router() {};
-    static Router router;
+    Router() {}; 
+    static Router router; //<! Singleton instance of Router
   public:
-    ~Router() {};
-    void map(const std::string& method, const std::string& url, THandlerFunction hander, const std::string& name);
-    void route(Request *req, Response *resp);
-    void printRoutes(std::ostream &os);
-    std::pair<std::string, std::string> urlFor(const std::string &name, const strstr_map_t& arguments);
+    void map(const std::string& method, const std::string& url, THandlerFunction hander, const std::string& name); //<! Instance method for mapping urls
+    bool route(Request *req, Response *resp); //<! Instance method for performing routing
+    void printRoutes(std::ostream &os); //<! Instance method for printing routes
+    std::pair<std::string, std::string> urlFor(const std::string &name, const strstr_map_t& arguments); //<! Instance method for generating paths
 
-    static void Map(const std::string& method, const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map(method, url, handler, name); };
-    static void Get(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("GET", url, handler, name); };
-    static void Post(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("POST", url, handler, name); };
-    static void Put(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("PUT", url, handler, name); };
-    static void Delete(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("DELETE", url, handler, name); };
+/*! Map an URL.
+If method is left empty, it will match any method. Name is also optional, but needed if you want to find it for making URLs 
+*/
+    static void Map(const std::string& method, const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map(method, url, handler, name); }; 
+    static void Get(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("GET", url, handler, name); }; //<! Helper for mapping GET
+    static void Post(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("POST", url, handler, name); }; //<! Helper for mapping POST
+    static void Put(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("PUT", url, handler, name); }; //<! Helper for mapping PUT
+    static void Delete(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("DELETE", url, handler, name); }; //<! Helper for mapping DELETE
 
-    static void Route(Request *req, Response *resp) { router.route(req, resp); };
-    static void PrintRoutes(std::ostream &os) { router.printRoutes(os); };
+    static bool Route(Request *req, Response *resp) { return router.route(req, resp); }; //<! Performs routing based on req->url.path 
+    static void PrintRoutes(std::ostream &os) { router.printRoutes(os); }; //<! Prints all known routes to given output stream
 
-    static std::pair<std::string, std::string> URLFor(const std::string &name, const strstr_map_t& arguments) { return router.urlFor(name,arguments); }; 
+    static std::pair<std::string, std::string> URLFor(const std::string &name, const strstr_map_t& arguments) { return router.urlFor(name,arguments); }; //<! Generates url from named route and arguments. Missing arguments are assumed empty
 
-    TRouteList routes;
+    TRouteList routes; //<! Instance variable for routes
   };
 };
 #endif

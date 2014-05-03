@@ -18,3 +18,5 @@ install-sh
 stamp-h1
 tests/*.log
 tests/*.trs
+.libs
+*~

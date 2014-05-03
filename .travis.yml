@@ -18,6 +18,6 @@ addons:
       name: "cmouse/yahttp"
       description: "Yet Another HTTP Library"
     notification_email: cmouse@desteem.org
-    build_command_prepend:
-    build_command:
+    build_command_prepend: 
+    build_command: make
     branch_pattern: coverity_scan

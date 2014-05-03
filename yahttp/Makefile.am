@@ -1,3 +1,5 @@
-lib_LIBRARIES=libyahttp.a
-libyahttp_a_CXXFLAGS=$(RELRO_CFLAGS) $(PIE_CFLAGS)
-libyahttp_a_SOURCES=cookie.hpp exception.hpp reqresp.cpp reqresp.hpp router.cpp router.hpp url.hpp utility.hpp yahttp.hpp
+lib_LTLIBRARIES=libyahttp.la
+include_yahttpdir=$(includedir)/yahttp
+include_yahttp_HEADERS=cookie.hpp exception.hpp reqresp.hpp router.hpp url.hpp utility.hpp yahttp.hpp yahttp-config.h
+libyahttp_la_CXXFLAGS=$(RELRO_CFLAGS) $(PIE_CFLAGS)
+libyahttp_la_SOURCES=cookie.hpp exception.hpp reqresp.cpp reqresp.hpp router.cpp router.hpp url.hpp utility.hpp yahttp.hpp

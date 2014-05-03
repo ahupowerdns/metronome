@@ -1,6 +1,6 @@
 env:
   global:
-   - secure: "VdaIygQz/mdYsdJ93+Zwmbk0gOJkxtSfKoC/cYMeSgy5gV6IOzL55AvAagc3Yffx+4/9PMNdd/T+u+jKtIoM6C22jtCmQbFomVhSxzmaWp1cWANNANmjCdhlYK05rc6iFU7lmP+i1dq0gXdbgi6SNKS0EXiER0/h05JiGrVvWeA="
+    - secure: "jLryW1QxSlUIaRDcKgSwKTWrH+Is2SH0+ZDLjwxxCiWqNuuFAEUIgPDEQJLErdwBTYV+dkU5O1k+/Eal8XzgEny2ACMIfOpLgKe9pAgCJOJMLSbN/m+E9jMY7I0w1vKOnevdGK7ZB8WL6v4DmvQbUyvBwSxCRXjZJdWJKlBKv/M=" 
 language: cpp
 compiler:
   - gcc

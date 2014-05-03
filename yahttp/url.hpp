@@ -65,13 +65,12 @@ namespace YaHTTP {
           if (pos >= url.size()) return true; // no data
           if (url[pos] != '/') return false; // not an url
           if ( (pos1 = url.find_first_of("?", pos)) == std::string::npos ) {
-             path = url;
+             path = url.substr(pos);
              pos = url.size();
           } else {
              path = url.substr(pos, pos1-pos);
              pos = pos1;
           }
-          path = Utility::decodeURL(path);
           return true;
       }
 
@@ -122,7 +121,7 @@ namespace YaHTTP {
               port > 0) 
             oss << ":" << port;
 
-          oss << Utility::encodeURL(path, true);
+          oss << path;
           if (parameters.empty() == false) {
              if (!pathless) 
                 oss << "?";

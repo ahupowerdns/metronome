@@ -1,6 +1,8 @@
 #ifndef _YAHTTP_ROUTER_HPP
 #define _YAHTTP_ROUTER_HPP 1
-
+/* @file 
+ * @brief Defines router class and support structures
+ */
 #ifdef HAVE_CXX11
 #include <functional>
 #include <tuple>

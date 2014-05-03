@@ -59,8 +59,11 @@ namespace YaHTTP {
       size_t operator()(const HTTPBase *doc, std::ostream& os) const {
         char buf[4096];
         size_t n,k;
-
+#ifdef HAVE_CXX11
         std::ifstream ifs(path, std::ifstream::binary);
+#else
+        std::ifstream ifs(path.c_str(), std::ifstream::binary);
+#endif
         n = 0;
         while(ifs && ifs.good()) {
           ifs.read(buf, sizeof buf);

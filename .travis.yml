@@ -1,3 +1,6 @@
+env:
+  global:
+   - secure: "VdaIygQz/mdYsdJ93+Zwmbk0gOJkxtSfKoC/cYMeSgy5gV6IOzL55AvAagc3Yffx+4/9PMNdd/T+u+jKtIoM6C22jtCmQbFomVhSxzmaWp1cWANNANmjCdhlYK05rc6iFU7lmP+i1dq0gXdbgi6SNKS0EXiER0/h05JiGrVvWeA="
 language: cpp
 compiler:
   - gcc
@@ -9,3 +12,12 @@ script:
  - ./configure
  - make
  - make check
+addons:
+  coverity_scan:
+    project:
+      name: "cmouse/yahttp"
+      description: "Yet Another HTTP Library"
+    notification_email: cmouse@desteem.org
+    build_command_prepend:
+    build_command:
+    branch_pattern: coverity_scan

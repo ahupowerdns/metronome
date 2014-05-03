@@ -1,7 +1,8 @@
 EXTRA_PROGRAMS=test
+test_CFLAGS=$(RELRO_CFLASG) $(PIE_CFLAGS) -I..
 test_CXXFLAGS=$(RELRO_CFLASG) $(PIE_CFLAGS) -I..
 test_LDADD=$(RELRO_LDFLAGS) $(PIE_LDFLAGS) -lboost_unit_test_framework ../yahttp/libyahttp.la
-test_SOURCES=test-main.cpp test-request-get.cpp test-request-get-arl.cpp test-request-post.cpp test-response-simple.cpp
+test_SOURCES=md5.h md5.c test-main.cpp test-request.cpp test-response.cpp
 
 TESTS=test
 TESTS_ENVIRONMENT = env BOOST_TEST_LOG_LEVEL=all

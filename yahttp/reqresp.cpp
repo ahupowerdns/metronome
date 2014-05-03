@@ -11,7 +11,7 @@ namespace YaHTTP {
       if (buffer[pos-1]=='\r')
         cr=1;
       std::string line(buffer.begin(), buffer.begin()+pos-cr); // exclude CRLF
-      buffer.erase(buffer.begin(), buffer.begin()+pos+cr+1); // remove line from buffer including CRLF
+      buffer.erase(buffer.begin(), buffer.begin()+pos+1); // remove line from buffer including CRLF
 
       if (state == 0) { // startup line
         if (target->kind == YAHTTP_TYPE_REQUEST) {
@@ -194,7 +194,7 @@ namespace YaHTTP {
     }
     // throw unless ready
     if (arl.ready() == false) 
-      throw Error("Was not able to extract a valid Response from stream");
+      throw ParseError("Was not able to extract a valid Response from stream");
     arl.finalize();
     return is;
   };
@@ -216,7 +216,7 @@ namespace YaHTTP {
       }
     }
     if (arl.ready() == false)
-      throw Error("Was not able to extract a valid Request from stream");
+      throw ParseError("Was not able to extract a valid Request from stream");
     arl.finalize();
     return is;
   };

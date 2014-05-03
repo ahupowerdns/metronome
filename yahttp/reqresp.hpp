@@ -117,7 +117,10 @@ public:
     CookieJar jar;
     strstr_map_t postvars;
     strstr_map_t getvars;
+// these two are for Router
     strstr_map_t params;
+    std::string routeName;
+
     std::string body;
  
 #ifdef HAVE_CPP_FUNC_PTR
@@ -156,7 +159,16 @@ public:
       this->kind = YAHTTP_TYPE_REQUEST;
       return *this;
     }
-    void prepareAsPost(postformat_t format = urlencoded) {
+
+    void setup(const std::string& method, const std::string& url) {
+      this->url.parse(url);
+      this->headers["host"] = this->url.host;
+      this->method = method;
+      std::transform(this->method.begin(), this->method.end(), this->method.begin(), ::toupper);
+      this->headers["user-agent"] = "YaHTTP v1.0";
+    }
+
+    void preparePost(postformat_t format = urlencoded) {
       std::ostringstream postbuf;
       if (format == urlencoded) {
         for(strstr_map_t::const_iterator i = POST().begin(); i != POST().end(); i++) {

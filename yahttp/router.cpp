@@ -30,13 +30,14 @@ namespace YaHTTP {
     std::string pname;
     bool matched = false;
     THandlerFunction handler;
+    std::string rname;
 
     // iterate routes
     for(TRouteList::iterator i = routes.begin(); !matched && i != routes.end(); i++) {
       int pos1,pos2,k1,k2,k3;
       std::string pname;
       std::string method, url;
-      funcptr::tie(method, url, handler, IGNORE) = *i;
+      funcptr::tie(method, url, handler, rname) = *i;
     
       if (method.empty() == false && req->method != method) continue; // no match on method
       // see if we can't match the url
@@ -91,8 +92,12 @@ namespace YaHTTP {
     for(std::map<std::string, TDelim>::iterator i = params.begin(); i != params.end(); i++) {
       int p1,p2;
       funcptr::tie(p1,p2) = i->second;
-      req->params[i->first] = std::string(req->url.path.begin() + p1, req->url.path.begin() + p2);
+      std::string value(req->url.path.begin() + p1, req->url.path.begin() + p2);
+      value = Utility::decodeURL(value);
+      req->params[i->first] = value;
     }
+
+    req->routeName = rname;
 
     return handler(req,resp);
   };
@@ -100,7 +105,16 @@ namespace YaHTTP {
   void Router::printRoutes(std::ostream &os) {
     for(TRouteList::iterator i = routes.begin(); i != routes.end(); i++) {
 #ifdef HAVE_CXX11
-      os << std::get<0>(*i) << "    " << std::get<1>(*i) << "    " << std::get<3>(*i) << std::endl;
+      std::streamsize ss = os.width();
+      std::ios::fmtflags ff = os.setf(std::ios::left);
+      os.width(10);
+      os << std::get<0>(*i);
+      os.width(50);
+      os << std::get<1>(*i);
+      os.width(ss);
+      os.setf(ff);
+      os << "    " << std::get<3>(*i);
+      os << std::endl;
 #else
       os << i->get<0>() << "    " << i->get<1>() << "    " << i->get<3>() << std::endl;
 #endif
@@ -136,7 +150,7 @@ namespace YaHTTP {
         else 
           pname = std::string(mask.begin() + k2 + 1, mask.begin() + k1);
         if ((pptr = arguments.find(pname)) != arguments.end()) 
-          path << pptr->second;
+          path << Utility::encodeURL(pptr->second);
         k3 = k1+1;
       }
       else if (mask[k1] == '*') {

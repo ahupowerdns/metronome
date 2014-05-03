@@ -192,6 +192,9 @@ namespace YaHTTP {
         if (arl.feed(std::string(buf, is.gcount())) == true) break; // completed
       }
     }
+    // throw unless ready
+    if (arl.ready() == false) 
+      throw Error("Was not able to extract a valid Response from stream");
     arl.finalize();
     return is;
   };
@@ -212,6 +215,8 @@ namespace YaHTTP {
         if (arl.feed(std::string(buf, is.gcount())) == true) break; // completed
       }
     }
+    if (arl.ready() == false)
+      throw Error("Was not able to extract a valid Request from stream");
     arl.finalize();
     return is;
   };

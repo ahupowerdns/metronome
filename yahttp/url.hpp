@@ -86,7 +86,7 @@ namespace YaHTTP {
              parameters = url.substr(pos+1, pos1-pos-1);
              pos = pos1;
           }
-          if (parameters.back() == '&') parameters.resize(parameters.size()-1);
+          if (parameters.size()>0 && *(parameters.end()-1) == '&') parameters.resize(parameters.size()-1);
           return true;
       }
 

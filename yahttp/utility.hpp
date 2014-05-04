@@ -195,7 +195,7 @@ namespace YaHTTP {
 
     static std::string encodeURL(const std::wstring& component, bool asUrl = true) {
       unsigned char const *p = reinterpret_cast<unsigned char const*>(&component[0]);
-      std::size_t s = component.size() * sizeof(component.front());
+      std::size_t s = component.size() * sizeof((*component.begin()));
       std::vector<unsigned char> vec(p, p+s);
 
       std::ostringstream result;

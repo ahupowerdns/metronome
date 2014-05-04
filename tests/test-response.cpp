@@ -69,8 +69,7 @@ BOOST_AUTO_TEST_CASE(test_response_parse_binary) {
   MD5_Update(&ctx, resp.body.c_str(), resp.body.size());
   MD5_Final(result, &ctx);
 
-  for(int i=0;i<16;i++) 
-    BOOST_CHECK_EQUAL(result[i], expected[i]);
+  BOOST_CHECK_EQUAL(::memcmp(result, expected, 16), 0);
 }
 
 }

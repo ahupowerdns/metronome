@@ -72,6 +72,7 @@ namespace YaHTTP {
        seconds = tm->tm_sec;
        wday = tm->tm_wday;
        utc_offset = tm->tm_gmtoff;
+       isSet = true;
      };
 
      void validate() const {

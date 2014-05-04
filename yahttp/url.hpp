@@ -86,6 +86,7 @@ namespace YaHTTP {
              parameters = url.substr(pos+1, pos1-pos-1);
              pos = pos1;
           }
+          if (parameters.back() == '&') parameters.resize(parameters.size()-1);
           return true;
       }
 
@@ -94,6 +95,10 @@ namespace YaHTTP {
           if (url[pos] != '#') return false; // not anchor
           anchor = url.substr(pos+1);
           return true;
+      }
+
+      void initialize() {
+        protocol = ""; host = ""; port = 0; username = ""; password = ""; path = ""; parameters = ""; anchor =""; pathless = true;
       }
 
   public:
@@ -142,7 +147,7 @@ namespace YaHTTP {
       std::string anchor;
       bool pathless;
 
-      URL() { protocol = ""; host = ""; port = 0; username = ""; password = ""; path = ""; parameters = ""; anchor =""; pathless = true; };
+      URL() { initialize(); }; 
       URL(const std::string& url) {
           parse(url);
       };
@@ -153,9 +158,7 @@ namespace YaHTTP {
 
       bool parse(const std::string& url) {
           // setup
-          protocol = ""; host = ""; port = 0; 
-          username = ""; password = ""; path = ""; 
-          parameters = ""; anchor =""; pathless = true;
+          initialize();
 
           if (url.size() > YAHTTP_MAX_URL_LENGTH) return false;
           size_t pos = 0;

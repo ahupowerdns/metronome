@@ -67,4 +67,17 @@ BOOST_AUTO_TEST_CASE(test_request_parse_post)
   BOOST_CHECK_EQUAL(req.POST()["Li"], "Ann");
 }
 
+BOOST_AUTO_TEST_CASE(test_request_parse_cookies) 
+{
+  std::ifstream ifs("request-get-cookies-ok.txt");
+  YaHTTP::Request req;
+  ifs >> req;
+
+  BOOST_CHECK_EQUAL(req.COOKIES()["type"].value, "data");
+  BOOST_CHECK_EQUAL(req.COOKIES()["more"].value, "values");
+  BOOST_CHECK_EQUAL(req.COOKIES()["just"].value, "like this");
+  BOOST_CHECK_EQUAL(req.COOKIES()["even"].value, "more");
+  BOOST_CHECK_EQUAL(req.COOKIES()["cookies"].value, "kääkkä");
+}
+
 }

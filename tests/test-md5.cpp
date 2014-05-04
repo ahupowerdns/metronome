@@ -4,7 +4,6 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/assign/list_of.hpp>
 #include <boost/foreach.hpp>
-#include "yahttp/yahttp.hpp"
 #include "md5.h"
 
 #define MD5_TEST(x,y) { \

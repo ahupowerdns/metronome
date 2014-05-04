@@ -17,18 +17,43 @@ BOOST_AUTO_TEST_CASE(test_url_complete) {
   BOOST_CHECK_EQUAL(url.path, "/something/somewhere+and+another/%CA%CF.json");
   BOOST_CHECK_EQUAL(url.parameters, "boo=baa&faa=fii");
   BOOST_CHECK_EQUAL(url.anchor, "anchor1234");
-
   BOOST_CHECK_EQUAL(url.to_string(), "https://shaun:sheep@test.org/something/somewhere+and+another/%CA%CF.json?boo=baa&faa=fii#anchor1234"); 
 }
 
 BOOST_AUTO_TEST_CASE(test_url_path) {
+  YaHTTP::URL url("/hello/world");
+  BOOST_CHECK_EQUAL(url.path, "/hello/world");
 }
 
+BOOST_AUTO_TEST_CASE(test_url_parameters) {
+  YaHTTP::URL url("/hello/world?pass=foo&");
+  BOOST_CHECK_EQUAL(url.parameters, "pass=foo");
+  url.parse("/hello/world?");
+  BOOST_CHECK_EQUAL(url.parameters, "");
+};
+
 BOOST_AUTO_TEST_CASE(test_url_root) {
+  YaHTTP::URL url("http://test.org");
+  BOOST_CHECK_EQUAL(url.protocol, "http");
+  BOOST_CHECK_EQUAL(url.host, "test.org");
+  BOOST_CHECK_EQUAL(url.path, "/");
+  url.parse("http://test.org/");
+  BOOST_CHECK_EQUAL(url.protocol, "http");
+  BOOST_CHECK_EQUAL(url.host, "test.org");
+  BOOST_CHECK_EQUAL(url.path, "/");
+  url.parse("/");
+  BOOST_CHECK_EQUAL(url.path, "/");
+}
+
+BOOST_AUTO_TEST_CASE(test_url_data) {
+  YaHTTP::URL url("data:base64:9vdas9t64gadsf=");
+  BOOST_CHECK_EQUAL(url.protocol, "data");
+  BOOST_CHECK_EQUAL(url.parameters, "base64:9vdas9t64gadsf=");
 }
 
 BOOST_AUTO_TEST_CASE(test_url_invalid) {
+  YaHTTP::URL url;
+  BOOST_CHECK(!url.parse("http")); // missing : 
 }
-
 
 };

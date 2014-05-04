@@ -63,12 +63,39 @@ BOOST_AUTO_TEST_CASE(test_utility_decodeurl) {
 }
 
 BOOST_AUTO_TEST_CASE(test_utility_parseurlparameters) {
+  YaHTTP::strstr_map_t parameters;
+  parameters = YaHTTP::Utility::parseUrlParameters("Hi=Moi&M=B%C3%A4%C3%A4&Bai=Kai&Li=Ann");
+  BOOST_CHECK_EQUAL(parameters["Hi"], "Moi");
+  BOOST_CHECK_EQUAL(parameters["M"], "Bää");
+  BOOST_CHECK_EQUAL(parameters["Bai"], "Kai");
+  BOOST_CHECK_EQUAL(parameters["Li"], "Ann"); 
 }
 
 BOOST_AUTO_TEST_CASE(test_utility_trimright) {
+  std::string str = "";
+  YaHTTP::Utility::trimRight(str);
+  BOOST_CHECK_EQUAL(str, "");
+  str = "   ";
+  YaHTTP::Utility::trimRight(str);
+  BOOST_CHECK_EQUAL(str, "");
+  str = "  hello  ";
+  YaHTTP::Utility::trimRight(str);
+  BOOST_CHECK_EQUAL(str, "  hello");
+  str = "hello  ";
+  YaHTTP::Utility::trimRight(str);
+  BOOST_CHECK_EQUAL(str, "hello");
+  str = "  hello";
+  YaHTTP::Utility::trimRight(str);
+  BOOST_CHECK_EQUAL(str, "  hello");
+  str = "  h e l l o  ";
+  YaHTTP::Utility::trimRight(str);
+  BOOST_CHECK_EQUAL(str, "  h e l l o");
 }
 
 BOOST_AUTO_TEST_CASE(test_utility_camelizeheader) {
+  BOOST_CHECK_EQUAL(YaHTTP::Utility::camelizeHeader("x-forwarded-for"),"X-Forwarded-For");
+  BOOST_CHECK_EQUAL(YaHTTP::Utility::camelizeHeader("x-my-ip"),"X-My-Ip");
+  BOOST_CHECK_EQUAL(YaHTTP::Utility::camelizeHeader("x------y"),"X------Y");
 }
 
 }

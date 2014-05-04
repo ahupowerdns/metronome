@@ -19,6 +19,9 @@ BOOST_AUTO_TEST_CASE(test_response_parse_ok)
   ifs >> resp;
 
   BOOST_CHECK_EQUAL(resp.status, 200);
+  // check cookie parsing here too
+  BOOST_CHECK_EQUAL(resp.COOKIES()["PREF"].value, "ID=6362d8df6eb4d584:FF=0:TM=1396263524:LM=1396263524:S=V9YLPeP1P62fLXXB");
+  BOOST_CHECK_EQUAL(resp.COOKIES()["NID"].value, "67=W89yJtULPiGMBuchaMlw_a5JLGL6irSRusm-mBQINYCGGVSBRGA9am0vqtPl61ZLLRFeqhmyfhhrV-E0VZ9rNlGKh4gwv7B1MrMEbcP8wGHxF68Fnpaiv4cSQ_Du81f4");
 }
 
 BOOST_AUTO_TEST_CASE(test_response_parse_arl_ok)

@@ -56,7 +56,8 @@ namespace YaHTTP {
             // this matches whatever comes after it, basically end of string
             pos2 = req->url.path.size();
             matched = true;
-            params[pname] = funcptr::tie(pos1,pos2);
+            if (pname != "") 
+              params[pname] = funcptr::tie(pos1,pos2);
             k1 = url.size();
             k2 = req->url.path.size();
             break;
@@ -67,10 +68,6 @@ namespace YaHTTP {
             params[pname] = funcptr::tie(pos1,pos2);
           }
           k2--;
-        }
-        else if (url[k1] == '*') {
-          matched = true;
-          break;
         }
         else if (url[k1] != req->url.path[k2]) {
           break;

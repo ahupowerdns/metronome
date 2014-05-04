@@ -3,7 +3,7 @@
 
 namespace YaHTTP {
   static const char *MONTHS[] = {0,"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec",0};
-  static const char *DAYS[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat"};
+  static const char *DAYS[] = {"Sun","Mon","Tue","Wed","Thu","Fri","Sat",0};
 
   class DateTime {
   public:
@@ -27,6 +27,8 @@ namespace YaHTTP {
 
      void initialize() {
        isSet = false; 
+       year = month = day = wday = hours = minutes = seconds = utc_offset = 0;
+       month = 1; // it's invalid otherwise
      };
 
      void setLocal() {
@@ -84,9 +86,12 @@ namespace YaHTTP {
      std::string rfc_str() const {
        std::ostringstream oss;
        validate();
-       oss << DAYS[wday] << ", " << day << " " << MONTHS[month] << " " << year << " " << hours 
-         << ":" << minutes << ":" << seconds << " ";
-       if (utc_offset>0) oss << "+";
+       oss << DAYS[wday] << ", " << std::setfill('0') << std::setw(2) << day << " " << MONTHS[month] << " " <<
+          std::setfill('0') << std::setw(2) <<  year << " " << 
+          std::setfill('0') << std::setw(2) << hours << ":" << 
+          std::setfill('0') << std::setw(2) << minutes << ":" << 
+          std::setfill('0') << std::setw(2) << seconds << " ";
+       if (utc_offset>=0) oss << "+";
        else oss << "-";
        int tmp_off = ( utc_offset < 0 ? utc_offset*-1 : utc_offset ); 
        oss << std::setfill('0') << std::setw(2) << (tmp_off/3600);
@@ -98,15 +103,17 @@ namespace YaHTTP {
      std::string cookie_str() const {
        std::ostringstream oss;
        validate();
-       oss << day << "-" << MONTHS[month] << "-" << month << " " << hours
-         << ":" << minutes << ":" << seconds << " GMT";
+       oss << std::setfill('0') << std::setw(2) << day << "-" << MONTHS[month] << "-" << year << " " <<
+         std::setfill('0') << std::setw(2) << hours << ":" << 
+         std::setfill('0') << std::setw(2) << minutes << ":" << 
+         std::setfill('0') << std::setw(2) << seconds << " GMT";
        return oss.str();
      }
  
      void parse822(const std::string &rfc822_date) {
        char *pos;
        struct tm tm;
-       if ( (pos = strptime(rfc822_date.c_str(), "%a, %j %b %Y %T %z", &tm)) != NULL) {
+       if ( (pos = strptime(rfc822_date.c_str(), "%a, %d %b %Y %T %z", &tm)) != NULL) {
           fromTm(&tm);
        } else {
           throw "Unparseable date";
@@ -116,7 +123,7 @@ namespace YaHTTP {
      void parseCookie(const std::string &cookie_date) {
        char *pos;
        struct tm tm;
-       if ( (pos = strptime(cookie_date.c_str(), "%j-%b-%Y %T %Z", &tm)) != NULL) {
+       if ( (pos = strptime(cookie_date.c_str(), "%d-%b-%Y %T %Z", &tm)) != NULL) {
           fromTm(&tm);
        } else {
           throw "Unparseable date";
@@ -168,21 +175,40 @@ namespace YaHTTP {
         return result;
     };
     
-    static std::string encodeURL(const std::string& component, bool encodeSlash = true) {
+    static std::string encodeURL(const std::string& component, bool asUrl = true) {
       std::string result = component;
+      std::string skip = "+-.:,&;_#%[]?/@(){}=";
       char repl[3];
       size_t pos;
       for(std::string::iterator iter = result.begin(); iter != result.end(); iter++) {
-        if (*iter != '+' && *iter != '.' && !(encodeSlash == false || *iter == '/' || *iter == '&') && !std::isalnum(*iter)) {
+        if (!std::isalnum(*iter) && (!asUrl || skip.find(*iter) == std::string::npos)) {
           // replace with different thing
           pos = std::distance(result.begin(), iter);
-          std::snprintf(repl,3,"%02x", *iter);
+          std::snprintf(repl,3,"%02x", static_cast<unsigned char>(*iter));
           result = result.replace(pos, 1, "%", 1).insert(pos+1, repl, 2);
           iter = result.begin() + pos + 2;
         }
       }
       return result;
     };
+
+    static std::string encodeURL(const std::wstring& component, bool asUrl = true) {
+      unsigned char const *p = reinterpret_cast<unsigned char const*>(&component[0]);
+      std::size_t s = component.size() * sizeof(component.front());
+      std::vector<unsigned char> vec(p, p+s);
+
+      std::ostringstream result;
+      std::string skip = "+-.,&;_#%[]?/@(){}=";
+      for(std::vector<unsigned char>::iterator iter = vec.begin(); iter != vec.end(); iter++) {
+        if (!std::isalnum((char)*iter) && (!asUrl || skip.find((char)*iter) == std::string::npos)) {
+          // bit more complex replace
+          result << "%" << std::hex << std::setw(2) << std::setfill('0') << static_cast<unsigned int>(*iter);
+        } else result << (char)*iter;
+      }
+      return result.str();
+    };
+
+
 
     static std::string status2text(int status) {
        switch(status) {
@@ -312,6 +338,11 @@ namespace YaHTTP {
       for(ai = a.begin(), bi = b.begin(), i = 0; ai != a.end() && bi != b.end() && i < length; ai++,bi++,i++) {
         if (::toupper(*ai) != ::toupper(*bi)) return false;
       }
+
+      if (ai == a.end() && bi == b.end()) return true;
+      if (ai == a.end() && bi != b.end() ||
+          ai != a.end() && bi == b.end()) return false;
+      
       return ::toupper(*ai) == ::toupper(*bi);
     }
 
@@ -320,7 +351,7 @@ namespace YaHTTP {
       return iequals(a,b,a.size());
     }
 
-    static void trim_right(std::string &str) {
+    static void trimRight(std::string &str) {
        const std::locale &loc = std::locale::classic();
        std::string::reverse_iterator iter = str.rbegin();
        while(iter != str.rend() && std::isspace(*iter, loc)) iter++;

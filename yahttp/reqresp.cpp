@@ -47,7 +47,7 @@ namespace YaHTTP {
           throw ParseError("Malformed header line");
         key = line.substr(0, pos);
         value = line.substr(pos+2);
-        Utility::trim_right(value);
+        Utility::trimRight(value);
         std::transform(key.begin(), key.end(), key.begin(), ::tolower);
         // is it already defined
 

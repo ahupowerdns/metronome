@@ -28,7 +28,7 @@ namespace YaHTTP {
 
      std::string str() const {
        std::ostringstream oss;
-       oss << name << "=" << value;
+       oss << YaHTTP::Utility::encodeURL(name) << "=" << YaHTTP::Utility::encodeURL(value);
        if (expires.isSet) 
          oss << "; expires=" << expires.cookie_str();
        if (domain.size()>0)
@@ -116,6 +116,8 @@ namespace YaHTTP {
             pos = npos+2;
           }
           keyValuePair(s, c.name, c.value);
+          c.name = YaHTTP::Utility::decodeURL(c.name);
+          c.value = YaHTTP::Utility::decodeURL(c.value);
           cookies.push_back(c);
         } else if (cstate == 1) {
           // ignore crap

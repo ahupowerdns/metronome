@@ -77,7 +77,7 @@ namespace YaHTTP {
     // check for expected body size
     if (target->kind == YAHTTP_TYPE_REQUEST) maxbody = YAHTTP_MAX_REQUEST_SIZE;
     else if (target->kind == YAHTTP_TYPE_RESPONSE) maxbody = YAHTTP_MAX_RESPONSE_SIZE; 
-    else maxbody = -1;
+    else maxbody = 0;
    
     if (!chunked) {
       if (target->headers.find("content-length") != target->headers.end()) {
@@ -89,6 +89,8 @@ namespace YaHTTP {
       if (target->kind == YAHTTP_TYPE_REQUEST && minbody > YAHTTP_MAX_REQUEST_SIZE) throw ParseError("Max request body size exceeded");
       else if (target->kind == YAHTTP_TYPE_RESPONSE && minbody > YAHTTP_MAX_RESPONSE_SIZE) throw ParseError("Max response body size exceeded");
     }
+
+    if (maxbody == 0) hasBody = false;
 
     if (buffer.size() == 0) return ready();
 

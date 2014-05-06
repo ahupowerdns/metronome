@@ -208,17 +208,20 @@ public:
     bool chunked;
     int chunk_size;
     std::ostringstream bodybuf;
-    long maxbody;
-    long minbody;
+    size_t maxbody;
+    size_t minbody;
+    bool hasBody;
+
     void keyValuePair(const std::string &keyvalue, std::string &key, std::string &value);
 
     void initialize(T* target) {
       chunked = false; chunk_size = 0;
       bodybuf.str(""); maxbody = 0;
       pos = 0; state = 0; this->target = target; 
+      hasBody = false;
     };
     int feed(const std::string& somedata);
-    bool ready() { return state > 1 && bodybuf.str().size() <= static_cast<unsigned long>(maxbody) && bodybuf.str().size() >= static_cast<unsigned long>(minbody); };
+    bool ready() { return state > 1 && (!hasBody || (bodybuf.str().size() <= maxbody && bodybuf.str().size() >= minbody)); };
     void finalize() {
       bodybuf.flush();
       if (ready()) {

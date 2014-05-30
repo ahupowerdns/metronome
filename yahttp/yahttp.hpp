@@ -7,6 +7,7 @@
 #include <sys/time.h>
 #include <iomanip>
 #include <list>
+#include <vector>
 
 #include "yahttp-config.h"
 #include "url.hpp"

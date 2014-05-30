@@ -91,6 +91,7 @@ namespace YaHTTP {
     }
 
     if (maxbody == 0) hasBody = false;
+    else hasBody = true;
 
     if (buffer.size() == 0) return ready();
 

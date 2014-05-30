@@ -221,7 +221,12 @@ public:
       hasBody = false;
     };
     int feed(const std::string& somedata);
-    bool ready() { return state > 1 && (!hasBody || (bodybuf.str().size() <= maxbody && bodybuf.str().size() >= minbody)); };
+    bool ready() {  return state > 1 && 
+                      (!hasBody || 
+                         (bodybuf.str().size() <= maxbody && 
+                          bodybuf.str().size() >= minbody)
+                      ); 
+                 };
     void finalize() {
       bodybuf.flush();
       if (ready()) {

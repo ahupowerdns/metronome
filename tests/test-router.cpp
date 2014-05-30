@@ -16,6 +16,7 @@ public:
   static bool Handler(YaHTTP::Request *req, YaHTTP::Response *resp) {
     std::cout << "Hello, got " << req->routeName << std::endl;
     routes[req->routeName] = true;
+    return true;
   }
 } rth;
 

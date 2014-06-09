@@ -18,6 +18,15 @@ public:
     routes[req->routeName] = true;
     return true;
   }
+  static bool ObjectHandler(YaHTTP::Request *req, YaHTTP::Response *resp) {
+    if (req->parameters["object"] == "1234" &&
+        req->parameters["attribute"] == "name" &&
+        req->parameters["format"] == "json") {
+      routes[req->routeName] = true;
+      return true;
+    }
+    return false;
+  }
 } rth;
 
 std::map<std::string, bool> RouteTargetHandler::routes;
@@ -25,8 +34,8 @@ std::map<std::string, bool> RouteTargetHandler::routes;
 struct RouterFixture {
   RouterFixture() { 
     BOOST_TEST_MESSAGE("Setup router");
-    YaHTTP::Router::Get("/test/<object>/<attribute>.<format>", rth.Handler, "object_attribute_format_get");
-    YaHTTP::Router::Map("patch", "/test/<object>/<attribute>.<format>", rth.Handler, "object_attribute_format_update");
+    YaHTTP::Router::Get("/test/<object>/<attribute>.<format>", rth.ObjectHandler, "object_attribute_format_get");
+    YaHTTP::Router::Patch("/test/<object>/<attribute>.<format>", rth.Handler, "object_attribute_format_update");
     YaHTTP::Router::Get("/test", rth.Handler, "test_index");
     YaHTTP::Router::Get("/", rth.Handler, "root_path");
 
@@ -55,10 +64,24 @@ BOOST_AUTO_TEST_CASE( test_router_basic ) {
   req.setup("get", "http://test.org/");
   
   BOOST_CHECK(YaHTTP::Router::Route(&req, func));
-  func(&req, &resp);
+  BOOST_CHECK(func(&req, &resp));
 
   // check if it was hit
   BOOST_CHECK(rth.routes["root_path"]);
 };
  
+BOOST_AUTO_TEST_CASE( test_router_object ) {
+  // setup request
+  YaHTTP::Request req;
+  YaHTTP::Response resp;
+  YaHTTP::THandlerFunction func;
+  req.setup("get", "http://test.org/test/1234/name.json");
+
+  BOOST_CHECK(YaHTTP::Router::Route(&req, func));
+  BOOST_CHECK(func(&req, &resp));
+
+  // check if it was hit
+  BOOST_CHECK(rth.routes["object_attribute_format_get"]);
+};
+
 }

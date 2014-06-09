@@ -341,8 +341,8 @@ namespace YaHTTP {
       }
 
       if (ai == a.end() && bi == b.end()) return true;
-      if (ai == a.end() && bi != b.end() ||
-          ai != a.end() && bi == b.end()) return false;
+      if ((ai == a.end() && bi != b.end()) ||
+          (ai != a.end() && bi == b.end())) return false;
       
       return ::toupper(*ai) == ::toupper(*bi);
     }

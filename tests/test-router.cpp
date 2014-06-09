@@ -13,19 +13,17 @@ class RouteTargetHandler {
 public:
   static std::map<std::string, bool> routes;
 
-  static bool Handler(YaHTTP::Request *req, YaHTTP::Response *resp) {
+  static void NonHandler(YaHTTP::Request *req, YaHTTP::Response *resp) { };
+
+  static void Handler(YaHTTP::Request *req, YaHTTP::Response *resp) {
     std::cout << "Hello, got " << req->routeName << std::endl;
     routes[req->routeName] = true;
-    return true;
   }
-  static bool ObjectHandler(YaHTTP::Request *req, YaHTTP::Response *resp) {
+  static void ObjectHandler(YaHTTP::Request *req, YaHTTP::Response *resp) {
     if (req->parameters["object"] == "1234" &&
         req->parameters["attribute"] == "name" &&
-        req->parameters["format"] == "json") {
+        req->parameters["format"] == "json") 
       routes[req->routeName] = true;
-      return true;
-    }
-    return false;
   }
 } rth;
 
@@ -60,11 +58,11 @@ BOOST_AUTO_TEST_CASE( test_router_basic ) {
   // setup request
   YaHTTP::Request req;
   YaHTTP::Response resp;
-  YaHTTP::THandlerFunction func;
+  YaHTTP::THandlerFunction func = rth.NonHandler;
   req.setup("get", "http://test.org/");
   
   BOOST_CHECK(YaHTTP::Router::Route(&req, func));
-  BOOST_CHECK(func(&req, &resp));
+  func(&req, &resp);
 
   // check if it was hit
   BOOST_CHECK(rth.routes["root_path"]);
@@ -74,11 +72,11 @@ BOOST_AUTO_TEST_CASE( test_router_object ) {
   // setup request
   YaHTTP::Request req;
   YaHTTP::Response resp;
-  YaHTTP::THandlerFunction func;
+  YaHTTP::THandlerFunction func = rth.NonHandler;
   req.setup("get", "http://test.org/test/1234/name.json");
 
   BOOST_CHECK(YaHTTP::Router::Route(&req, func));
-  BOOST_CHECK(func(&req, &resp));
+  func(&req, &resp);
 
   // check if it was hit
   BOOST_CHECK(rth.routes["object_attribute_format_get"]);

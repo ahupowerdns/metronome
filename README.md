@@ -59,4 +59,4 @@ CXX=gcc
 CXXFLAGS=-W -Wall
 ```
 
-YaHTTP include files can be placed where the rest of your includes are. 
+YaHTTP include files can be placed where the rest of your includes are. Then just add your own code there and it should work just fine. 

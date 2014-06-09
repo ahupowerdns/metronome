@@ -89,7 +89,7 @@ protected:
       this->status = rhs.status; this->statusText = rhs.statusText;
       this->method = rhs.method; this->headers = rhs.headers;
       this->jar = rhs.jar; this->postvars = rhs.postvars;
-      this->params = rhs.params; this->getvars = rhs.getvars;
+      this->parameters = rhs.parameters; this->getvars = rhs.getvars;
       this->body = rhs.body;
 #ifdef HAVE_CPP_FUNC_PTR
       this->renderer = rhs.renderer;
@@ -100,7 +100,7 @@ protected:
       this->status = rhs.status; this->statusText = rhs.statusText;
       this->method = rhs.method; this->headers = rhs.headers;
       this->jar = rhs.jar; this->postvars = rhs.postvars;
-      this->params = rhs.params; this->getvars = rhs.getvars;
+      this->parameters = rhs.parameters; this->getvars = rhs.getvars;
       this->body = rhs.body;
 #ifdef HAVE_CPP_FUNC_PTR
       this->renderer = rhs.renderer;
@@ -118,7 +118,7 @@ public:
     strstr_map_t postvars;
     strstr_map_t getvars;
 // these two are for Router
-    strstr_map_t params;
+    strstr_map_t parameters;
     std::string routeName;
 
     std::string body;

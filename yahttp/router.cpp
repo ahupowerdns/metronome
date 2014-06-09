@@ -83,14 +83,14 @@ namespace YaHTTP {
     }
 
     if (!matched) { return false; } // no route
-    req->params.clear();    
+    req->parameters.clear();    
 
     for(std::map<std::string, TDelim>::iterator i = params.begin(); i != params.end(); i++) {
       int p1,p2;
       funcptr::tie(p1,p2) = i->second;
       std::string value(req->url.path.begin() + p1, req->url.path.begin() + p2);
       value = Utility::decodeURL(value);
-      req->params[i->first] = value;
+      req->parameters[i->first] = value;
     }
 
     req->routeName = rname;

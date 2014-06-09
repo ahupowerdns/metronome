@@ -56,7 +56,7 @@ If method is left empty, it will match any method. Name is also optional, but ne
     static void Get(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("GET", url, handler, name); }; //<! Helper for mapping GET
     static void Post(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("POST", url, handler, name); }; //<! Helper for mapping POST
     static void Put(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("PUT", url, handler, name); }; //<! Helper for mapping PUT
-    static void Put(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("PATCH", url, handler, name); }; //<! Helper for mapping PATCH
+    static void Patch(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("PATCH", url, handler, name); }; //<! Helper for mapping PATCH
     static void Delete(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("DELETE", url, handler, name); }; //<! Helper for mapping DELETE
     static void Any(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("", url, handler, name); }; //<! Helper for mapping any method
 

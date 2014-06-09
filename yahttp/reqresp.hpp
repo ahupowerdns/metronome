@@ -56,7 +56,7 @@ namespace YaHTTP {
         this->path = path;
       };
   
-      size_t operator()(const HTTPBase *doc, std::ostream& os) const {
+      size_t operator()(const HTTPBase *doc __attribute__((unused)), std::ostream& os) const {
         char buf[4096];
         size_t n,k;
 #ifdef HAVE_CXX11

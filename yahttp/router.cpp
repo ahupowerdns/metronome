@@ -33,7 +33,7 @@ namespace YaHTTP {
 
     // iterate routes
     for(TRouteList::iterator i = routes.begin(); !matched && i != routes.end(); i++) {
-      int pos1,pos2,k1,k2,k3;
+      int k1,k2,k3;
       std::string pname;
       std::string method, url;
       funcptr::tie(method, url, handler, rname) = *i;
@@ -42,12 +42,12 @@ namespace YaHTTP {
       // see if we can't match the url
       params.clear();
       // simple matcher func
-      for(k1=0, k2=0; k1 < url.size() && k2 < req->url.path.size(); ) {
+      for(k1=0, k2=0; k1 < static_cast<int>(url.size()) && k2 < static_cast<int>(req->url.path.size()); ) {
         if (url[k1] == '<') {
           pos1 = k2;
           k3 = k1+1;
           // start of parameter
-          while(k1 < url.size() && url[k1] != '>') k1++;
+          while(k1 < static_cast<int>(url.size()) && url[k1] != '>') k1++;
           pname = std::string(url.begin()+k3, url.begin()+k1);
           // then we also look it on the url
           if (pname[0]=='*') {
@@ -62,7 +62,7 @@ namespace YaHTTP {
             break;
           } else { 
             // match until url[k1]
-            while(k2 < req->url.path.size() && req->url.path[k2] != url[k1+1]) k2++;
+            while(k2 < static_cast<int>(req->url.path.size()) && req->url.path[k2] != url[k1+1]) k2++;
             pos2 = k2;
             params[pname] = funcptr::tie(pos1,pos2);
           }
@@ -134,12 +134,12 @@ namespace YaHTTP {
     if (!found)
       throw Error("Route not found");
 
-    for(k1=0,k3=0;k1<mask.size();k1++) {
+    for(k1=0,k3=0;k1<static_cast<int>(mask.size());k1++) {
       if (mask[k1] == '<') {
         std::string pname;
         strstr_map_t::const_iterator pptr;
         k2=k1;
-        while(k1<mask.size() && mask[k1]!='>') k1++;
+        while(k1<static_cast<int>(mask.size()) && mask[k1]!='>') k1++;
         path << mask.substr(k3,k2-k3);
         if (mask[k2+1] == '*')
           pname = std::string(mask.begin() + k2 + 2, mask.begin() + k1);

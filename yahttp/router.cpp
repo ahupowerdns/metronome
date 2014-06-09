@@ -24,7 +24,7 @@ namespace YaHTTP {
     routes.push_back(funcptr::make_tuple(method2, url, handler, name));
   };
 
-  bool Router::route(Request *req, Response *resp, THandlerFunction& handler) {
+  bool Router::route(Request *req, THandlerFunction& handler) {
     std::map<std::string, TDelim> params;
     int pos1,pos2;
     std::string pname;

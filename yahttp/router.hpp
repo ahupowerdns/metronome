@@ -26,7 +26,7 @@ namespace funcptr = boost;
 #include <utility>
 
 namespace YaHTTP {
-  typedef funcptr::function <bool(Request* req, Response* resp)> THandlerFunction; //!< Handler function pointer 
+  typedef funcptr::function <void(Request* req, Response* resp)> THandlerFunction; //!< Handler function pointer 
   typedef funcptr::tuple<std::string, std::string, THandlerFunction, std::string> TRoute; //!< Route tuple (method, urlmask, handler, name)
   typedef std::vector<TRoute> TRouteList; //!< List of routes in order of evaluation
 

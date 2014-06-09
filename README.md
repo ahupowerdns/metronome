@@ -5,3 +5,58 @@ YaHTTP aims to be a pure http request/response parser that has no IO ties. It is
 
 [![Build Status](https://travis-ci.org/cmouse/yahttp.svg?branch=master)](https://travis-ci.org/cmouse/yahttp)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/2161/badge.svg)](https://scan.coverity.com/projects/2161)
+
+WARNINGS
+--------
+If you are upgrading from version before May 02, 2014 - *PLEASE BE SURE TO CHECK THAT EVERYTHING WORKS AS EXPECTED*. There has been complete overhaul of the library and many things have changed. 
+
+Integration guide
+-----------------
+
+Here are some instructions on how to integrate YaHTTP into your project. 
+
+With automake and libtool
+-------------------------
+
+If you don't need router or any of the C++11 features, you can just create empty yahttp-config.h, or symlink it to your project's config.h for the yahttp.hpp to include. Then just put this stuff into it's own folder and create Makefile.am with following contents:
+
+```
+nodist_lib_LTLIBRARIES=libyahttp.la
+libyahttp_la_CXXFLAGS=$(RELRO_CFLAGS) $(PIE_CFLAGS) -D__STRICT_ANSI__
+libyahttp_la_SOURCES=cookie.hpp exception.hpp reqresp.cpp reqresp.hpp router.cpp router.hpp url.hpp utility.hpp yahttp.hpp
+```
+
+You can define RELRO and PIE to match your project. 
+
+If you need router, additionally check for boost or C++11 and point yahttp-config.h to your project's config.h or add relevant options to your compiler CXXFLAGS. See below for the flags.
+
+You can also just add the sources to your project and symlink yahttp-config.h to your projecct's config.h. This works just as well. Just remember to add all the source files you need. router.hpp and router.cpp can be excluded if no router is needed.
+
+Without automake
+----------------
+
+Create simple Makefile with contents for C++11:
+
+```
+OBJECTS=reqresp.o router.o
+CXX=gcc
+CXXFLAGS=-W -Wall -DHAVE_CXX11 -std=c++11 
+```
+
+Or create simple Makefile with contents for boost:
+
+```
+OBJECTS=reqresp.o router.o
+CXX=gcc
+CXXFLAGS=-W -Wall -DHAVE_BOOST 
+```
+
+Or if you don't need either one, just:
+
+```
+OBJECTS=reqresp.o 
+CXX=gcc
+CXXFLAGS=-W -Wall
+```
+
+YaHTTP include files can be placed where the rest of your includes are. 

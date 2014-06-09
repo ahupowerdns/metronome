@@ -44,8 +44,8 @@ is consumed but not stored. Note that only path is matched, scheme, host and url
     Router() {}; 
     static Router router; //<! Singleton instance of Router
   public:
-    void map(const std::string& method, const std::string& url, THandlerFunction hander, const std::string& name); //<! Instance method for mapping urls
-    bool route(Request *req, Response *resp); //<! Instance method for performing routing
+    void map(const std::string& method, const std::string& url, THandlerFunction handler, const std::string& name); //<! Instance method for mapping urls
+    bool route(Request *req, Response *resp, THandlerFunction& handler); //<! Instance method for performing routing
     void printRoutes(std::ostream &os); //<! Instance method for printing routes
     std::pair<std::string, std::string> urlFor(const std::string &name, const strstr_map_t& arguments); //<! Instance method for generating paths
 
@@ -60,7 +60,7 @@ If method is left empty, it will match any method. Name is also optional, but ne
     static void Delete(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("DELETE", url, handler, name); }; //<! Helper for mapping DELETE
     static void Any(const std::string& url, THandlerFunction handler, const std::string& name = "") { router.map("", url, handler, name); }; //<! Helper for mapping any method
 
-    static bool Route(Request *req, Response *resp) { return router.route(req, resp); }; //<! Performs routing based on req->url.path 
+    static bool Route(Request *req, Response *resp, THandlerFunction& handler) { return router.route(req, resp); }; //<! Performs routing based on req->url.path 
     static void PrintRoutes(std::ostream &os) { router.printRoutes(os); }; //<! Prints all known routes to given output stream
 
     static std::pair<std::string, std::string> URLFor(const std::string &name, const strstr_map_t& arguments) { return router.urlFor(name,arguments); }; //<! Generates url from named route and arguments. Missing arguments are assumed empty

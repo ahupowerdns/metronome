@@ -24,12 +24,11 @@ namespace YaHTTP {
     routes.push_back(funcptr::make_tuple(method2, url, handler, name));
   };
 
-  bool Router::route(Request *req, Response *resp) {
+  bool Router::route(Request *req, Response *resp, THandlerFunction& handler) {
     std::map<std::string, TDelim> params;
     int pos1,pos2;
     std::string pname;
     bool matched = false;
-    THandlerFunction handler;
     std::string rname;
 
     // iterate routes
@@ -96,7 +95,7 @@ namespace YaHTTP {
 
     req->routeName = rname;
 
-    return handler(req,resp);
+    return true;
   };
 
   void Router::printRoutes(std::ostream &os) {

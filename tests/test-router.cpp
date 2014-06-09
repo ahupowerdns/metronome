@@ -54,7 +54,7 @@ BOOST_AUTO_TEST_CASE( test_router_basic ) {
   YaHTTP::THandlerFunction func;
   req.setup("get", "http://test.org/");
   
-  BOOST_CHECK(YaHTTP::Router::Route(&req, &resp, func));
+  BOOST_CHECK(YaHTTP::Router::Route(&req, func));
   func(&req, &resp);
 
   // check if it was hit

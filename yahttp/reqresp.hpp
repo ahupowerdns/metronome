@@ -133,6 +133,12 @@ public:
     strstr_map_t& GET() { return getvars; };
     strstr_map_t& POST() { return postvars; };
     strcookie_map_t& COOKIES() { return jar.cookies; };
+
+    std::string str() const {
+       std::ostringstream oss;
+       write(oss);
+       return oss.str();
+    };
   };
 
   class Response: public HTTPBase { 

@@ -79,6 +79,8 @@ namespace YaHTTP {
     };
 #endif
     HTTPBase() {
+      kind = 0;
+      status = 0;
 #ifdef HAVE_CPP_FUNC_PTR
       renderer = SendBodyRender();
 #endif

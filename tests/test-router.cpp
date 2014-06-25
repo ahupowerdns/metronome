@@ -16,7 +16,6 @@ public:
   static void NonHandler(YaHTTP::Request *req, YaHTTP::Response *resp) { };
 
   static void Handler(YaHTTP::Request *req, YaHTTP::Response *resp) {
-    std::cout << "Hello, got " << req->routeName << std::endl;
     routes[req->routeName] = true;
   }
   static void ObjectHandler(YaHTTP::Request *req, YaHTTP::Response *resp) {
@@ -47,7 +46,7 @@ struct RouterFixture {
     }
 
     // print routes
-    YaHTTP::Router::PrintRoutes(std::cout);
+//    YaHTTP::Router::PrintRoutes(std::cout);
   };
 
 };

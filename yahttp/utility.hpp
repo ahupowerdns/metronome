@@ -112,9 +112,8 @@ namespace YaHTTP {
      }
  
      void parse822(const std::string &rfc822_date) {
-       char *pos;
        struct tm tm;
-       if ( (pos = strptime(rfc822_date.c_str(), "%a, %d %b %Y %T %z", &tm)) != NULL) {
+       if ( (strptime(rfc822_date.c_str(), "%a, %d %b %Y %T %z", &tm)) != NULL) {
           fromTm(&tm);
        } else {
           throw "Unparseable date";
@@ -122,9 +121,8 @@ namespace YaHTTP {
      };
 
      void parseCookie(const std::string &cookie_date) {
-       char *pos;
        struct tm tm;
-       if ( (pos = strptime(cookie_date.c_str(), "%d-%b-%Y %T %Z", &tm)) != NULL) {
+       if ( (strptime(cookie_date.c_str(), "%d-%b-%Y %T %Z", &tm)) != NULL) {
           fromTm(&tm);
        } else {
           throw "Unparseable date";

@@ -38,6 +38,11 @@ namespace YaHTTP {
              host = url.substr(pos, pos1-pos);
              pos = pos1;
           }
+          if ( (pos1 = host.find_first_of(":")) != std::string::npos ) {
+             std::istringstream tmp(host.substr(pos1+1));
+             tmp >> port;
+             host = host.substr(0, pos1);
+          }
           return true;
       }
 

@@ -80,4 +80,22 @@ BOOST_AUTO_TEST_CASE(test_request_parse_cookies)
   BOOST_CHECK_EQUAL(req.COOKIES()["cookies"].value, "kääkkä");
 }
 
+BOOST_AUTO_TEST_CASE(test_request_build_post) 
+{
+  YaHTTP::Request req;
+  req.setup("POST", "http://example.org/test");
+  req.POST()["one"] = "w";
+  req.preparePost();
+
+  BOOST_CHECK_EQUAL(req.str(),  
+"POST /test HTTP/1.1\r\n\
+Content-Length: 5\r\n\
+Content-Type: application/x-www-form-urlencoded; charset=utf-8\r\n\
+Host: example.org\r\n\
+User-Agent: YaHTTP v1.0\r\n\
+\r\n\
+one=w"
+  );
+}
+
 }

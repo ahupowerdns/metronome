@@ -178,7 +178,7 @@ public:
         }
         // remove last bit
         if (postbuf.str().length()>0) 
-          body = std::string(postbuf.str().begin(), postbuf.str().end()-1);
+          body = postbuf.str().substr(0, postbuf.str().length()-1);
         else
           body = "";
         headers["content-type"] = "application/x-www-form-urlencoded; charset=utf-8";
@@ -190,9 +190,11 @@ public:
         }
       }
 
+      postbuf.str("");
+      postbuf << body.length();
       // set method and change headers
       method = "POST";
-      headers["content-length"] = body.length();
+      headers["content-length"] = postbuf.str();
     };
 
     friend std::ostream& operator<<(std::ostream& os, const Request &resp);

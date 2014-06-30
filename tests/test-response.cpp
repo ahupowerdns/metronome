@@ -75,4 +75,38 @@ BOOST_AUTO_TEST_CASE(test_response_parse_binary) {
   BOOST_CHECK_EQUAL(::memcmp(result, expected, 16), 0);
 }
 
+BOOST_AUTO_TEST_CASE(test_response_parse_chunked) {
+  char buffer[1024];
+  size_t n;
+  std::ifstream ifs;
+
+  YaHTTP::AsyncResponseLoader arl;
+  YaHTTP::Response resp;
+
+  arl.initialize(&resp);
+
+  ifs.open("response-chunked-headers.txt", std::ifstream::in);
+  ifs.read(buffer, sizeof buffer);
+  n = ifs.gcount();
+  buffer[n] = 0;
+ 
+  arl.feed(std::string(buffer, n));
+  ifs.close();
+  ifs.clear();
+  
+  ifs.open("response-chunked-body.txt", std::ifstream::in);
+  ifs.read(buffer, sizeof buffer);
+  n = ifs.gcount();
+  buffer[n] = 0;
+
+  arl.feed(std::string(buffer, n));
+
+  arl.finalize();
+
+  BOOST_CHECK_EQUAL(resp.status, 200);
+  BOOST_CHECK_EQUAL(resp.body.size(), 249);
+
+  BOOST_CHECK_EQUAL(resp.body, "{\"result\":[{\"qname\":\"example.com\",\"qtype\":\"SOA\",\"content\":\"sns.dns.icann.org noc.dns.icann.org 2014051935 7200 3600 1209600 3600\",\"ttl\":3600,\"auth\":1},{\"qname\":\"example.com\",\"qtype\":\"NS\",\"content\":\"sns.dns.icann.org\",\"ttl\":3600,\"auth\":1}],\"log\":[]}\n"); 
+}
+
 }

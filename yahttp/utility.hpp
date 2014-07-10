@@ -45,13 +45,18 @@ namespace YaHTTP {
        struct tm tm;
        localtime_r(&t, &tm);
        fromTm(&tm);
+#ifndef HAVE_TM_GMTOFF
+       time_t t2 = timegm(&tm);
+#endif
 #else
        struct tm *tm;
        tm = localtime(&t);
        fromTm(tm);
+#ifndef HAVE_TM_GMTOFF
+       time_t t2 = timegm(tm);
+#endif
 #endif
 #ifndef HAVE_TM_GMTOFF
-       time_t t2 = timegm(&tm);
        this->utc_offset = ((t2-t)/10)*10; // removes any possible differences. 
 #endif
      }; //<! uses localtime for time
@@ -123,7 +128,7 @@ namespace YaHTTP {
  
      void parse822(const std::string &rfc822_date) {
        struct tm tm;
-       char *ptr;
+       const char *ptr;
 #ifdef HAVE_TM_GMTOFF
        if ( (ptr = strptime(rfc822_date.c_str(), "%a, %d %b %Y %T %z", &tm)) != NULL) {
 #else
@@ -134,7 +139,9 @@ namespace YaHTTP {
           if (*ptr == '+') sign = 0;
           else if (*ptr == '-') sign = -1;
           else throw "Unparseable date";
-          utc_offset = atoi((*ptr+1));
+          ptr++;
+          utc_offset = ::atoi(ptr) * sign;
+          while(*ptr && ::isdigit(*ptr)) ptr++;
 #endif
           while(*ptr && ::isspace(*ptr)) ptr++;
           if (*ptr) throw "Unparseable date"; // must be final.

@@ -50,6 +50,10 @@ namespace YaHTTP {
        tm = localtime(&t);
        fromTm(tm);
 #endif
+#ifndef HAVE_TM_GMTOFF
+       time_t t2 = timegm(&tm);
+       this->utc_offset = ((t2-t)/10)*10; // removes any possible differences. 
+#endif
      }; //<! uses localtime for time
 
      void fromGmtime(time_t t) {
@@ -62,6 +66,9 @@ namespace YaHTTP {
        tm = gmtime(&t);
        fromTm(tm);
 #endif
+#ifndef HAVE_TM_GMTOFF
+       this->utc_offset = 0;
+#endif
      }; //<! uses gmtime for time
 
      void fromTm(const struct tm *tm) {
@@ -72,7 +79,9 @@ namespace YaHTTP {
        minutes = tm->tm_min;
        seconds = tm->tm_sec;
        wday = tm->tm_wday;
+#ifdef HAVE_TM_GMTOFF
        utc_offset = tm->tm_gmtoff;
+#endif
        isSet = true;
      }; //<! parses date from struct tm 
 
@@ -114,7 +123,21 @@ namespace YaHTTP {
  
      void parse822(const std::string &rfc822_date) {
        struct tm tm;
-       if ( (strptime(rfc822_date.c_str(), "%a, %d %b %Y %T %z", &tm)) != NULL) {
+       char *ptr;
+#ifdef HAVE_TM_GMTOFF
+       if ( (ptr = strptime(rfc822_date.c_str(), "%a, %d %b %Y %T %z", &tm)) != NULL) {
+#else
+	if ( (ptr = strptime(rfc822_date.c_str(), "%a, %d %b %Y %T", &tm)) != NULL) {
+          int sign;
+  	  // parse the timezone parameter
+          while(*ptr && ::isspace(*ptr)) ptr++;
+          if (*ptr == '+') sign = 0;
+          else if (*ptr == '-') sign = -1;
+          else throw "Unparseable date";
+          utc_offset = atoi((*ptr+1));
+#endif
+          while(*ptr && ::isspace(*ptr)) ptr++;
+          if (*ptr) throw "Unparseable date"; // must be final.
           fromTm(&tm);
        } else {
           throw "Unparseable date";
@@ -130,7 +153,7 @@ namespace YaHTTP {
        }
      }; //<! parses HTTP Cookie date
 
-     int unixtime() const {
+     time_t unixtime() const {
        struct tm tm;
        tm.tm_year = year-1900;
        tm.tm_mon = month-1;
@@ -138,8 +161,10 @@ namespace YaHTTP {
        tm.tm_hour = hours;
        tm.tm_min = minutes;
        tm.tm_sec = seconds;
+#ifdef HAVE_TM_GMTOFF
        tm.tm_gmtoff = utc_offset;
-       return mktime(&tm);
+#endif
+       return timelocal(&tm);
      }; //<! returns this datetime as unixtime. will not work for dates before 1970/1/1 00:00:00 GMT
   };
 

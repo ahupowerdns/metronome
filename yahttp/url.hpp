@@ -180,7 +180,7 @@ namespace YaHTTP {
         if (parsePath(url, pos) == false) return false;
         if (parseParameters(url, pos) == false) return false;
         return parseAnchor(url, pos);
-    }; /*! parse various formats of urls ranging from http://example.com/foo?bar=baz into data:base64:d089swt64wt... */
+    }; //<! parse various formats of urls ranging from http://example.com/foo?bar=baz into data:base64:d089swt64wt... 
 
     friend std::ostream & operator<<(std::ostream& os, const URL& url) {
       os<<url.to_string();

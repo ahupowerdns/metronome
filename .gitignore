@@ -22,3 +22,4 @@ tests/*.trs
 *~
 *.la
 *.lo
+aclocal.m4

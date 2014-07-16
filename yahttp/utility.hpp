@@ -158,16 +158,12 @@ namespace YaHTTP {
      void parseCookie(const std::string &cookie_date) {
        struct tm tm;
        const char *ptr;
-#ifdef HAVE_TM_GMTOFF
-       if ( (ptr = strptime(cookie_date.c_str(), "%d-%b-%Y %T %Z", &tm)) != NULL) {
-#else
-        if ( (ptr = strptime(cookie_date.c_str(), "%d-%b-%Y %T", &tm)) != NULL) {
-          this->utc_offset = 0;  
+       if ( (ptr = strptime(cookie_date.c_str(), "%d-%b-%Y %T", &tm)) != NULL) {
           while(*ptr && ( ::isspace(*ptr) || ::isalnum(*ptr) )) ptr++;
-#endif
-          while(*ptr && ::isspace(*ptr)) ptr++;
+          std::cerr << ptr << std::endl;
           if (*ptr) throw "Unparseable date (non-final)"; // must be final.
           fromTm(&tm);
+          this->utc_offset = 0;
        } else {
           throw "Unparseable date (did not match pattern cookie)";
        }

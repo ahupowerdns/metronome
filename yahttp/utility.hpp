@@ -159,9 +159,10 @@ namespace YaHTTP {
        struct tm tm;
        const char *ptr;
 #ifdef HAVE_TM_GMTOFF
-       if ( (strptime(cookie_date.c_str(), "%d-%b-%Y %T %Z", &tm)) != NULL) {
+       if ( (ptr = strptime(cookie_date.c_str(), "%d-%b-%Y %T %Z", &tm)) != NULL) {
 #else
         if ( (ptr = strptime(cookie_date.c_str(), "%d-%b-%Y %T", &tm)) != NULL) {
+          this->utc_offset = 0;  
           while(*ptr && ( ::isspace(*ptr) || ::isalnum(*ptr) )) ptr++;
 #endif
           while(*ptr && ::isspace(*ptr)) ptr++;

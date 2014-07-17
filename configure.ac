@@ -18,6 +18,8 @@ LT_INIT
 AC_CC_PIE
 AC_LD_RELRO
 
+AC_CHECK_FUNCS([localtime_r])
+
 AC_CHECK_MEMBER(struct tm.tm_gmtoff,
   [AC_DEFINE(HAVE_TM_GMTOFF, 1,
      [Define if struct tm has the tm_gmtoff member.])],

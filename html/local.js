@@ -25,6 +25,7 @@ $(document).ready(function() {
 	var config1 = { items: [ 
             { name: servername+".servfail-answers", legend: "Servfail answers/s"},
             { name: servername+".questions", legend: "Questions/s" }, 
+            { name: servername+".policy-drops", legend: "Policy drops/s" },
             { name: servername+".all-outqueries", legend: "All outqueries/s"}
         ]};	
 	

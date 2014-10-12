@@ -389,12 +389,24 @@ namespace YaHTTP {
       return iequals(a,b,a.size());
     }; //<! case-insensitive comparison
 
+    static void trimLeft(std::string &str) {
+       const std::locale &loc = std::locale::classic();
+       std::string::iterator iter = str.begin();
+       while(iter != str.end() && std::isspace(*iter, loc)) iter++;
+       str.erase(str.begin(), iter);
+    }; //<! removes whitespace from left
+
     static void trimRight(std::string &str) {
        const std::locale &loc = std::locale::classic();
        std::string::reverse_iterator iter = str.rbegin();
        while(iter != str.rend() && std::isspace(*iter, loc)) iter++;
        str.erase(iter.base(), str.end());
     }; //<! removes whitespace from right
+
+    static void trim(std::string &str) {
+       trimLeft(str);
+       trimRight(str);
+    }; //<! removes whitespace from left and right
 
     static std::string camelizeHeader(const std::string &str) {
        std::string::const_iterator iter = str.begin();

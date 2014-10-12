@@ -19,6 +19,7 @@ BOOST_AUTO_TEST_CASE(test_request_parse_get)
   BOOST_CHECK_EQUAL(req.method, "GET");
   BOOST_CHECK_EQUAL(req.url.path, "/");
   BOOST_CHECK_EQUAL(req.url.host, "test.org");
+  BOOST_CHECK_EQUAL(req.headers["accept-encoding"], "gzip, deflate");
 }
 
 BOOST_AUTO_TEST_CASE(test_request_parse_get_arl)
@@ -96,6 +97,14 @@ User-Agent: YaHTTP v1.0\r\n\
 \r\n\
 one=w"
   );
+}
+
+BOOST_AUTO_TEST_CASE(test_request_issue_7)
+{
+  YaHTTP::Request req;
+  std::ifstream ifs("request-issue-7.txt");
+
+  BOOST_CHECK_THROW(ifs>>req, YaHTTP::ParseError);
 }
 
 }

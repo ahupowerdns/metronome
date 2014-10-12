@@ -43,11 +43,15 @@ namespace YaHTTP {
           break;
         }
         // split headers
-        if ((pos = line.find_first_of(": ")) == std::string::npos)
+        if ((pos = line.find(": ")) == std::string::npos)
           throw ParseError("Malformed header line");
         key = line.substr(0, pos);
         value = line.substr(pos+2);
-        Utility::trimRight(value);
+        for(std::string::iterator it=key.begin(); it != key.end(); it++)
+          if (std::isspace(*it)) 
+            throw ParseError("Header key contains whitespace which is not allowed by RFC");
+     
+        Utility::trim(value);
         std::transform(key.begin(), key.end(), key.begin(), ::tolower);
         // is it already defined
 

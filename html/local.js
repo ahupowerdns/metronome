@@ -90,15 +90,32 @@ $(document).ready(function() {
 
 
 	var config7 = { items: [ 
-            { name: servername+".udp-queries", legend: "Questions/s" }, 
-            { name: servername+".udp-answers", legend: "Answers/s"}]};
+            { name: servername+".udp-queries", legend: "UDP Questions/s" }, 
+            { name: servername+".udp-answers", legend: "UDP Answers/s"}]};
 
 	var config7a = { items: [ 
             { name: servername+".tcp-queries", legend: "TCP Questions/s" }, 
             { name: servername+".tcp-answers", legend: "TCP Answers/s"}]};
 
+        var config7aa = { items: [ 
+            { name: servername+".rd-queries", legend: "RD Questions/s" }, 
+            { name: servername+".recursing-answers", legend: "RD Answers/s"},
+            { name: servername+".recursing-questions", legend: "RD Questions/s"},
+            { name: servername+".recursing-unanswered", legend: "RD Unanswered/s"}            
+            
+            ]};
+
 	var config7b = { items: [ 
             { name: servername+".qsize-q", legend: "DB Queue", kind: "gauge"}
+            ]};
+
+	var config7c = { items: [ 
+            { name: servername+".timedout-packets", legend: "Timedout queries"},
+            { name: servername+".servfail-packets", legend: "Servfail answers"},
+            ]};
+
+	var config7d = { items: [ 
+            { name: servername+".latency", legend: "Latency (usec)", kind: "gauge"}
             ]};
 
 
@@ -120,13 +137,19 @@ $(document).ready(function() {
 		{name: servername+".query-cache-miss", legend: "Database queries/s"}
 	]};
 
+	var config11 = { items: [ 
+		{name: servername+".deferred-cache-inserts", legend: "Deferred cache inserts/s"},
+		{name: servername+".deferred-cache-lookup", legend: "Deferred cache lookups/s"},
+	]};
+
+
 	var configs;
 	var components = servername.split('.');
 	if(components[2]=="recursor") { 
 	    configs=[config1, config2, config2a, config2b, config3, config3a, config3b, config4, config5, config6];
 	}
 	else if(components[2]=="auth") { 
-	    configs=[config7, config7a, config7b, config8, config9, config10];
+	    configs=[config7, config7a, config7aa, config7b, config7c, config7d, config8, config9, config10, config11];
 	}
 	else if(components[0]=="system" && components[2]=="network") { 
 	    configs=[ { 

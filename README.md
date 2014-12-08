@@ -32,6 +32,7 @@ Either install libeigen3-dev (Debian, Ubuntu), or:
     $ ln -s eigen-eigen-*/Eigen .
 
 Then:
+
     $ make
     $ ./metronome --help
     $ mkdir stats

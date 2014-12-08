@@ -25,7 +25,7 @@ To view, try html/index.html
 
 Installing
 ==========
-Either install libeigen3-dev (Debian, Ubuntu), or:
+Either install libeigen3-dev (Debian, Ubuntu), eigen3-devel (Fedora, EPEL), or:
 
     $ wget http://bitbucket.org/eigen/eigen/get/3.2.1.tar.bz2
     $ tar xf 3.2.1.tar.bz2

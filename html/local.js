@@ -164,6 +164,10 @@ $(document).ready(function() {
 	        { name: servername+".key-cache-size", legend: "Key cache size", kind: "gauge"},	        
 	        { name: servername+".signature-cache-size", legend: "Signature cache size", kind: "gauge"},	        
         ]};
+
+	var config14 = { items: [ 
+		{name: servername+".signatures", legend: "DNSSEC signatures/s"},
+	]};
 	            
 
 	var configs;
@@ -172,7 +176,7 @@ $(document).ready(function() {
 	    configs=[config1, config2, config2a, config2b, config3, config3a, config3b, config4, config5, config6];
 	}
 	else if(components[2]=="auth") { 
-	    configs=[config3, config7, config7a, config7aa, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13];
+	    configs=[config3, config7, config7a, config7aa, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];
 	}
 	else if(components[0]=="system" && components[2]=="network") { 
 	    configs=[ { 

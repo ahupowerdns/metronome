@@ -57,7 +57,7 @@ $(document).ready(function() {
 	      formula: function(r,d) { return d[0]/10.0; }
 	    }, 
             { metrics: [servername+".sys-msec"], legend: "System CPU%",
-	      formula: function(r,d) { return d[0]/10.0; }
+	      formula: function(r,d) { return d[1]/10.0; }
 	    }]};
 	
 	var config3a = { items: [ 

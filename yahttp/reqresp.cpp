@@ -161,14 +161,18 @@ namespace YaHTTP {
     }
     os << "\r\n";
   
+    bool cookieSent=false;
+
     // write headers
     strstr_map_t::const_iterator iter = headers.begin();
     while(iter != headers.end()) {
       if (iter->first == "host" && kind != YAHTTP_TYPE_REQUEST) { iter++; continue; }
+      std::string header = Utility::camelizeHeader(iter->first);
+      if (header == "Cookie" || header == "Set-Cookie") cookieSent = true;
       os << Utility::camelizeHeader(iter->first) << ": " << iter->second << "\r\n";
       iter++;
     }
-    if (jar.cookies.size() > 0) { // write cookies
+    if (!cookieSent && jar.cookies.size() > 0) { // write cookies
       for(strcookie_map_t::const_iterator i = jar.cookies.begin(); i != jar.cookies.end(); i++) {
         if (kind == YAHTTP_TYPE_REQUEST) {
           os << "Cookie: ";

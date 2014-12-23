@@ -53,6 +53,10 @@ namespace YaHTTP {
       this->cookies = rhs.cookies;
     } //<! copy cookies from another cookie jar
   
+    void clear() {
+      this->cookies.clear();
+    }
+
     void keyValuePair(const std::string &keyvalue, std::string &key, std::string &value) {
       size_t pos;
       pos = keyvalue.find("=");

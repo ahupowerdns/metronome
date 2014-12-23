@@ -109,4 +109,16 @@ BOOST_AUTO_TEST_CASE(test_response_parse_chunked) {
   BOOST_CHECK_EQUAL(resp.body, "{\"result\":[{\"qname\":\"example.com\",\"qtype\":\"SOA\",\"content\":\"sns.dns.icann.org noc.dns.icann.org 2014051935 7200 3600 1209600 3600\",\"ttl\":3600,\"auth\":1},{\"qname\":\"example.com\",\"qtype\":\"NS\",\"content\":\"sns.dns.icann.org\",\"ttl\":3600,\"auth\":1}],\"log\":[]}\n"); 
 }
 
+BOOST_AUTO_TEST_CASE(test_response_print_chunked) {
+  YaHTTP::Response resp;
+  std::ostringstream oss;
+  resp.status = 200;
+  resp.headers["content-type"] = "text/html; charset=utf-8";
+  resp.body = "<!DOCTYPE html>\n<html lang=\"en\"><head><title>Hello, world</title><link rel=\"stylesheet\" href=\"style.css\" type=\"text/css\" /></head><body><h1>200 OK</h1><p>Hello, world</p></body></html>";
+ 
+  oss << resp;
+
+  BOOST_CHECK_EQUAL(oss.str(), "HTTP/1.1 200 OK\r\nTransfer-Encoding: chunked\r\nContent-Type: text/html; charset=utf-8\r\n\r\nb8\r\n<!DOCTYPE html>\n<html lang=\"en\"><head><title>Hello, world</title><link rel=\"stylesheet\" href=\"style.css\" type=\"text/css\" /></head><body><h1>200 OK</h1><p>Hello, world</p></body></html>\r\n0\r\n\r\n");
+}
+
 }

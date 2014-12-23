@@ -6,9 +6,10 @@ namespace YaHTTP {
     buffer.append(somedata);
     while(state < 2) {
       int cr=0;
+      pos = buffer.find_first_of("\n");
       // need to find CRLF in buffer
-      if ((pos = buffer.find_first_of("\n")) == std::string::npos) return false;
-      if (buffer[pos-1]=='\r')
+      if (pos == std::string::npos) return false;
+      if (pos>0 && buffer[pos-1]=='\r')
         cr=1;
       std::string line(buffer.begin(), buffer.begin()+pos-cr); // exclude CRLF
       buffer.erase(buffer.begin(), buffer.begin()+pos+1); // remove line from buffer including CRLF
@@ -161,7 +162,29 @@ namespace YaHTTP {
     }
     os << "\r\n";
   
-    bool cookieSent=false;
+    bool cookieSent = false;
+    bool sendChunked = false;
+    
+    if (headers.find("content-length") == headers.end()) {
+      // must use chunked on response
+      sendChunked = (kind == YAHTTP_TYPE_RESPONSE);
+      if ((headers.find("transfer-encoding") != headers.end() && headers.find("transfer-encoding")->second != "chunked")) {
+        throw YaHTTP::Error("Transfer-encoding must be chunked, or Content-Length defined");
+      }
+      if ((headers.find("transfer-encoding") == headers.end() && kind == YAHTTP_TYPE_RESPONSE)) {
+        sendChunked = true;
+        // write the header now
+        os << "Transfer-Encoding: chunked" << "\r\n";
+      }
+    } else {
+      if ((headers.find("transfer-encoding") == headers.end() && kind == YAHTTP_TYPE_RESPONSE)) {
+        sendChunked = true;
+        // write the header now
+        os << "Transfer-Encoding: chunked" << "\r\n";
+      } else if (headers.find("transfer-encoding") != headers.end() && headers.find("transfer-encoding")->second == "chunked") {
+        sendChunked = true;
+      }
+    }
 
     // write headers
     strstr_map_t::const_iterator iter = headers.begin();
@@ -184,9 +207,10 @@ namespace YaHTTP {
     }
     os << "\r\n";
 #ifdef HAVE_CPP_FUNC_PTR
-    this->renderer(this, os);
+    this->renderer(this, os, sendChunked);
 #else
-    os << body;
+    SendbodyRenderer r; 
+    r(this, os, chunked)
 #endif
   };
   
@@ -201,7 +225,7 @@ namespace YaHTTP {
     while(is.good()) {
       char buf[1024];
       is.read(buf, 1024);
-      if (is.gcount()) { // did we actually read anything
+      if (is.gcount()>0) { // did we actually read anything
         is.clear();
         if (arl.feed(std::string(buf, is.gcount())) == true) break; // completed
       }

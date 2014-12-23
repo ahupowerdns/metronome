@@ -172,7 +172,6 @@ namespace YaHTTP {
        const char *ptr;
        if ( (ptr = strptime(cookie_date.c_str(), "%d-%b-%Y %T", &tm)) != NULL) {
           while(*ptr && ( ::isspace(*ptr) || ::isalnum(*ptr) )) ptr++;
-          std::cerr << ptr << std::endl;
           if (*ptr) throw "Unparseable date (non-final)"; // must be final.
           fromTm(&tm);
           this->utc_offset = 0;

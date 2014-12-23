@@ -30,8 +30,7 @@ namespace funcptr = boost;
 #define YAHTTP_TYPE_RESPONSE 2
 
 namespace YaHTTP {
-  typedef std::map<std::string,std::string> strstr_map_t; //<! String to String map 
-  typedef std::map<std::string,Cookie> strcookie_map_t; //<! String to Cookie map
+  typedef std::map<std::string,Cookie,ASCIICINullSafeComparator> strcookie_map_t; //<! String to Cookie map
 
   typedef enum {
     urlencoded,

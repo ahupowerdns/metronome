@@ -46,7 +46,7 @@ namespace YaHTTP {
   /*! Implements a Cookie jar for storing multiple cookies */
   class CookieJar {
     public:
-    std::map<std::string, Cookie> cookies;  //<! cookie container
+    std::map<std::string, Cookie, ASCIICINullSafeComparator> cookies;  //<! cookie container
   
     CookieJar() {}; //<! constructs empty cookie jar
     CookieJar(const CookieJar & rhs) {

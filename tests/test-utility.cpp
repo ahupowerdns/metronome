@@ -99,4 +99,13 @@ BOOST_AUTO_TEST_CASE(test_utility_camelizeheader) {
   BOOST_CHECK_EQUAL(YaHTTP::Utility::camelizeHeader("x------y"),"X------Y");
 }
 
+BOOST_AUTO_TEST_CASE(test_strstr_map_t) {
+  YaHTTP::strstr_map_t test;
+  test["HELLO"] = "world";
+  BOOST_CHECK_EQUAL(test["HELLO"], "world");
+  test["hello"] = "WORLD";
+  BOOST_CHECK_EQUAL(test["hello"], "WORLD");
+  BOOST_CHECK_EQUAL(test["HeLlO"], "WORLD");
+}
+
 }

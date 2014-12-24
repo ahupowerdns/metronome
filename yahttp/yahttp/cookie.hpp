@@ -1,10 +1,12 @@
 namespace YaHTTP {
+  /*! Implements a single cookie */
   class Cookie {
   public:
      Cookie() {
        secure = false;
        httponly = false;
-     };
+       name = value = "";
+     }; //!< Set the cookie to empty value
 
      Cookie(const Cookie &rhs) {
        domain = rhs.domain;
@@ -13,20 +15,20 @@ namespace YaHTTP {
        httponly = rhs.httponly;
        name = rhs.name;
        value = rhs.value;
-     };
+     }; //<! Copy cookie values
 
-     DateTime expires;
-     std::string domain;
-     std::string path;
-     bool httponly;
-     bool secure;
+     DateTime expires; /*!< Expiration date */
+     std::string domain; /*!< Domain where cookie is valid */
+     std::string path; /*!< Path where the cookie is valid */
+     bool httponly; /*!< Whether the cookie is for server use only */
+     bool secure; /*!< Whether the cookie is for HTTPS only */
  
-     std::string name;
-     std::string value;
+     std::string name; /*!< Cookie name */
+     std::string value; /*!< Cookie value */
 
      std::string str() const {
        std::ostringstream oss;
-       oss << name << "=" << value;
+       oss << YaHTTP::Utility::encodeURL(name) << "=" << YaHTTP::Utility::encodeURL(value);
        if (expires.isSet) 
          oss << "; expires=" << expires.cookie_str();
        if (domain.size()>0)
@@ -38,25 +40,30 @@ namespace YaHTTP {
        if (httponly)
          oss << "; httpOnly";
        return oss.str();
-     };
+     }; //!< Stringify the cookie
   };
 
+  /*! Implements a Cookie jar for storing multiple cookies */
   class CookieJar {
     public:
-    std::map<std::string, Cookie> cookies; 
+    std::map<std::string, Cookie, ASCIICINullSafeComparator> cookies;  //<! cookie container
   
-    CookieJar() {};
+    CookieJar() {}; //<! constructs empty cookie jar
     CookieJar(const CookieJar & rhs) {
       this->cookies = rhs.cookies;
-    }
+    } //<! copy cookies from another cookie jar
   
+    void clear() {
+      this->cookies.clear();
+    }
+
     void keyValuePair(const std::string &keyvalue, std::string &key, std::string &value) {
       size_t pos;
       pos = keyvalue.find("=");
       if (pos == std::string::npos) throw "Not a Key-Value pair (cookie)";
       key = std::string(keyvalue.begin(), keyvalue.begin()+pos);
       value = std::string(keyvalue.begin()+pos+1, keyvalue.end());
-    }
+    } //<! key value pair parser
   
     void parseCookieHeader(const std::string &cookiestr) {
       std::list<Cookie> cookies;
@@ -114,6 +121,8 @@ namespace YaHTTP {
             pos = npos+2;
           }
           keyValuePair(s, c.name, c.value);
+          c.name = YaHTTP::Utility::decodeURL(c.name);
+          c.value = YaHTTP::Utility::decodeURL(c.value);
           cookies.push_back(c);
         } else if (cstate == 1) {
           // ignore crap
@@ -125,6 +134,6 @@ namespace YaHTTP {
       for(std::list<Cookie>::iterator i = cookies.begin(); i != cookies.end(); i++) {
         this->cookies[i->name] = *i;
       }
-    };
+    }; //<! Parse multiple cookies from header 
   };
 };

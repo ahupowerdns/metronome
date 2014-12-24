@@ -1,0 +1,11 @@
+GET / HTTP/1.1
+Host: test.org
+User-Agent: Mozilla/5.0 (Windows NT 6.1; WOW64; rv:28.0) Gecko/20100101 Firefox/28.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: fi-fi,fi;q=0.8,en-us;q=0.5,en;q=0.3
+Accept-Encoding:          gzip, deflate            
+DNT: 1
+Connection: keep-alive
+Cache-Control: max-age=0
+
+

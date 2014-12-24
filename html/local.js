@@ -53,10 +53,10 @@ $(document).ready(function() {
 
 	
 	var config3 ={ renderer: "stack", items: [ 
-            { metrics: [servername+".user-msec"], legend: "User CPU%",
+            { metrics: [servername+".sys-msec"], legend: "System CPU%",
 	      formula: function(r,d) { return d[0]/10.0; }
 	    }, 
-            { metrics: [servername+".sys-msec"], legend: "System CPU%",
+            { metrics: [servername+".user-msec"], legend: "User CPU%",
 	      formula: function(r,d) { return d[1]/10.0; }
 	    }]};
 	

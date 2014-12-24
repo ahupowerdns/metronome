@@ -55,8 +55,8 @@ void dumpRequest(const YaHTTP::Request& req)
   for(auto h : req.headers) {
     cout << h.first << " -> "<<h.second<<endl;
   }
-  cout<<"Parameters: \n";
-  for(auto h : req.parameters) {
+  cout<<"getvars: \n";
+  for(auto h : req.getvars) {
     cout << h.first << " -> "<<h.second<<endl;
   }
   cout<<"URL: "<<req.url<<endl;
@@ -138,9 +138,10 @@ try
   for(int numrequests=0;;++numrequests) {
     string input, line;
     while(sockGetLine(sock, &line)) {
-      if(line.empty() || line=="\n" || line=="\r\n") // XXX NO
-	goto ok;
+
       input.append(line);
+      if(line.empty() || line=="\n" || line=="\r\n") // XXX NO
+	goto ok;      
     }
     close(sock);
     if(input.size()) {
@@ -153,21 +154,21 @@ try
   ok:;
     YaHTTP::Request req;
     istringstream str(input);
-    req.load(str);
     
+    str >> req;
     YaHTTP::Response resp(req);
     ostringstream body;
-    
-    if(req.parameters["do"]=="store") {
+//    dumpRequest(req);
+    if(req.getvars["do"]=="store") {
       StatStorage ss(g_vm["stats-directory"].as<string>());
-      ss.store(req.parameters["name"], atoi(req.parameters["timestamp"].c_str()), 
-	       atof(req.parameters["value"].c_str()));
+      ss.store(req.getvars["name"], atoi(req.getvars["timestamp"].c_str()), 
+	       atof(req.getvars["value"].c_str()));
     }
-    else if(req.parameters["do"]=="get-metrics") {  
+    else if(req.getvars["do"]=="get-metrics") {  
       StatStorage ss(g_vm["stats-directory"].as<string>());
       resp.headers["Content-Type"]= "application/json";
       resp.headers["Access-Control-Allow-Origin"]= "*";
-      body<<req.parameters["callback"]<<"(";
+      body<<req.getvars["callback"]<<"(";
       body<<"{ \"metrics\": [";
       auto metrics = ss.getMetrics();
       for(const auto& metric : metrics)  {
@@ -177,9 +178,9 @@ try
       }
       body << "]});";
     }
-    else if(req.parameters["do"]=="get-all") {  
+    else if(req.getvars["do"]=="get-all") {  
       StatStorage ss(g_vm["stats-directory"].as<string>());
-      auto vals = ss.retrieve(req.parameters["name"]);
+      auto vals = ss.retrieve(req.getvars["name"]);
       
       body.setf(std::ios::fixed);    
       for(const auto& v: vals) {
@@ -187,22 +188,22 @@ try
 	body<<v.timestamp<<'\t'<<v.value<<'\t'<<s.first<<'\t'<<s.second<<'\n';
       }
     }
-    else if(req.parameters["do"]=="retrieve") {
-      //    dumpRequest(req);
+    else if(req.getvars["do"]=="retrieve") {
+      //    
       StatStorage ss(g_vm["stats-directory"].as<string>());
       vector<string> names;
-      stringtok(names, req.parameters["name"], ",");
+      stringtok(names, req.getvars["name"], ",");
       resp.headers["Content-Type"]= "application/json";
       resp.headers["Access-Control-Allow-Origin"]= "*";
       
       body.setf(std::ios::fixed);
       
-      double begin = atoi(req.parameters["begin"].c_str());
-      double end = atoi(req.parameters["end"].c_str());
-      int datapoints = atoi(req.parameters["datapoints"].c_str());
+      double begin = atoi(req.getvars["begin"].c_str());
+      double end = atoi(req.getvars["end"].c_str());
+      int datapoints = atoi(req.getvars["datapoints"].c_str());
       if(!datapoints)
 	datapoints=100;
-      body<<req.parameters["callback"]<<"(";
+      body<<req.getvars["callback"]<<"(";
       body<<"{ raw: {";
       bool first=true;
       map<string,vector<StatStorage::Datum> > derivative;

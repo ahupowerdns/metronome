@@ -101,7 +101,7 @@ $(document).ready(function() {
             { name: servername+".rd-queries", legend: "RD Questions/s" }, 
             { name: servername+".recursing-answers", legend: "RD Answers/s"},
             { name: servername+".recursing-questions", legend: "RD Questions/s"},
-            { name: servername+".recursing-unanswered", legend: "RD Unanswered/s"}            
+            { name: servername+".recursion-unanswered", legend: "RD Unanswered/s"}            
             
             ]};
 

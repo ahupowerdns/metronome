@@ -27,6 +27,8 @@ metronome: metronome.o yahttp/yahttp/reqresp.o iputils.o statstorage.o interpola
 msubmit: msubmit.o iputils.o
 	$(CC) $^ $(LDFLAGS) -o $@
 
+mmanage: mmanage.o statstorage.o
+	$(CC) $^ $(LDFLAGS) -o $@
 
 install: metronome
 	mkdir -p $(DESTDIR)/usr/bin/

@@ -10,7 +10,7 @@ class StatStorage
 public:
   StatStorage(const std::string& root);
   void store(const std::string& name, uint32_t timestamp, float value);
-  
+
   struct Datum
   {
     uint32_t timestamp;
@@ -24,6 +24,7 @@ public:
       return std::tie(rhs.timestamp, rhs.value) == std::tie(timestamp, value);
     }
   };
+  void store(const std::string& name, const std::vector<Datum>& data);
   std::vector<Datum> retrieve(const std::string& name, time_t begin, time_t end, int number=-1);
   std::vector<Datum> retrieve(const std::string& name);
   std::vector<std::string> getMetrics();
@@ -42,7 +43,11 @@ private:
     }
   } __attribute__((packed));
 
+  unsigned int getWeekNum(uint32_t t);
+  std::string makeFilename(const std::string& name, uint32_t timestamp);
+  std::vector<Val> retrieveVals(const std::string& name, uint32_t begin, uint32_t end);
   std::vector<Val> retrieveVals(const std::string& name);
+  void retrieveAllFromFile(const std::string& fname, std::vector<StatStorage::Val>* values);
 };
 
 inline bool operator<(double t, const StatStorage::Datum& d)

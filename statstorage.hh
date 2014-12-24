@@ -4,7 +4,7 @@
 #include <limits>
 #include <tuple>
 
-//! make your own, not thread safe
+//! make your own instance, not thread safe
 class StatStorage
 {
 public:

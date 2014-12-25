@@ -7,6 +7,7 @@ before_script:
  - wget http://bitbucket.org/eigen/eigen/get/3.2.1.tar.bz2
  - tar xf 3.2.1.tar.bz2
  - ln -s eigen-eigen-*/Eigen .
+ - cd yahttp ; ./configure ; cd ..
 script:
  - make -j 4
  - make -j 4 check

@@ -91,10 +91,19 @@ vector<string> StatStorage::getMetrics()
     }
     if(!result)
       break;
-    if(result->d_name[0] != '.')
-      ret.push_back(result->d_name);
+    if(result->d_name[0] != '.') {
+      char *p;
+      for(p=result->d_name + strlen(result->d_name) - 1; p !=result->d_name && *p!='.'; --p);
+      *p=0;
+      
+      if(*result->d_name)
+	ret.push_back(result->d_name);
+    }
   }
   closedir(dir);
+  sort(ret.begin(), ret.end());
+  auto newend=unique(ret.begin(), ret.end());
+  ret.resize(distance(ret.begin(), newend));
   return ret;
 }
 

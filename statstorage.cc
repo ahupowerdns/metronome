@@ -153,7 +153,7 @@ vector<StatStorage::Val> StatStorage::retrieveVals(const std::string& name, uint
   if(name.find("/") != string::npos)
     return values;
 
-  for(uint32_t t = begin; t < end; t += 7*86400) {
+  for(uint32_t t = begin; t < end + 7*86400; t += 7*86400) {
     string fname=makeFilename(name, t);
     retrieveAllFromFile(fname, &values);
 

@@ -23,25 +23,36 @@ $(document).ready(function() {
 	    return;
 
         if(servername=='All') {
-            var all=[];
+            var allqueries=[];
+            var servfails=[];
             
             $.each(m.servers, function(key,val) {
                 var re=/.auth$/;
                 if(re.test(val))
-                    all.push(val+".udp-queries");
-                else
-                    all.push(val+".questions");
+                    allqueries.push(val+".udp-queries");
+                else if((/.recursor$/).test(val)) {
+                        allqueries.push(val+".questions");
+                        servfails.push(val+".servfail-answers");
+                    }
                 });
                 
             var config ={ items: [ 
-            { metrics: all, legend: "Total qps",
+            { metrics: servfails, legend: "Total servfails/s",
 	      formula: function(r,d) { 
 	          var ret=0;
-	          $.each(d, function(key,val) { ret+= val; });
+	          $.each(d, function(key,val) { if(key<servfails.length) ret+= val; });
+	          return ret;
+	          }
+	    },
+	    { metrics: allqueries, legend: "Total queries/s",
+	      formula: function(r,d) { 
+	          var ret=0;
+	          $.each(d, function(key,val) { if(key>=servfails.length) ret+= val; });
 	          return ret;
 	          }
 	    }
             ]};
+            
             m.setupGraphs("#graphs", [config]);	
             return;
         }

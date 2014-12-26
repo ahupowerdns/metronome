@@ -79,8 +79,10 @@ Metronome.prototype.getAllMetrics=function(destination)
 {
     var qstring = this.comconfig.url+"?do=get-metrics&callback=?&name";
     var that=this;
+    var alerter = window.setTimeout(function(){ alert("Could not contact Metronome statistics server at "+that.comconfig.url+". This is either due to a connectivity problem or a intervening firewall, or otherwise a timeout."); }, 1500);
     $.getJSON(qstring, 
-	      function(data) {	      
+	      function(data) {
+	          window.clearTimeout(alerter);	      
 		  var theservers={};
 		  that.hierarchy={};
 		  $.each(data.metrics, function(a, b) {

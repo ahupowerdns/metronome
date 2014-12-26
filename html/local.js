@@ -22,6 +22,30 @@ $(document).ready(function() {
 	if(servername=='')
 	    return;
 
+        if(servername=='All') {
+            var all=[];
+            
+            $.each(m.servers, function(key,val) {
+                var re=/.auth$/;
+                if(re.test(val))
+                    all.push(val+".udp-queries");
+                else
+                    all.push(val+".questions");
+                });
+                
+            var config ={ items: [ 
+            { metrics: all, legend: "Total qps",
+	      formula: function(r,d) { 
+	          var ret=0;
+	          $.each(d, function(key,val) { ret+= val; });
+	          return ret;
+	          }
+	    }
+            ]};
+            m.setupGraphs("#graphs", [config]);	
+            return;
+        }
+
 	var config1 = { items: [ 
             { name: servername+".servfail-answers", legend: "Servfail answers/s"},
             { name: servername+".questions", legend: "Questions/s" }, 
@@ -230,6 +254,7 @@ $(document).ready(function() {
 
     m.getAllMetrics(function() { 
 	var ret="";
+	ret+="<option value='All'>All</option>";
 	$.each(m.servers, function(a,b) {
 	    ret+= "<option value='"+b+"'>"+b+"</option>";
 	});

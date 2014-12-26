@@ -7,7 +7,7 @@ ifeq ($(CXX),clang++)
 	CXX2011FLAGS=-std=c++11 -stdlib=libc++
 endif
 
-CXXFLAGS?=-Wall -O3 -ggdb -I. -I yahttp/yahttp  -pthread -MMD -MP  $(CXX2011FLAGS) # -Wno-unused-local-typedefs 
+CXXFLAGS?=-Wall -O3 -ggdb -I. -I yahttp/yahttp  -pthread -MMD -MP -DYAHTTP_MAX_URL_LENGTH=16384 $(CXX2011FLAGS) # -Wno-unused-local-typedefs 
 CFLAGS=-Wall -I.  -O3 -MMD -MP
 LDFLAGS+=$(CXX2011FLAGS) -pthread  -Wl,-Bstatic $(LIBRARIES) -lstdc++ -lgcc -lz -Wl,-Bdynamic -static-libgcc -lm -lc
 CHEAT_ARG := $(shell ./update-git-hash-if-necessary)
@@ -36,7 +36,7 @@ install: metronome
 	install -s $(SHIPPROGRAMS) $(DESTDIR)/usr/bin/
 
 clean:
-	rm -f *~ *.o *.d $(PROGRAMS) githash.h 
+	rm -f *~ *.o *.d yahttp/yahttp/*.o $(PROGRAMS) githash.h 
 
 package: all
 	rm -rf dist

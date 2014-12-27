@@ -122,6 +122,7 @@ public:
 
     rr.resp.headers["content-type"] = "text/html; charset=utf-8";
     rr.resp.headers["connection"] = "close";
+    rr.resp.version = rr.req.version;
 
     if (rr.req.url.path == "/") {
       rr.resp.url = rr.req.url;

@@ -3,10 +3,27 @@
 #include <sstream>
 #include <syslog.h>
 
+/* This file is intended not to be metronome specific, and is simple example of C++2011
+   variadic templates in action.
+
+   The goal is rapid easy to use logging to console & syslog. 
+
+   Usage: 
+          string address="localhost";
+          infolog("Bound to %s port %d", address, port);
+          warnlog("Query took %d milliseconds", 1232.4); // yes, %d
+          errlog("Unable to bind to %s: %s", ca.toStringWithPort(), strerr(errno));
+
+   If bool g_console is true, will log to stdout. Will syslog in any case with LOG_INFO,
+   LOG_WARNING, LOG_ERR respectively.
+   More generically, dolog(someiostream, "Hello %s", stream) will log to someiostream
+
+   This will happily print a string to %d! Doesn't do further format processing.
+*/
+
 inline void dolog(std::ostream& os, const char*s)
 {
   os<<s;
-  // test
 }
 
 template<typename T, typename... Args>
@@ -20,7 +37,7 @@ void dolog(std::ostream& os, const char* s, T value, Args... args)
       else {
 	os << value;
 	s += 2;
-	dolog(os, s, args...); // call even when *s == 0 to detect extra arguments
+	dolog(os, s, args...); 
 	return;
       }
     }
@@ -28,10 +45,11 @@ void dolog(std::ostream& os, const char* s, T value, Args... args)
   }    
 }
 
+extern bool g_console;
+
 template<typename... Args>
 void genlog(int level, const char* s, Args... args)
 {
-  extern bool g_console;
   std::ostringstream str;
   dolog(str, s, args...);
   syslog(level, "%s", str.str().c_str());

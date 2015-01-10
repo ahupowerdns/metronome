@@ -45,7 +45,9 @@ try
 catch(exception& e)
 {
   errlog("Exception: %s", e.what());
-  writen(sock, string("Error: ")+e.what()+"\n");
+  try {
+    writen(sock, string("Error: ")+e.what()+"\n");
+  }catch(...){}
   close(sock);
 }
 
@@ -290,7 +292,6 @@ void webServerThread(int sock, const ComboAddress& local)
 
 void launchWebserver(int s, const ComboAddress& local)
 {
-
   thread t1(webServerThread, s, local);
   t1.detach();
 }

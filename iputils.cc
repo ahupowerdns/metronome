@@ -69,9 +69,9 @@ int writen(int fd, const void *buf, size_t count)
     res = ::write(fd, ptr, eptr - ptr);
     if(res < 0) {
       if (errno == EAGAIN)
-        throw std::runtime_error("used writen2 on non-blocking socket, got EAGAIN");
+        throw std::runtime_error("used writen on non-blocking socket, got EAGAIN");
       else
-        unixDie("failed in writen2");
+        unixDie("failed in writen");
     }
     else if (res == 0)
       throw std::runtime_error("could not write all bytes, got eof in writen2");

@@ -39,7 +39,7 @@ try
     ss.store(parts[0], atoi(parts[2].c_str()), atof(parts[1].c_str()));
     numStored++;
   }
-  infolog("Closing connection with %s, stored %d data", remote.toStringWithPort() % numStored);
+  infolog("Closing connection with %s, stored %d data", remote.toStringWithPort(), numStored);
   close(sock);
 }
 catch(exception& e)
@@ -148,7 +148,7 @@ try
       warnlog("Did not receive full request, got %ld bytes", input.size());
     }
     else {
-      infolog("EOF from %s after %d requests", remote.toStringWithPort() % numrequests);
+      infolog("EOF from %s after %d requests", remote.toStringWithPort(), numrequests);
     }
     return;
   ok:;
@@ -270,14 +270,14 @@ try
   close(sock);
 }
 catch(exception& e) {
-  errlog("Web connection thread for %s terminated because of error: %s", remote.toStringWithPort() % e.what());
+  errlog("Web connection thread for %s terminated because of error: %s", remote.toStringWithPort(), e.what());
   close(sock);
 }
 
-void webServerThread(int sock)
+void webServerThread(int sock, const ComboAddress& local)
 {
   for(;;) {
-    ComboAddress remote("::");
+    ComboAddress remote=local; // sets the family flag right
     int client=SAccept(sock, remote);
     if(client >= 0) {
       thread t1(startWebserverThread, client, remote);
@@ -288,16 +288,10 @@ void webServerThread(int sock)
   }
 }
 
-void launchWebserver()
+void launchWebserver(int s, const ComboAddress& local)
 {
-  ComboAddress localWeb(g_vm["webserver-address"].as<string>(), 8000);
-  int s = SSocket(localWeb.sin4.sin_family, SOCK_STREAM, 0);
 
-  SSetsockopt(s, SOL_SOCKET, SO_REUSEADDR, 1);
-  SBind(s, localWeb);
-  SListen(s, 10);
-  warnlog("Launched webserver on %s", localWeb.toStringWithPort());
-  thread t1(webServerThread, s);
+  thread t1(webServerThread, s, local);
   t1.detach();
 }
 
@@ -312,13 +306,32 @@ void processCommandLine(int argc, char **argv)
     ("daemon", po::value<bool>()->default_value(true), "run in background")
     ("stats-directory", po::value<string>()->default_value("./stats"), "Store/access statistics from this directory");
 
-  po::store(po::command_line_parser(argc, argv).options(desc).run(), g_vm);
-  po::notify(g_vm);
+  try {
+    po::store(po::command_line_parser(argc, argv).options(desc).run(), g_vm);
+    po::notify(g_vm);
+  }
+  catch(std::exception& e) {
+    cerr<<"Error parsing options: "<<e.what()<<endl;
+    cout<<desc<<endl;
+    exit(EXIT_SUCCESS);
+  }
   if(g_vm.count("help")) {
     cout<<desc<<endl;
     exit(EXIT_SUCCESS);
   }
 }
+
+
+int makeAndBindSocket(const ComboAddress& local, string name) 
+{
+  int s = SSocket(local.sin4.sin_family, SOCK_STREAM, 0);
+  SSetsockopt(s, SOL_SOCKET, SO_REUSEADDR, 1);
+  SBind(s, local);
+  SListen(s, 10);
+  warnlog("Launched %s functionality on %s", name, local.toStringWithPort());
+  return s;
+}
+
 
 int main(int argc, char** argv)
 try
@@ -329,19 +342,16 @@ try
 #endif 
 
   openlog("metronome", LOG_PID, LOG_DAEMON);
-  
-  processCommandLine(argc, argv);
   g_console=true;
+  g_verbose=true;  
+  processCommandLine(argc, argv);
+
   g_verbose=!g_vm["quiet"].as<bool>();
-  ComboAddress localCarbon(g_vm["carbon-address"].as<string>(), 2003);
-  int s = SSocket(localCarbon.sin4.sin_family, SOCK_STREAM, 0);
 
-  SSetsockopt(s, SOL_SOCKET, SO_REUSEADDR, 1);
-  SBind(s, localCarbon);
-  SListen(s, 10);
-  warnlog("Launched Carbon functionality on %s", localCarbon.toStringWithPort());
-
-  launchWebserver();
+  ComboAddress carbonLocal{g_vm["carbon-address"].as<string>(), 2003};
+  int s = makeAndBindSocket(carbonLocal, "carbon");
+  ComboAddress wsLocal{g_vm["webserver-address"].as<string>(), 8000};
+  int ws = makeAndBindSocket(wsLocal, "webserver");
   
   if(g_vm["daemon"].as<bool>())  {
     daemonize();
@@ -349,13 +359,13 @@ try
     g_console=false;
   }
   else {
-    infolog("Running in the %s", "foreground");
-
+    infolog("Running in the foreground");
   }
 
-  
+  launchWebserver(ws, wsLocal);
+
   int client;
-  ComboAddress remote=localCarbon;
+  ComboAddress remote=carbonLocal;
   for(;;) {
     client=SAccept(s, remote);
     if(client >= 0) {

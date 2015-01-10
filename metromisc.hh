@@ -4,6 +4,7 @@
 #include <errno.h>
 #include <string.h>
 #include <vector>
+#include "dolog.hh"
 using std::string;
 
 inline void unixDie(const string &why)
@@ -39,10 +40,3 @@ stringtok (Container &container, string const &in,
     i = j + 1;
   }
 }
-
-#define infolog(X,Y) if(g_verbose) { syslog(LOG_INFO, "%s", (boost::format((X)) % Y).str().c_str()); \
-    if(g_console) cout << boost::format((X)) %Y << endl; } do{}while(0)
-#define warnlog(X,Y) { syslog(LOG_WARNING, "%s", (boost::format((X)) % Y).str().c_str()); \
-    if(g_console) cout << boost::format((X)) %Y << endl; } do{}while(0)
-#define errlog(X,Y) {syslog(LOG_ERR, "%s", (boost::format((X)) % Y).str().c_str()); \
-    if(g_console) cout << boost::format((X)) %Y << endl; }do{}while(0)

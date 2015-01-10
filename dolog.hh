@@ -15,7 +15,7 @@
           errlog("Unable to bind to %s: %s", ca.toStringWithPort(), strerr(errno));
 
    If bool g_console is true, will log to stdout. Will syslog in any case with LOG_INFO,
-   LOG_WARNING, LOG_ERR respectively.
+   LOG_WARNING, LOG_ERR respectively. If g_verbose=false, infolog is a noop.
    More generically, dolog(someiostream, "Hello %s", stream) will log to someiostream
 
    This will happily print a string to %d! Doesn't do further format processing.
@@ -46,6 +46,7 @@ void dolog(std::ostream& os, const char* s, T value, Args... args)
 }
 
 extern bool g_console;
+extern bool g_verbose;
 
 template<typename... Args>
 void genlog(int level, const char* s, Args... args)
@@ -60,7 +61,8 @@ void genlog(int level, const char* s, Args... args)
 template<typename... Args>
 void infolog(const char* s, Args... args)
 {
-  genlog(LOG_INFO, s, args...);
+  if(g_verbose)
+    genlog(LOG_INFO, s, args...);
 }
 
 template<typename... Args>

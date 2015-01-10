@@ -16,7 +16,7 @@ namespace po = boost::program_options;
 po::variables_map g_vm;
 bool g_verbose;
 bool g_console;
-
+bool g_http10;
 using namespace std;
 
 void startCarbonThread(int sock, ComboAddress remote)
@@ -161,6 +161,7 @@ try
     YaHTTP::Response resp(req);
     ostringstream body;
 //    dumpRequest(req);
+    resp.status=200;
     if(req.getvars["do"]=="store") {
       StatStorage ss(g_vm["stats-directory"].as<string>());
       ss.store(req.getvars["name"], atoi(req.getvars["timestamp"].c_str()), 
@@ -263,11 +264,16 @@ try
     }
     resp.body=body.str();
     resp.headers["Content-Length"]=boost::lexical_cast<string>(resp.body.length());
-    resp.headers["Connection"]="Keep-Alive";
+    if(g_http10)
+      resp.headers["Connection"]="Close"; 
+    else
+      resp.headers["Connection"]="Keep-Alive";
     ostringstream ostr;
     ostr << resp;
     
     writen(sock, ostr.str());
+    if(g_http10)
+      break;
   }
   close(sock);
 }
@@ -277,6 +283,7 @@ catch(exception& e) {
 }
 
 void webServerThread(int sock, const ComboAddress& local)
+try
 {
   for(;;) {
     ComboAddress remote=local; // sets the family flag right
@@ -288,6 +295,10 @@ void webServerThread(int sock, const ComboAddress& local)
     else 
       errlog("Error from accept: %s", strerror(errno));
   }
+}
+catch(...)
+{
+  errlog("Webserver thread died because of exception");
 }
 
 void launchWebserver(int s, const ComboAddress& local)
@@ -303,6 +314,7 @@ void processCommandLine(int argc, char **argv)
     ("help,h", "produce help message")
     ("carbon-address", po::value<string>()->default_value("[::]:2003"), "Accept carbon data on this address")
     ("webserver-address", po::value<string>()->default_value("[::]:8000"), "Provide HTTP service on this address")
+    ("http1.0", "If set, use http 1.0 semantics for lighttpd proxy")
     ("quiet", po::value<bool>()->default_value(true), "don't be too noisy")
     ("daemon", po::value<bool>()->default_value(true), "run in background")
     ("stats-directory", po::value<string>()->default_value("./stats"), "Store/access statistics from this directory");
@@ -320,6 +332,8 @@ void processCommandLine(int argc, char **argv)
     cout<<desc<<endl;
     exit(EXIT_SUCCESS);
   }
+  if(g_vm.count("http1.0"))
+    g_http10=true;
 }
 
 

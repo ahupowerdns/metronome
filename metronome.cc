@@ -161,6 +161,7 @@ try
     YaHTTP::Response resp(req);
     ostringstream body;
 //    dumpRequest(req);
+    resp.status=200;
     if(req.getvars["do"]=="store") {
       StatStorage ss(g_vm["stats-directory"].as<string>());
       ss.store(req.getvars["name"], atoi(req.getvars["timestamp"].c_str()), 
@@ -277,6 +278,7 @@ catch(exception& e) {
 }
 
 void webServerThread(int sock, const ComboAddress& local)
+try
 {
   for(;;) {
     ComboAddress remote=local; // sets the family flag right
@@ -288,6 +290,10 @@ void webServerThread(int sock, const ComboAddress& local)
     else 
       errlog("Error from accept: %s", strerror(errno));
   }
+}
+catch(...)
+{
+  errlog("Webserver thread died because of exception");
 }
 
 void launchWebserver(int s, const ComboAddress& local)

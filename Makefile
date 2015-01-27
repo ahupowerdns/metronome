@@ -1,5 +1,4 @@
 -include sysdeps/$(shell uname).inc
-
 VERSION=0.1
 
 
@@ -9,7 +8,7 @@ endif
 
 CXXFLAGS?=-Wall -O3 -ggdb -I. -I yahttp/yahttp  -pthread -MMD -MP -DYAHTTP_MAX_URL_LENGTH=16384 $(CXX2011FLAGS) # -Wno-unused-local-typedefs 
 CFLAGS=-Wall -I.  -O3 -MMD -MP
-LDFLAGS+=$(CXX2011FLAGS) -pthread  -Wl,-Bstatic $(LIBRARIES) -lstdc++ -lgcc -lz -Wl,-Bdynamic -static-libgcc -lm -lc
+LDFLAGS+=$(CXX2011FLAGS) -pthread  $(STATICFLAGS)
 CHEAT_ARG := $(shell ./update-git-hash-if-necessary)
 
 SHIPPROGRAMS=metronome msubmit

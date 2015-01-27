@@ -3,6 +3,7 @@
 #include <vector>
 #include <limits>
 #include <tuple>
+#include <ctime>
 
 //! make your own instance, not thread safe
 class StatStorage

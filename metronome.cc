@@ -177,7 +177,7 @@ try
       for(const auto& metric : metrics)  {
 	if(&metric != &metrics[0]) 
 	  body<<',';
-	body<<'\''<<metric<<'\'';
+	body<<'"'<<metric<<'"';
       }
       body << "]});";
     }

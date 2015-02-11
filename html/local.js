@@ -4,7 +4,7 @@ var updateEverything = function(){}
 $(document).ready(function() {
     $.ajaxSetup({ cache: false });
     
-    var m = new Metronome( {url: "http://xs.powerdns.com:8000/", datapoints: 150 });
+    var m = new Metronome( {url: "http://127.0.0.1:8000/", datapoints: 150 });
 
     $(window).bind('popstate',  
 		   function(event) {

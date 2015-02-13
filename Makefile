@@ -3,7 +3,7 @@ VERSION=0.1
 
 
 ifeq ($(CXX),clang++)
-	CXX2011FLAGS=-std=c++11 -stdlib=libc++
+	CXX2011FLAGS?=-std=c++11 -stdlib=libc++
 endif
 
 CXXFLAGS?=-Wall -O3 -ggdb -I. -I yahttp/yahttp  -pthread -MMD -MP -DYAHTTP_MAX_URL_LENGTH=16384 $(CXX2011FLAGS) # -Wno-unused-local-typedefs 

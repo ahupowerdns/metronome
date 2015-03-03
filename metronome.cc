@@ -173,11 +173,16 @@ try
       resp.headers["Access-Control-Allow-Origin"]= "*";
       body<<req.getvars["callback"]<<"(";
       body<<"{ \"metrics\": [";
-      auto metrics = ss.getMetrics();
-      for(const auto& metric : metrics)  {
-	if(&metric != &metrics[0]) 
-	  body<<',';
-	body<<'"'<<metric<<'"';
+      try {
+        auto metrics = ss.getMetrics();
+        for(const auto& metric : metrics)  {
+        if(&metric != &metrics[0])
+          body<<',';
+        body<<'"'<<metric<<'"';
+	      }
+      }
+      catch(exception& e) {
+        body<< "], \"messages\": [\""<<e.what()<<"\"";
       }
       body << "]});";
     }

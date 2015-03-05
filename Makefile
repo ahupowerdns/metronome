@@ -1,7 +1,6 @@
 -include sysdeps/$(shell uname).inc
 VERSION=0.1
 
-
 ifeq ($(CXX),clang++)
 	CXX2011FLAGS?=-std=c++11 -stdlib=libc++
 endif
@@ -12,7 +11,7 @@ LDFLAGS+=$(CXX2011FLAGS) -pthread  $(STATICFLAGS)
 CHEAT_ARG := $(shell ./update-git-hash-if-necessary)
 
 SHIPPROGRAMS=metronome msubmit
-PROGRAMS=$(SHIPPROGRAMS) 
+PROGRAMS=$(SHIPPROGRAMS)
 
 all: $(PROGRAMS)
 
@@ -35,13 +34,13 @@ install: metronome
 	install -s $(SHIPPROGRAMS) $(DESTDIR)/usr/bin/
 
 clean:
-	rm -f *~ *.o *.d yahttp/yahttp/*.o $(PROGRAMS) githash.h 
+	rm -f *~ *.o *.d yahttp/yahttp/*.o $(PROGRAMS) githash.h
 
 package: all
 	rm -rf dist
 	DESTDIR=dist make install
-	fpm -s dir -f -t rpm -n metronome -v 1.g$(shell cat githash) -C dist .
-	fpm -s dir -f -t deb -n metronome -v 1.g$(shell cat githash) -C dist .	
+	fpm -s dir -f -t rpm -n metronome -v ${VERSION}.$(shell date +%Y%m%d).g$(shell cat githash) --iteration 1 -C dist .
+	fpm -s dir -f -t deb -n metronome -v ${VERSION}+$(shell date +%Y%m%d).g$(shell cat githash) --iteration 1 -C dist .
 	rm -rf dist
 
 codedocs: codedocs/html/index.html

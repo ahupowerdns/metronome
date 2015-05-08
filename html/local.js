@@ -213,6 +213,38 @@ $(document).ready(function() {
 	else if(components[2]=="auth") { 
 	    configs=[config3, config7, config7a, config7aa, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];
 	}
+	else if(components[0]=="dnsdist") {
+	    configs=[ { 
+		items: [ 
+		    {name: "dnsdist."+components[1]+".main.servfail-responses", legend: "Servfail/s"},
+		    {name: "dnsdist."+components[1]+".main.queries", legend: "Queries/s"},
+		    {name: "dnsdist."+components[1]+".main.responses", legend: "Responses/s"}
+
+		]
+	    },
+            { 
+		items: [ 
+		    {name: "dnsdist."+components[1]+".main.downstream-timeouts", legend: "Timeouts/s"},
+		    {name: "dnsdist."+components[1]+".main.downstream-send-errors", legend: "Errors/s"},
+		]
+	    },
+            { 
+		items: [ 
+		    {name: "dnsdist."+components[1]+".main.rule-drop", legend: "Rule drops/s"},
+		    {name: "dnsdist."+components[1]+".main.acl-drops", legend: "ACL drops/s"},
+		]
+	    },
+		      { renderer: 'stack', items: [ 
+			  { name: "dnsdist."+components[1]+".main.latency-slow", legend: "Slow answers/s"},
+			  { name: "dnsdist."+components[1]+".main.latency0-1", legend: "<1 ms answers/s"},
+			  { name: "dnsdist."+components[1]+".main.latency1-10", legend: "1-10ms answers/s"},
+			  { name: "dnsdist."+components[1]+".main.latency10-50", legend: "10-50ms answers/s"},
+			  { name: "dnsdist."+components[1]+".main.latency50-100", legend: "50-100ms answers/s"},
+			  { name: "dnsdist."+components[1]+".main.latency100-1000", legend: "100-1000ms answers/s"} ]}		  
+			  
+		      ];
+
+        }
 	else if(components[0]=="system" && components[2]=="network") { 
 	    configs=[ { 
 		items: [ 

@@ -222,6 +222,13 @@ $(document).ready(function() {
 
 		]
 	    },
+		      { renderer: 'stack', items: [ 
+			  { name: "dnsdist."+components[1]+".main.latency-slow", legend: "Slow answers/s"},
+			  { name: "dnsdist."+components[1]+".main.latency0-1", legend: "<1 ms answers/s"},
+			  { name: "dnsdist."+components[1]+".main.latency1-10", legend: "1-10ms answers/s"},
+			  { name: "dnsdist."+components[1]+".main.latency10-50", legend: "10-50ms answers/s"},
+			  { name: "dnsdist."+components[1]+".main.latency50-100", legend: "50-100ms answers/s"},
+			  { name: "dnsdist."+components[1]+".main.latency100-1000", legend: "100-1000ms answers/s"} ]}		  	    ,
             { 
 		items: [ 
 		    {name: "dnsdist."+components[1]+".main.downstream-timeouts", legend: "Timeouts/s"},
@@ -234,13 +241,12 @@ $(document).ready(function() {
 		    {name: "dnsdist."+components[1]+".main.acl-drops", legend: "ACL drops/s"},
 		]
 	    },
-		      { renderer: 'stack', items: [ 
-			  { name: "dnsdist."+components[1]+".main.latency-slow", legend: "Slow answers/s"},
-			  { name: "dnsdist."+components[1]+".main.latency0-1", legend: "<1 ms answers/s"},
-			  { name: "dnsdist."+components[1]+".main.latency1-10", legend: "1-10ms answers/s"},
-			  { name: "dnsdist."+components[1]+".main.latency10-50", legend: "10-50ms answers/s"},
-			  { name: "dnsdist."+components[1]+".main.latency50-100", legend: "50-100ms answers/s"},
-			  { name: "dnsdist."+components[1]+".main.latency100-1000", legend: "100-1000ms answers/s"} ]}		  
+	    { items: [
+	        { name: "dnsdist."+components[1]+".main.latency-avg100", legend: "100 packet avg latency", kind: "gauge"},
+	        { name: "dnsdist."+components[1]+".main.latency-avg10000", legend: "10000 packet avg latency", kind: "gauge"},	        
+	        { name: "dnsdist."+components[1]+".main.latency-avg1000000", legend: "1000000 packet avg latency", kind: "gauge"},	        
+            ]}
+
 			  
 		      ];
 

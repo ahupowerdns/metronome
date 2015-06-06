@@ -25,6 +25,8 @@ To view, try html/index.html
 
 Installing
 ==========
+Dependencies include a recent g++ (4.7+) and libboost.
+
 Either install libeigen3-dev (Debian, Ubuntu), eigen3-devel (Fedora, EPEL), or:
 
     $ wget http://bitbucket.org/eigen/eigen/get/3.2.1.tar.bz2

@@ -31,6 +31,13 @@ Either install libeigen3-dev (Debian, Ubuntu), eigen3-devel (Fedora, EPEL), or:
     $ tar xf 3.2.1.tar.bz2
     $ ln -s eigen-eigen-*/Eigen .
 
+Now configure yahttp:
+
+    $ cd yahttp
+    $ ./autogen.sh
+    $ ./configure
+    $ cd -
+
 Then:
 
     $ make

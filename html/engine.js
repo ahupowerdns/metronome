@@ -85,6 +85,9 @@ Metronome.prototype.getAllMetrics=function(destination)
 	          window.clearTimeout(alerter);	      
 		  var theservers={};
 		  that.hierarchy={};
+		  if(data.messages) {
+		    $("#message").append(data.messages[0]);
+		  }
 		  $.each(data.metrics, function(a, b) {
 		      var parts = b.split('.');
 		      var name = parts.slice(0,3).join('.');

@@ -176,7 +176,7 @@ Metronome.prototype._showGraph = function (config) {
 
 		for (num in items) {
 			plotseries.push({
-				color: colors[num],
+				color: colors[num % colors.length],
 				data: toplot[num],
 				name: items[num].legend,
 				renderer: 'line'

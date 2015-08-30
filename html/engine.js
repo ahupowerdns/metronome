@@ -1,4 +1,4 @@
-"use strict";
+'use strict';
 
 function Metronome(comconfig)
 {
@@ -12,10 +12,10 @@ function Metronome(comconfig)
 
 /* The ritual: 
    0) Have a 'div' where you want your graphs
-   1) make a Metronome object -> new Metronome({url: "http://xs.powerdns.com:8080", datapoints: 150}) 
+   1) make a Metronome object -> new Metronome({url: 'http://xs.powerdns.com:8080', datapoints: 150}) 
    2) call its getAllMetrics method with a startup function
    3) Your startup function gets called with metronome object which is ready & includes a metric hierarchy & server list
-   4) In startup function, create a graphing config based on hierarchy & server list, and submit it setupHTML("#yourdiv", configs),
+   4) In startup function, create a graphing config based on hierarchy & server list, and submit it setupHTML('#yourdiv', configs),
       which populates your div with empty graphs of the right size
    5) Call the updateGraphs method to actually retrieve data & draw graphs
    6) Call updateGraphs periodically (every m.getNaturalInterval() milliseconds if you want smooth transitions)
@@ -26,8 +26,8 @@ The graph config, as passed to setupGraphs:
   Each metric has a 'name', which says which metric is to be graphed, plus a legend which is the human friendly name
   Example:
   		configs.push({items: [ 
-		    { name: "system.xs.interfaces.eth0.tx_packets", legend: "eth0 TX packets/s"},
-		    { name: "system.xs.interfaces.eth0.rx_packets", legend: "eth0 RX packets/s"},
+		    { name: 'system.xs.interfaces.eth0.tx_packets', legend: 'eth0 TX packets/s'},
+		    { name: 'system.xs.interfaces.eth0.rx_packets', legend: 'eth0 RX packets/s'},
 		    ]});
   By default, we plot the nonNegativeDerivative of the metric. 
   To turn bits into bytes, add 'bitsToBytes: true'.
@@ -43,8 +43,8 @@ The graph config, as passed to setupGraphs:
   
   	configs.push({ items: [ 
             { 
-		metrics: [servername+".cache-hits",servername+".cache-misses"], 
-		legend: "% cache hitrate", 
+		metrics: [servername+'.cache-hits',servername+'.cache-misses'], 
+		legend: '% cache hitrate', 
 		formula: m.percentalizer
 	    });    
 */
@@ -58,7 +58,7 @@ Metronome.prototype.percentalizer=function(r, d)
 	return 0;
 }
 
-// Call this to get array of all metrics at a certain level (listMetricaAt("system", "server1", "network", "interfaces"))
+// Call this to get array of all metrics at a certain level (listMetricaAt('system', 'server1', 'network', 'interfaces'))
 Metronome.prototype.listMetricsAt=function()
 {
   var ref=this.hierarchy;
@@ -77,9 +77,9 @@ Metronome.prototype.listMetricsAt=function()
 // the startup function, 
 Metronome.prototype.getAllMetrics=function(destination) 
 {
-    var qstring = this.comconfig.url+"?do=get-metrics&callback=?&name";
+    var qstring = this.comconfig.url+'?do=get-metrics&callback=?&name';
     var that=this;
-    var alerter = window.setTimeout(function(){ alert("Could not contact Metronome statistics server at "+that.comconfig.url+". This is either due to a connectivity problem or a intervening firewall, or otherwise a timeout."); }, 2500);
+    var alerter = window.setTimeout(function(){ alert('Could not contact Metronome statistics server at '+that.comconfig.url+'. This is either due to a connectivity problem or a intervening firewall, or otherwise a timeout.'); }, 2500);
     $.getJSON(qstring, 
 	      function(data) {
 	          window.clearTimeout(alerter);	      
@@ -119,7 +119,7 @@ Metronome.prototype.updateGraphs=function()
 Metronome.prototype._showGraph=function(config) {
     var items = config.items;
 
-    var qstring = this.comconfig.url+"?do=retrieve&callback=?&name=";
+    var qstring = this.comconfig.url+'?do=retrieve&callback=?&name=';
     var metrics=[];
     for(var item in items) {
 	if(items[item].name != undefined)
@@ -134,7 +134,7 @@ Metronome.prototype._showGraph=function(config) {
     qstring+= metrics.join(',');
 
     var epoch = (new Date).getTime()/1000;
-    qstring+="&begin="+(epoch+this.comconfig.beginTime)+"&end="+(epoch)+"&datapoints="+this.comconfig.datapoints;
+    qstring+='&begin='+(epoch+this.comconfig.beginTime)+'&end='+(epoch)+'&datapoints='+this.comconfig.datapoints;
 
     var that=this;
     $.getJSON(qstring, 
@@ -156,10 +156,10 @@ Metronome.prototype._showGraph=function(config) {
 			  grouped[value[0]].derivative[num]=value[1];
 		      });
 		  });
-		  //		      console.log("Grouped", grouped);
+		  //		      console.log('Grouped', grouped);
 		  for(var num in items) {
 		      var series;
-		      if(items[num].kind=="gauge")
+		      if(items[num].kind=='gauge')
 			  series = fullseries.raw;
 		      else
 			  series = fullseries.derivative;
@@ -187,10 +187,10 @@ Metronome.prototype._showGraph=function(config) {
 		  for(num in items) {
 		      plotseries.push( { color: colors[num], data: toplot[num], name: items[num].legend, renderer: 'line'});
 		  }
-		  config.div.html('<div class="chart_container"><div class="y_axis"></div><div class="chart"></div><div class="legend"></div>');
+		  config.div.html('<div class='chart_container'><div class='y_axis'></div><div class='chart'></div><div class='legend'></div>');
 
 		  var graph = new Rickshaw.Graph( {
-		      element: config.div.find(".chart")[0], 
+		      element: config.div.find('.chart')[0], 
 		      width: 550, 
 		      height: 250, 
                       renderer: config.renderer || 'multi',
@@ -210,12 +210,12 @@ Metronome.prototype._showGraph=function(config) {
 		      orientation: 'left',
 		      tickFormat:
 		      Rickshaw.Fixtures.Number.formatKMBT,
-		      element: config.div.find(".y_axis")[0]
+		      element: config.div.find('.y_axis')[0]
 		  } );
 		  
 		  var legend = new Rickshaw.Graph.Legend( {
                       graph: graph,
-                      element: config.div.find(".legend")[0]
+                      element: config.div.find('.legend')[0]
                   } );		      
 	
 		  graph.render();
@@ -224,8 +224,8 @@ Metronome.prototype._showGraph=function(config) {
 		      graph: graph,
 
 		      formatter: function(series, x, y) {			  
-			  var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
-			  var content = swatch + series.name + ": " + y.toFixed(2);
+			  var swatch = '<span class='detail_swatch' style='background-color: ' + series.color + ''></span>';
+			  var content = swatch + series.name + ': ' + y.toFixed(2);
 			  return content;
 		      },
 		      xFormatter: function(x) {
@@ -245,7 +245,7 @@ Metronome.prototype.getNaturalInterval=function()
 Metronome.prototype.setupGraphs=function(where, configs)
 {  
   this.configs=[];
-  $(where).html("");
+  $(where).html('');
   for(var a in configs) {
     configs[a].div = $('<div style="height: 300px;"/>');
     $(where).append(configs[a].div);

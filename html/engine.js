@@ -53,9 +53,9 @@ The graph config, as passed to setupGraphs:
 Metronome.prototype.percentalizer=function(r, d)
 {
 	if(d[0] > 0 && d[1] > 0)
-	return d[0]*100.0/(d[0] +d[1]);
+		return d[0]*100.0/(d[0] +d[1]);
 	else
-	return 0;
+		return 0;
 }
 
 // Call this to get array of all metrics at a certain level (listMetricaAt('system', 'server1', 'network', 'interfaces'))
@@ -94,7 +94,7 @@ Metronome.prototype.getAllMetrics=function(destination)
 				var ref = that.hierarchy;
 				for(var j = 0 ; j < i; ++j) {
 					if(ref[parts[j]]==undefined)
-					ref[parts[j]]={};
+						ref[parts[j]]={};
 					ref = ref[parts[j]];
 				}
 			}
@@ -122,8 +122,8 @@ Metronome.prototype._showGraph=function(config) {
 	var qstring = this.comconfig.url+'?do=retrieve&callback=?&name=';
 	var metrics=[];
 	for(var item in items) {
-	if(items[item].name != undefined)
-		metrics.push(items[item].name);
+		if(items[item].name != undefined)
+			metrics.push(items[item].name);
 		if(items[item].metrics != undefined) {
 			$.each(items[item].metrics, function(key, value) {
 				metrics.push(value);

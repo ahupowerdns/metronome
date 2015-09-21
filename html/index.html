@@ -1,95 +1,80 @@
 <!DOCTYPE html>
-<head>                                                                  
-<meta charset="utf-8" />
-<script src="js/jquery-1.8.3.min.js"></script>        
-<script src="js/d3.v3.js"></script>        
-<script src="js/rickshaw.min.js"></script>        
-<script src="js/purl.js"></script>
-
-<link type="text/css" rel="stylesheet" href="graph.css">
-<link type="text/css" rel="stylesheet" href="detail.css">
-<link type="text/css" rel="stylesheet" href="legend.css">
-<link type="text/css" rel="stylesheet" href="lines.css">
-
-<script src="engine.js"></script>
-<script src="local.js"></script>
-<body>                                                                  
-<a href="https://github.com/ahuPowerDNS/metronome"><img style="position: absolute; top: 0;
-right: 0; border: 0;"
-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"
-alt="Fork me on GitHub"></a>
-<style>
-.chart_container {
-        top: 25px;
-        position: relative;
-        font-family: Arial, Helvetica, sans-serif;
-}
-                
-.chart {
-	position: relative;
-	left: 40px;
-}
-.y_axis {
-	position: absolute;
-	top: 0;
-	bottom: 0;
-	width: 40px;
-}
-.legend {
-	position: absolute;
-        top: 0;
-        bottom: 0;
-	left: 610px;
-	width: 150px;
-}
-
-.rickshaw_graph .x_tick .title {
-    bottom: -24px;
-    left: -18px;
-}
-
-</style>
-
-
-<form action="">
-<table width="600"><tr><td><img src="https://www.powerdns.com/img/powerdns-logo-220px.png"/></td>
-<td align="right">
-
-<select id="server" onChange="updateFromForm();" name="server">
-</select>
-</td>
-<td align="right">
-
-<select id="duration" onChange="updateFromForm();" name="duration">
-<option value="-900">15 Minutes</option>
-<option value="-3600">1 Hour</option>
-<option value="-7200" selected="selected">2 Hours</option>
-<option value="-14400">4 Hours</option>
-<option value="-21600">6 Hours</option>
-<option value="-43200">12 Hours</option>
-<option value="-86400">1 Day</option>
-<option value="-172800">2 Days</option>
-<option value="-604800">1 Week</option>
-</select>
-
-</td></tr></table>
-</form>
-<div id="graphs">
-</div>
-
-<div>
-<br/><br/>
-<p></p><p></p>
-<hr/>
-Built with <a href="https://github.com/ahupowerdns/metronome/">Metronome</a>.
-You are most cordially invited to <a
-href="http://blog.powerdns.com/2014/12/11/powerdns-graphing-as-a-service/">
-add your
-own PowerDNS instances</a> to this "<a
-href="http://xs.powerdns.com/metronome/?server=pdns.xs.auth&beginTime=-3600">graph as a
-service</a>". It can be as easy
-as setting: carbon-server=82.94.213.34, or at runtime: rec_control
-set-carbon-server 82.94.213.34
-</div>
-</body>                                                                 
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<script src="js/jquery-1.8.3.min.js"></script>
+		<script src="js/d3.v3.js"></script>
+		<script src="js/rickshaw.min.js"></script>
+		<script src="js/purl.js"></script>
+		<link type="text/css" rel="stylesheet" href="graph.css">
+		<link type="text/css" rel="stylesheet" href="detail.css">
+		<link type="text/css" rel="stylesheet" href="legend.css">
+		<link type="text/css" rel="stylesheet" href="lines.css">
+		<script src="engine.js"></script>
+		<script src="local.js"></script>
+		<!-- todo: try moving these javascript files to the end of the html -->
+	</head>
+	<body>
+		<a href="https://github.com/ahuPowerDNS/metronome"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
+		<style type="text/css">
+			.chart_container {
+				top: 25px;
+				position: relative;
+				font-family: Arial, Helvetica, sans-serif;
+			}
+			.chart {
+				position: relative;
+				left: 40px;
+			}
+			.y_axis {
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				width: 40px;
+			}
+			.legend {
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				left: 610px;
+				width: 150px;
+			}
+			.rickshaw_graph .x_tick .title {
+				bottom: -24px;
+				left: -18px;
+			}
+		</style>
+		<form action="">
+			<table width="600">
+				<tr>
+					<td>
+						<img src="https://www.powerdns.com/img/powerdns-logo-220px.png"/>
+					</td>
+					<td align="right">
+						<select id="server" onchange="updateFromForm();" onkeyup="updateFromForm();" name="server"></select>
+					</td>
+					<td align="right">
+						<select id="duration" onchange="updateFromForm();" onkeyup="updateFromForm();" name="duration">
+							<option value="-900">15 Minutes</option>
+							<option value="-3600">1 Hour</option>
+							<option value="-7200" selected="selected">2 Hours</option>
+							<option value="-14400">4 Hours</option>
+							<option value="-21600">6 Hours</option>
+							<option value="-43200">12 Hours</option>
+							<option value="-86400">1 Day</option>
+							<option value="-172800">2 Days</option>
+							<option value="-604800">1 Week</option>
+						</select>
+					</td>
+				</tr>
+			</table>
+		</form>
+		<div id="graphs"></div>
+		<div>
+			<br/><br/><!-- todo: replace these with proper padding-top in the parent div -->
+			<p></p><p></p>
+			<hr/>
+			Built with <a href="https://github.com/ahupowerdns/metronome/">Metronome</a>. You are most cordially invited to <a href="http://blog.powerdns.com/2014/12/11/powerdns-graphing-as-a-service/">add your own PowerDNS instances</a> to this "<a href="http://xs.powerdns.com/metronome/?server=pdns.xs.auth&beginTime=-3600">graph as a service</a>". It can be as easy as setting: carbon-server=82.94.213.34, or at runtime: rec_control set-carbon-server 82.94.213.34
+		</div>
+	</body>
 </html>

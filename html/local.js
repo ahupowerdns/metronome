@@ -64,6 +64,12 @@ $(document).ready(function() {
             { name: servername+".all-outqueries", legend: "All outqueries/s"}
         ]};	
 	
+        var config1a = { items: [ 
+            { name: servername+".qa-latency", legend: "Latency (usec)", kind: "gauge"}
+            ]};
+
+
+	
 	var config2 = { renderer: 'stack', items: [ 
             { name: servername+".answers-slow", legend: "Slow answers/s"},
 	    { name: servername+".packetcache-hits", legend: "0ms answers/s"},
@@ -96,6 +102,8 @@ $(document).ready(function() {
 	    }]};
 	
 	var config3a = { items: [ 
+            { name: servername+".outgoing-timeouts", legend: "Out.timeouts/s" }, 	
+            { name: servername+".unreachables", legend: "Unreachable/s" }, 	
             { name: servername+".throttled-out", legend: "Throttled/s" }, 
             { name: servername+".resource-limits", legend: "Resource limited/s"},
             { name: servername+".over-capacity-drops", legend: "Capacity drop/s" }
@@ -210,7 +218,7 @@ $(document).ready(function() {
 	var configs;
 	var components = servername.split('.');
 	if(components[2]=="recursor") { 
-	    configs=[config1, config2, config2a, config2b, config3, config3a, config3b, config4, config5, config6];
+	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3b, config4, config5, config6];
 	}
 	else if(components[2]=="auth") { 
 	    configs=[config3, config7, config7a, config7aa, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];

@@ -97,7 +97,9 @@ $(document).ready(function() {
 	
 	var config3a = { items: [ 
             { name: servername+".throttled-out", legend: "Throttled/s" }, 
-            { name: servername+".resource-limits", legend: "Resource limited/s"}]};
+            { name: servername+".resource-limits", legend: "Resource limited/s"},
+            { name: servername+".over-capacity-drops", legend: "Capacity drop/s" }
+            ]};
 
 	var config3b ={ items: [
             { name: servername+".concurrent-queries", legend: "Concurrent queries", kind: "gauge"}

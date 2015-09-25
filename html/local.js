@@ -136,7 +136,10 @@ $(document).ready(function() {
 
 	var config7 = { items: [ 
             { name: servername+".udp-queries", legend: "UDP Questions/s" }, 
-            { name: servername+".udp-answers", legend: "UDP Answers/s"}]};
+            { name: servername+".udp-answers", legend: "UDP Answers/s"}, 
+            { name: servername+".udp6-queries", legend: "UDP6 Questions/s" }, 
+            { name: servername+".udp6-answers", legend: "UDP6 Answers/s"}            
+            ]};
 
 	var config7a = { items: [ 
             { name: servername+".tcp-queries", legend: "TCP Questions/s" }, 
@@ -149,6 +152,15 @@ $(document).ready(function() {
             { name: servername+".recursion-unanswered", legend: "RD Unanswered/s"}            
             
             ]};
+
+        var config7ab = { items: [ 
+            { name: servername+".udp-recvbuf-errors", legend: "UDP recvbuf errors/s" }, 
+            { name: servername+".udp-sndbuf-errors", legend: "UDP sndbuf errors/s"},
+            { name: servername+".udp-noport-errors", legend: "UDP noport errors/s"},
+            { name: servername+".udp-in-errors", legend: "UDP in-errors/s"}            
+            
+            ]};
+
 
 	var config7b = { items: [ 
             { name: servername+".qsize-q", legend: "DB Queue", kind: "gauge"}
@@ -221,7 +233,7 @@ $(document).ready(function() {
 	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3b, config4, config5, config6];
 	}
 	else if(components[2]=="auth") { 
-	    configs=[config3, config7, config7a, config7aa, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];
+	    configs=[config3, config7, config7a, config7aa, config7ab, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];
 	}
 	else if(components[0]=="dnsdist") {
 	    configs=[ { 

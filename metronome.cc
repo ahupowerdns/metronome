@@ -51,6 +51,29 @@ catch(exception& e)
   close(sock);
 }
 
+static string htmlescape(const string &s) {
+  string result;
+  for(string::const_iterator it=s.begin(); it!=s.end(); ++it) {
+    switch (*it) {
+    case '&':
+      result += "&amp;";
+      break;
+    case '<':
+      result += "&lt;";
+      break;
+    case '>':
+      result += "&gt;";
+      break;
+    case '"':
+      result += "&quot;";
+      break;
+    default:
+      result += *it;
+    }
+  }
+  return result;
+}
+
 void dumpRequest(const YaHTTP::Request& req)
 {
   cout<<"Headers: \n";
@@ -217,7 +240,7 @@ try
 	  body<<',';
 	first=false;
 	
-	body<< '"' << name << "\": [";
+	body<< '"' << htmlescape(name) << "\": [";
 	int count=0;
 	vector<StatStorage::Datum> derived;
 

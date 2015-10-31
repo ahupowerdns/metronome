@@ -109,6 +109,24 @@ $(document).ready(function() {
             { name: servername+".over-capacity-drops", legend: "Capacity drop/s" }
             ]};
 
+	var config3aa = { renderer: 'stack', items: [ 
+            { name: servername+".auth4-answers0-1", legend: "<1 ms auth4 answers/s"},
+            { name: servername+".auth4-answers1-10", legend: "1-10ms auth4 answers/s"},
+            { name: servername+".auth4-answers10-100", legend: "10-100ms auth4 answers/s"},
+            { name: servername+".auth4-answers100-1000", legend: "100-1000ms auth4 answers/s"},
+            { name: servername+".auth4-answers-slow", legend: "Slow auth4 answers/s"},
+            { name: servername+".outgoing4-timeouts", legend: "Out4.timeouts/s" } 	
+	]};
+
+	var config3ab = { renderer: 'stack', items: [ 
+            { name: servername+".auth6-answers0-1", legend: "<1 ms auth6 answers/s"},
+            { name: servername+".auth6-answers1-10", legend: "1-10ms auth6 answers/s"},
+            { name: servername+".auth6-answers10-100", legend: "10-100ms auth6 answers/s"},
+            { name: servername+".auth6-answers100-1000", legend: "100-1000ms auth6 answers/s"},
+            { name: servername+".auth6-answers-slow", legend: "Slow auth6 answers/s"},
+            { name: servername+".outgoing6-timeouts", legend: "Out6.timeouts/s" } 	
+	]};
+
 	var config3b ={ items: [
             { name: servername+".concurrent-queries", legend: "Concurrent queries", kind: "gauge"}
         ]};
@@ -230,7 +248,7 @@ $(document).ready(function() {
 	var configs;
 	var components = servername.split('.');
 	if(components[2]=="recursor") { 
-	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3b, config4, config5, config6];
+	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3b, config4, config5, config6];
 	}
 	else if(components[2]=="auth") { 
 	    configs=[config3, config7, config7a, config7aa, config7ab, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];
@@ -267,7 +285,10 @@ $(document).ready(function() {
 	        { name: "dnsdist."+components[1]+".main.latency-avg100", legend: "100 packet avg latency", kind: "gauge"},
 	        { name: "dnsdist."+components[1]+".main.latency-avg10000", legend: "10000 packet avg latency", kind: "gauge"},	        
 	        { name: "dnsdist."+components[1]+".main.latency-avg1000000", legend: "1000000 packet avg latency", kind: "gauge"},	        
-            ]}
+            ]}, 
+	    { items: [
+	        { name: "dnsdist."+components[1]+".main.real-memory-usage", legend: "Memory usage (bytes)", kind: "gauge"}
+            ]}            
 
 			  
 		      ];

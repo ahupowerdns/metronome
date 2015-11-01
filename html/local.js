@@ -151,6 +151,14 @@ $(document).ready(function() {
             { name: servername+".cache-entries", legend: "Cache entries", kind: "gauge"}, 
             { name: servername+".packetcache-entries", legend: "Packetcache entries", kind: "gauge"}]};
 
+	var config6a=    { items: [
+	        { name: servername+".real-memory-usage", legend: "Memory usage (bytes)", kind: "gauge"}
+            ]};
+        var config6b=
+	    { items: [
+	        { name: servername+".uptime", legend: "Uptime (seconds)", kind: "gauge"}
+            ]};
+
 
 	var config7 = { items: [ 
             { name: servername+".udp-queries", legend: "UDP Questions/s" }, 
@@ -248,7 +256,7 @@ $(document).ready(function() {
 	var configs;
 	var components = servername.split('.');
 	if(components[2]=="recursor") { 
-	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3b, config4, config5, config6];
+	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3b, config4, config5, config6, config6a, config6b];
 	}
 	else if(components[2]=="auth") { 
 	    configs=[config3, config7, config7a, config7aa, config7ab, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];
@@ -288,9 +296,10 @@ $(document).ready(function() {
             ]}, 
 	    { items: [
 	        { name: "dnsdist."+components[1]+".main.real-memory-usage", legend: "Memory usage (bytes)", kind: "gauge"}
-            ]}            
-
-			  
+            ]},
+	    { items: [
+	        { name: "dnsdist."+components[1]+".main.uptime", legend: "Uptime (seconds)", kind: "gauge"}
+            ]}
 		      ];
 
         }

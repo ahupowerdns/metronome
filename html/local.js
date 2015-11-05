@@ -154,6 +154,8 @@ $(document).ready(function() {
 	var config6a=    { items: [
 	        { name: servername+".real-memory-usage", legend: "Memory usage (bytes)", kind: "gauge"}
             ]};
+            
+            
         var config6b=
 	    { items: [
 	        { name: servername+".uptime", legend: "Uptime (seconds)", kind: "gauge"}
@@ -297,6 +299,9 @@ $(document).ready(function() {
 	    { items: [
 	        { name: "dnsdist."+components[1]+".main.real-memory-usage", legend: "Memory usage (bytes)", kind: "gauge"}
             ]},
+	    { items: [
+	        { name: "dnsdist."+components[1]+".main.fd-usage", legend: "Used filedescriptors", kind: "gauge"}
+            ]},            
 	    { items: [
 	        { name: "dnsdist."+components[1]+".main.uptime", legend: "Uptime (seconds)", kind: "gauge"}
             ]}

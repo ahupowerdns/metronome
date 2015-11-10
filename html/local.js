@@ -307,6 +307,32 @@ $(document).ready(function() {
             ]}
 		      ];
 
+            if ("servers" in m.hierarchy["dnsdist"][components[1]]["main"]) {
+                var servers=m.listMetricsAt("dnsdist", components[1], "main", "servers");
+                var queries_values=[];
+                var drops_values=[];
+                var latency_values=[];
+                $.each(servers, function(key, val) {
+                    queries_values.push(
+                        { name: "dnsdist."+components[1]+".main.servers."+val+".queries", legend: val+" Queries/s"}
+                    );
+                    drops_values.push(
+                        { name: "dnsdist."+components[1]+".main.servers."+val+".drops", legend: val+" Drops/s"}
+                    );
+                    latency_values.push(
+                        { name: "dnsdist."+components[1]+".main.servers."+val+".latency", legend: val+" Latency", kind: "gauge"}
+                    );
+                });
+                configs.push(
+                    { renderer: 'stack', items: queries_values}
+                );
+                configs.push(
+                    { renderer: 'stack', items: drops_values}
+                );
+                configs.push(
+                    { items: latency_values}
+                );
+            }
         }
 	else if(components[0]=="system" && components[2]=="network") { 
 	    configs=[ { 

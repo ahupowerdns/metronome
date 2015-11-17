@@ -312,26 +312,63 @@ $(document).ready(function() {
                 var queries_values=[];
                 var drops_values=[];
                 var latency_values=[];
+                var senderrors_values=[];
+                var outstanding_values=[];
+                var per_server_values=[];
+                var servers_count=0;
                 $.each(servers, function(key, val) {
+                    servers_count++;
                     queries_values.push(
                         { name: "dnsdist."+components[1]+".main.servers."+val+".queries", legend: val+" Queries/s"}
                     );
                     drops_values.push(
                         { name: "dnsdist."+components[1]+".main.servers."+val+".drops", legend: val+" Drops/s"}
                     );
+                    senderrors_values.push(
+                        { name: "dnsdist."+components[1]+".main.servers."+val+".senderrors", legend: val+" Send Errors/s"}
+                    );
                     latency_values.push(
                         { name: "dnsdist."+components[1]+".main.servers."+val+".latency", legend: val+" Latency", kind: "gauge"}
                     );
+                    outstanding_values.push(
+                        { name: "dnsdist."+components[1]+".main.servers."+val+".outstanding", legend: val+" Outstanding", kind: "gauge"}
+                    );
+                    per_server_values.push(
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.servers."+val+".queries", legend: val+" Queries/s"}
+                        ]},
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.servers."+val+".drops", legend: val+" Drops/s"}
+                        ]},
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.servers."+val+".senderrors", legend: val+" Send Errors/s"}
+                        ]},
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.servers."+val+".outstanding", legend: val+" Outstanding", kind: "gauge"}
+                        ]},
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.servers."+val+".latency", legend: val+" Latency", kind: "gauge"}
+                        ]}
+                    );
                 });
-                configs.push(
-                    { renderer: 'stack', items: queries_values}
-                );
-                configs.push(
-                    { renderer: 'stack', items: drops_values}
-                );
-                configs.push(
-                    { items: latency_values}
-                );
+                if (servers_count > 1) {
+                    configs.push(
+                        { renderer: 'stack', items: queries_values}
+                    );
+                    configs.push(
+                        { renderer: 'stack', items: drops_values}
+                    );
+                    configs.push(
+                        { renderer: 'stack', items: senderrors_values}
+                    );
+                    configs.push(
+                        { renderer: 'stack', items: outstanding_values}
+                    );
+                    configs.push(
+                        { items: latency_values}
+                    );
+                }
+                configs.push.apply(configs, per_server_values);
             }
         }
 	else if(components[0]=="system" && components[2]=="network") { 

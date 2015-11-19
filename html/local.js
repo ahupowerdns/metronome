@@ -295,7 +295,11 @@ $(document).ready(function() {
 	        { name: "dnsdist."+components[1]+".main.latency-avg100", legend: "100 packet avg latency", kind: "gauge"},
 	        { name: "dnsdist."+components[1]+".main.latency-avg10000", legend: "10000 packet avg latency", kind: "gauge"},	        
 	        { name: "dnsdist."+components[1]+".main.latency-avg1000000", legend: "1000000 packet avg latency", kind: "gauge"},	        
-            ]}, 
+            ]},
+            { renderer: "stack", items: [
+                { metrics: ["dnsdist."+components[1]+".main.cpu-sys-msec"], legend: "System CPU%", formula: function(r,d) { return d[0]/10.0; } },
+                { metrics: ["dnsdist."+components[1]+".main.cpu-user-msec"], legend: "User CPU%", formula: function(r,d) { return d[0]/10.0; } },
+            ]},
 	    { items: [
 	        { name: "dnsdist."+components[1]+".main.real-memory-usage", legend: "Memory usage (bytes)", kind: "gauge"}
             ]},

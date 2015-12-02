@@ -370,6 +370,29 @@ $(document).ready(function() {
                 }
                 configs.push.apply(configs, per_server_values);
             }
+            if ("frontends" in m.hierarchy["dnsdist"][components[1]]["main"]) {
+                var frontends=m.listMetricsAt("dnsdist", components[1], "main", "frontends");
+                var queries_values=[];
+                var per_frontend_values=[];
+                var frontends_count=0;
+                $.each(frontends, function(key, val) {
+                    frontends_count++;
+                    queries_values.push(
+                        { name: "dnsdist."+components[1]+".main.frontends."+val+".queries", legend: val+" Queries/s"}
+                    );
+                    per_frontend_values.push(
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.frontends."+val+".queries", legend: val+" Queries/s"}
+                        ]}
+                    );
+                });
+                if (frontends_count > 1) {
+                    configs.push(
+                        { renderer: 'stack', items: queries_values}
+                    );
+                }
+                configs.push.apply(configs, per_frontend_values);
+            }
         }
 	else if(components[0]=="system" && components[2]=="network") { 
 	    configs=[ { 

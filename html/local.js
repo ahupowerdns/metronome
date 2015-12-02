@@ -291,6 +291,11 @@ $(document).ready(function() {
 		    {name: "dnsdist."+components[1]+".main.acl-drops", legend: "ACL drops/s"},
 		]
 	    },
+	    {
+		items: [
+		    {name: "dnsdist."+components[1]+".main.rdqueries", legend: "RD Queries/s"},
+		]
+	    },
 	    { items: [
 	        { name: "dnsdist."+components[1]+".main.latency-avg100", legend: "100 packet avg latency", kind: "gauge"},
 	        { name: "dnsdist."+components[1]+".main.latency-avg10000", legend: "10000 packet avg latency", kind: "gauge"},	        

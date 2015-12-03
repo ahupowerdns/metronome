@@ -1,5 +1,5 @@
 #!/bin/sh
-HASH=$(git describe --always --dirty=+ | tr -d '\n')
+HASH=$(git describe --always --dirty=+dirty | tr -d '\n')
 
 echo \#define GIT_HASH \"$HASH\" > githash.h.tmp
 echo $HASH > githash

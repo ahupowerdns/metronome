@@ -4,12 +4,14 @@
 #include <limits>
 #include <tuple>
 #include <ctime>
+#include <regex.h>
 
 //! make your own instance, not thread safe
 class StatStorage
 {
 public:
   StatStorage(const std::string& root);
+  ~StatStorage();
   void store(const std::string& name, uint32_t timestamp, float value);
 
   struct Datum
@@ -31,6 +33,7 @@ public:
   std::vector<std::string> getMetrics();
 private:
   std::string d_root;
+  regex_t d_preg;
   struct Val { 
     uint32_t timestamp;
     float value;

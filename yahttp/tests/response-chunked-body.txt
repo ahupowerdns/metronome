@@ -1,5 +1,0 @@
-f9
-{"result":[{"qname":"example.com","qtype":"SOA","content":"sns.dns.icann.org noc.dns.icann.org 2014051935 7200 3600 1209600 3600","ttl":3600,"auth":1},{"qname":"example.com","qtype":"NS","content":"sns.dns.icann.org","ttl":3600,"auth":1}],"log":[]}
-
-0
-

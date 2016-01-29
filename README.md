@@ -1,14 +1,13 @@
 metronome
 =========
+Mini-graphite that uses client-side java script to render graphs w/o depending on graphite.
 
-Mini-graphite so we can ship pdnscontrol w/o depending on graphite.
-
-'metronome' implements the carbon protocol, so anything that can feed Graphite can feed metronome. 
+'metronome' implements the carbon protocol, so anything that can feed Graphite can feed metronome.
 We also accept submissions via POST:
 
 For example, to submit RX bytes for eth0:
 
-    while true; 
+    while true;
     do
         VAL=$(ip -s link ls eth0 | grep RX -A 1 | tail -1 | awk '{print $1}')
         wget -q --post-data="" "http://127.0.0.1:8000/?do=store&name=rxbytes&timestamp=$(date +%s)&value=$VAL" -O /dev/null
@@ -19,31 +18,35 @@ To retrieve data:
 
     $ wget http://127.0.0.1:8000/?do=retrieve&name=rxbytes&begin=0&end=$(date +%s)&callback=jsonp
 
-This delivers a JSONP callback with your values in there. 
+This delivers a JSONP callback with your values in there.
 
 To view, try html/index.html
 
 Installing
 ==========
-Dependencies include a recent g++ (4.7+) and libboost.
+Dependencies include a recent g++ (4.7+), Boost and libeigen.
 
-Either install libeigen3-dev (Debian, Ubuntu), eigen3-devel (Fedora, EPEL), or:
+Installing Eigen
+----------------
+Either install `libeigen3-dev` (Debian, Ubuntu), `eigen3-devel` (Fedora, EPEL).
+
+To install it manually:
 
     $ wget http://bitbucket.org/eigen/eigen/get/3.2.1.tar.bz2
     $ tar xf 3.2.1.tar.bz2
-    $ ln -s eigen-eigen-*/Eigen .
 
-Now configure yahttp:
+Compiling
+=========
 
-    $ cd yahttp
-    $ ./autogen.sh
+    $ ./bootstrap
     $ ./configure
-    $ cd -
-
-Then:
-
     $ make
-    $ ./metronome --help
+
+If you installed libeigen manually, use `./configure --with-eigen=/path/to/eigen`
+
+Running
+=======
+
     $ mkdir stats
     $ ./metronome --stats-directory=./stats
 

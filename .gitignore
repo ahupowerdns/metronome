@@ -22,3 +22,48 @@
 
 # joe backups
 *~
+
+# autotools
+/Makefile
+/Makefile.in
+/aclocal.m4
+/autom4te.cache
+/build-aux/*
+!/build-aux/gen-version
+/config.cache
+/config.guess
+/config.h
+/config.h.in
+/config.sub
+/configure
+/configure.in
+/config.log
+/config.status
+/depcomp
+/install-sh
+/ltmain.sh
+/libtool
+/missing
+/mkinstalldirs
+/stamp-h
+/stamp-h1
+/test-driver
+/ylwrap
+*.la
+*.lo
+*.a
+*.o
+.deps
+.libs
+.dirstamp
+.version
+libtool.m4
+ltoptions.m4
+ltsugar.m4
+ltversion.m4
+lt~obsolete.m4
+
+# compiled programs
+msubmit
+mmanage
+metronome

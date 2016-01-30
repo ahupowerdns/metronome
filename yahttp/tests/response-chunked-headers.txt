@@ -1,7 +1,0 @@
-HTTP/1.1 200 OK
-Date: Mon, 30 Jun 2014 16:10:32 GMT
-Server: Apache/2.4.7
-X-Powered-By: PHP/5.5.7
-Transfer-Encoding: chunked
-Content-Type: application/json; charset=utf-8
-

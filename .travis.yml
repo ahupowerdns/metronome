@@ -1,14 +1,14 @@
 language: cpp
+dist: trusty
+sudo: yes
 compiler:
   - gcc
 before_script:
  - sudo apt-get update
- - sudo apt-get install libboost-test-dev libboost-program-options-dev 
- - wget http://bitbucket.org/eigen/eigen/get/3.2.1.tar.bz2
- - tar xf 3.2.1.tar.bz2
- - ln -s eigen-eigen-*/Eigen .
- - cd yahttp ; ./autogen.sh; ./configure ; cd ..
+ - sudo apt-get install -y libboost-test-dev libboost-program-options-dev libeigen3-dev
 script:
+ - ./bootstrap
+ - ./configure
  - make -j 4
  - make -j 4 check
 notifications:

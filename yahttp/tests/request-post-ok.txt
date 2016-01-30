@@ -1,7 +1,0 @@
-POST /test HTTP/1.1
-Host: test.org
-Connection: close
-Content-Type: application/x-www-form-urlencoded; charset=utf-8
-Content-Length: 37
-
-Hi=Moi&M=B%C3%A4%C3%A4&Bai=Kai&Li=Ann

@@ -1,0 +1,12 @@
+[Unit]
+Description=Metronome
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/metronome --daemon 0 --stats /var/lib/metronome
+User=metronome
+Group=metronome
+
+[Install]
+WantedBy=multi-user.target

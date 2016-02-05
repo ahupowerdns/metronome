@@ -1,0 +1,25 @@
+Source: metronome
+Section: net
+Priority: extra
+Standards-Version: 3.9.6
+Maintainer: PowerDNS Autobuilder <powerdns.support@powerdns.com>
+Origin: PowerDNS
+Build-Depends: debhelper (>= 9~), dh-autoreconf, dh-systemd, libtool, dpkg-dev (>= 1.17.0~), libboost-dev, libboost-program-options-dev, autotools-dev, automake, autoconf, pkg-config, libeigen3-dev
+Homepage: https://www.github.com/ahupowerdns/metronome
+
+Package: metronome
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, ucf (>= 0.28), adduser, lsb-base (>= 3.2-14)
+Description: mini-graphite with builtin webserver and client-side plotting
+ Mini-graphite that uses client-side java script to render graphs w/o depending
+ on graphite. 'metronome' implements the carbon protocol, so anything that can
+ feed Graphite can feed metronome. We also accept submissions via POST:
+
+Package: metronome-dbg
+Section: debug
+Architecture: any
+Depends: metronome (= ${binary:Version}), ${misc:Depends}
+Description: debugging symbols for metronome
+ Mini-graphite that uses client-side java script to render graphs w/o depending
+ on graphite. 'metronome' implements the carbon protocol, so anything that can
+ feed Graphite can feed metronome. We also accept submissions via POST:

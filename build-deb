@@ -1,0 +1,38 @@
+#!/bin/sh
+
+export DEBFULLNAME=${DEBFULLNAME:="PowerDNS.COM BV AutoBuilder"}
+export DEBEMAIL=${DEBEMAIL:="noreply@powerdns.com"}
+
+
+
+if [ -z "$VERSION" ]; then
+  if [ -x build-aux/gen-version ]; then
+    VERSION="$(./build-aux/gen-version)"
+  elif [ -r .version ]; then
+    VERSION="$(cat .version)"
+  else
+    echo 'Please set $VERSION' >&2
+    exit 1
+  fi
+fi
+
+if [ -z "$RELEASE" ];then
+  echo 'Please set $RELEASE' >&2
+  exit 1
+fi
+
+DISTDIR=${DISTDIR:=.}
+
+set -e
+set -x
+
+cat > debian/changelog << EOF
+metronome (${VERSION}-${RELEASE}) unstable; urgency=medium
+
+  * Automatic build
+
+ -- ${DEBFULLNAME} <${DEBEMAIL}>  $(date -R)
+
+EOF
+
+DH_OPTIONS=--parallel fakeroot debian/rules binary

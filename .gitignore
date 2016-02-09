@@ -62,8 +62,11 @@ ltoptions.m4
 ltsugar.m4
 ltversion.m4
 lt~obsolete.m4
+metronome-*.tar.bz2
 
 # compiled programs
 msubmit
 mmanage
 metronome
+
+debian/changelog

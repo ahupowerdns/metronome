@@ -1,0 +1,27 @@
+#!/usr/bin/make -f
+
+DEB_HOST_MULTIARCH  ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
+
+# Use new build system
+%:
+	dh $@ --with autoreconf --parallel
+
+override_dh_auto_configure:
+	./configure \
+		--host=$(DEB_HOST_GNU_TYPE) \
+		--build=$(DEB_BUILD_GNU_TYPE) \
+		--prefix=/usr \
+		--mandir=\$${prefix}/share/man \
+		--infodir=\$${prefix}/share/info \
+		--libdir='$${prefix}/lib/$(DEB_HOST_MULTIARCH)' \
+		--libexecdir='$${prefix}/lib'
+
+override_dh_strip:
+	dh_strip --dbg-package=metronome-dbg
+
+# Verbose build (shows used compiler/linker and their flags)
+override_dh_auto_build-arch:
+	dh_auto_build -- V=1
+
+override_dh_auto_test:
+	true

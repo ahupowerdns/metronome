@@ -448,7 +448,9 @@ $(document).ready(function() {
 	configAll();
 
 	var stateObj = { server: $("#server").val(), beginTime: parseInt($("#duration").val()) };
-	history.pushState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
+	try {
+	  history.pushState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
+	} catch(err) {}
 	updateEverything();
     }
 
@@ -468,7 +470,9 @@ $(document).ready(function() {
 	    $("#duration").val($.url().param('beginTime'));
 	
 	var stateObj = { server: $("#server").val(), beginTime: parseInt($("#duration").val()) };
-	history.replaceState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
+	try {
+	  history.replaceState(stateObj, "Metronome", "?server="+stateObj.server+"&beginTime="+stateObj.beginTime);
+	} catch (err) {}
 	
 	configAll();
 	updateEverything();

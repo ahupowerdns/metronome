@@ -289,8 +289,16 @@ $(document).ready(function() {
 		items: [ 
 		    {name: "dnsdist."+components[1]+".main.rule-drop", legend: "Rule drops/s"},
 		    {name: "dnsdist."+components[1]+".main.acl-drops", legend: "ACL drops/s"},
+		    {name: "dnsdist."+components[1]+".main.dyn-blocked", legend: "Dynamic drops/s"},		    
 		]
 	    },
+	    { items: [ 
+              { 
+		metrics: ["dnsdist."+components[1]+".main.cache-misses",
+		          "dnsdist."+components[1]+".main.cache-hits"],
+		legend: "% cache missrate", 
+		formula: m.percentalizer
+	     }]},
 	    {
 		items: [
 		    {name: "dnsdist."+components[1]+".main.rdqueries", legend: "RD Queries/s"},

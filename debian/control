@@ -9,7 +9,7 @@ Homepage: https://www.github.com/ahupowerdns/metronome
 
 Package: metronome
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}, ucf (>= 0.28), adduser, lsb-base (>= 3.2-14)
+Depends: ${shlibs:Depends}, ${misc:Depends}, adduser, lsb-base (>= 3.2-14)
 Description: mini-graphite with builtin webserver and client-side plotting
  Mini-graphite that uses client-side java script to render graphs w/o depending
  on graphite. 'metronome' implements the carbon protocol, so anything that can

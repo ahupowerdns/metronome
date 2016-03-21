@@ -289,7 +289,8 @@ $(document).ready(function() {
 		items: [ 
 		    {name: "dnsdist."+components[1]+".main.rule-drop", legend: "Rule drops/s"},
 		    {name: "dnsdist."+components[1]+".main.acl-drops", legend: "ACL drops/s"},
-		    {name: "dnsdist."+components[1]+".main.dyn-blocked", legend: "Dynamic drops/s"},		    
+		    {name: "dnsdist."+components[1]+".main.dyn-blocked", legend: "Dynamic drops/s"},
+		    {name: "dnsdist."+components[1]+".main.block-filter", legend: "Blockfilter drops/s"}
 		]
 	    },
 	    { items: [ 
@@ -302,6 +303,12 @@ $(document).ready(function() {
 	    {
 		items: [
 		    {name: "dnsdist."+components[1]+".main.rdqueries", legend: "RD Queries/s"},
+		    {name: "dnsdist."+components[1]+".main.rule-nxdomain", legend: "Rule NXDomain/s"},
+		    {name: "dnsdist."+components[1]+".main.self-answered", legend: "Rule self-answered/s"},
+		    {name: "dnsdist."+components[1]+".main.no-policy", legend: "No policy/s"},
+		    {name: "dnsdist."+components[1]+".main.noncompliant-queries", legend: "Non-compliant queries/s"},
+		    {name: "dnsdist."+components[1]+".main.noncompliant-responses", legend: "Non-compliant responses/s"},
+		    {name: "dnsdist."+components[1]+".main.empty-queries", legend: "Empty queries/s"}
 		]
 	    },
 	    { items: [
@@ -321,6 +328,9 @@ $(document).ready(function() {
             ]},            
 	    { items: [
 	        { name: "dnsdist."+components[1]+".main.uptime", legend: "Uptime (seconds)", kind: "gauge"}
+            ]},
+	    { items: [
+	        { name: "dnsdist."+components[1]+".main.dyn-block-nmg-size", legend: "Dynamic blocks size", kind: "gauge"}
             ]}
 		      ];
 
@@ -409,6 +419,109 @@ $(document).ready(function() {
                     );
                 }
                 configs.push.apply(configs, per_frontend_values);
+            }
+            if ("pools" in m.hierarchy["dnsdist"][components[1]]["main"]) {
+                var pools=m.listMetricsAt("dnsdist", components[1], "main", "pools");
+                var servers_values=[];
+                var cache_size_values=[];
+                var cache_entries_values=[];
+                var cache_hits_values=[];
+                var cache_misses_values=[];
+                var cache_deferred_inserts_values=[];
+                var cache_deferred_lookups_values=[];
+                var cache_lookup_collisions_values=[];
+                var cache_insert_collisions_values=[];
+                var per_pool_values=[];
+                var pools_count=0;
+                $.each(pools, function(key, val) {
+                    pools_count++;
+                    servers_values.push(
+                        { name: "dnsdist."+components[1]+".main.pools."+val+".servers", legend: val+" Servers", kind: "gauge"}
+                    );
+                    cache_size_values.push(
+                        { name: "dnsdist."+components[1]+".main.pools."+val+".cache-size", legend: val+" Cache size", kind: "gauge"}
+                    );
+                    cache_entries_values.push(
+                        { name: "dnsdist."+components[1]+".main.pools."+val+".cache-entries", legend: val+" Cache entries", kind: "gauge"}
+                    );
+                    cache_hits_values.push(
+                        { name: "dnsdist."+components[1]+".main.pools."+val+".cache-hits", legend: val+" Cache hits"}
+                    );
+                    cache_misses_values.push(
+                        { name: "dnsdist."+components[1]+".main.pools."+val+".cache-misses", legend: val+" Cache misses"}
+                    );
+                    cache_deferred_inserts_values.push(
+                        { name: "dnsdist."+components[1]+".main.pools."+val+".cache-deferred-inserts", legend: val+" Cache deferred inserts"}
+                    );
+                    cache_deferred_lookups_values.push(
+                        { name: "dnsdist."+components[1]+".main.pools."+val+".cache-deferred-lookups", legend: val+" Cache deferred lookups"}
+                    );
+                    cache_lookup_collisions_values.push(
+                        { name: "dnsdist."+components[1]+".main.pools."+val+".cache-lookup-collisions", legend: val+" Cache lookup collisions"}
+                    );
+                    cache_insert_collisions_values.push(
+                        { name: "dnsdist."+components[1]+".main.pools."+val+".cache-insert-collisions", legend: val+" Cache insert collisions"}
+                    );
+                    per_pool_values.push(
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.pools."+val+".servers", legend: val+" Servers", kind: "gauge"}
+                        ]},
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.pools."+val+".cache-size", legend: val+" Cache size", kind: "gauge"}
+                        ]},
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.pools."+val+".cache-entries", legend: val+" Cache entries", kind: "gauge"}
+                        ]},
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.pools."+val+".cache-hits", legend: val+" Cache hits"}
+                        ]},
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.pools."+val+".cache-misses", legend: val+" Cache misses"}
+                        ]},
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.pools."+val+".cache-deferred-inserts", legend: val+" Cache deferred inserts"}
+                        ]},
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.pools."+val+".cache-deferred-lookups", legend: val+" Cache deferred lookups"}
+                        ]},
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.pools."+val+".cache-lookup-collisions", legend: val+" Cache lookup collisions"}
+                        ]},
+                        { items: [
+                            { name: "dnsdist."+components[1]+".main.pools."+val+".cache-insert-collisions", legend: val+" Cache insert collisions"}
+                        ]}
+                    );
+                });
+                if (pools_count > 1) {
+                    configs.push(
+                        { renderer: 'stack', items: servers_values}
+                    );
+                    configs.push(
+                        { renderer: 'stack', items: cache_size_values}
+                    );
+                    configs.push(
+                        { renderer: 'stack', items: cache_entries_values}
+                    );
+                    configs.push(
+                        { renderer: 'stack', items: cache_hits_values}
+                    );
+                    configs.push(
+                        { renderer: 'stack', items: cache_misses_values}
+                    );
+                    configs.push(
+                        { renderer: 'stack', items: cache_deferred_inserts_values}
+                    );
+                    configs.push(
+                        { renderer: 'stack', items: cache_deferred_lookups_values}
+                    );
+                    configs.push(
+                        { renderer: 'stack', items: cache_lookup_collisions_values}
+                    );
+                    configs.push(
+                        { renderer: 'stack', items: cache_insert_collisions_values}
+                    );
+                }
+                configs.push.apply(configs, per_pool_values);
             }
         }
 	else if(components[0]=="system" && components[2]=="network") { 

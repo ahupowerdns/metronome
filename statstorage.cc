@@ -10,6 +10,13 @@ using namespace std;
 
 StatStorage::StatStorage(const string& fname) : d_root(fname)
 {
+  if(regcomp(&d_preg, "^[A-Za-z0-9_.-]+$", REG_NOSUB|REG_EXTENDED))
+    throw runtime_error("Regular expression did not compile");
+}
+
+StatStorage::~StatStorage()
+{
+  regfree(&d_preg);
 }
 
 unsigned int StatStorage::getWeekNum(uint32_t t)
@@ -25,6 +32,9 @@ string StatStorage::makeFilename(const string& name, uint32_t timestamp)
 void StatStorage::store(const string& name, uint32_t timestamp, float value)
 {
   if(name.find("/") != string::npos)
+    return;
+
+  if (regexec(&d_preg, name.c_str(), 0, NULL, 0) == REG_NOMATCH)
     return;
 
   string fname=makeFilename(name, timestamp);

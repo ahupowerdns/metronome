@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# postinst script for pdns-server
+# postinst script for metronome
 
 set -e
 
@@ -10,7 +10,7 @@ case "$1" in
       addgroup --quiet --system metronome
     fi
     if [ -z "`getent passwd metronome`" ]; then
-      echo -n "Creating user and group pdns..."
+      echo -n "Creating user and group metronome..."
       adduser --quiet --system --home /var/lib/metronome --shell /bin/false --ingroup metronome --disabled-password --disabled-login --gecos "Metronome" metronome
       echo "done"
     fi

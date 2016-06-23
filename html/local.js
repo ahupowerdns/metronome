@@ -549,6 +549,24 @@ $(document).ready(function() {
 			     });
 	    });		      
 	}
+	else if(components[0]=="power") { 
+	    configs=[ { 
+		items: [ 
+		    {
+                        name: "power."+components[1]+".joules", legend: "Watt"
+                    }
+		]
+	    },
+	    { 
+		items: [ 
+		    {
+                        metrics: ["power."+components[1]+".joules"], legend: "kWh", formula: function(r,d) { return r[0]/3600000.0; }
+                    }
+		]
+	    }
+	    ];
+
+	}
 	
 	m.setupGraphs("#graphs", configs);	
     }

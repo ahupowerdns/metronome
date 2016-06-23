@@ -259,6 +259,17 @@ $(document).ready(function() {
 	var components = servername.split('.');
 	if(components[2]=="recursor") { 
 	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3b, config4, config5, config6, config6a, config6b];
+
+            if ("filter" in m.hierarchy["pdns"][components[1]]["recursor"]) {
+                var filters=m.listMetricsAt("pdns",components[1], "recursor", "filter");
+                console.log("filters: ",filters);
+                $.each(filters, function(a,b){
+                    console.log("pdns."+components[1]+"recursor.filter."+b+".count");
+                    config={items:[ {name: "pdns."+components[1]+".recursor.filter."+b+".count", legend: b+" filtered/s"}]};
+                    configs.push(config);
+                });
+            }
+                
 	}
 	else if(components[2]=="auth") { 
 	    configs=[config3, config7, config7a, config7aa, config7ab, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];

@@ -13,7 +13,8 @@ SUBDIRS=yahttp
 bin_PROGRAMS = \
   metronome \
   msubmit \
-  mmanage
+  mmanage \
+  mdump
 
 metronome_SOURCES = \
   metronome.cc \
@@ -42,6 +43,13 @@ mmanage_SOURCES= \
   statstorage.cc statstorage.hh \
   metromisc.hh \
   dolog.hh
+
+mdump_SOURCES= \
+  mdump.cc \
+  statstorage.cc statstorage.hh \
+  metromisc.hh \
+  dolog.hh
+
 
 nobase_dist_metronomehtml_DATA = \
   html/*.* \

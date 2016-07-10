@@ -258,16 +258,46 @@ $(document).ready(function() {
 	var configs;
 	var components = servername.split('.');
 	if(components[2]=="recursor") { 
-	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3b, config4, config5, config6, config6a, config6b];
+	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3b, config4, config5, config6, config6a, config6b, config7ab];
+
+            configs.push({items:[ {name: servername+".dnssec-queries", legend: "DNSSEC queries/s"},
+                                  {name: servername+".dnssec-validations", legend: "DNSSEC validations/s"}]});
+
+            configs.push({ renderer: 'stack', items: [ 
+            { name: servername+".dnssec-result-bogus", legend: "bogus/s"},
+            { name: servername+".dnssec-result-insecure", legend: "insecure/s"},
+                { name: servername+".dnssec-result-secure", legend: "secure/s"},
+            { name: servername+".dnssec-result-indeterminate", legend: "indeterminate/s"},
+            { name: servername+".dnssec-result-nta", legend: "neg trust anchor/s"}
+            
+	]});
 
             if ("filter" in m.hierarchy["pdns"][components[1]]["recursor"]) {
+                var stackconfig1={renderer: 'stack', items: []};
+                var stackconfig2={renderer: 'stack', items: []};
                 var filters=m.listMetricsAt("pdns",components[1], "recursor", "filter");
-                console.log("filters: ",filters);
+                var stackcount=0;
                 $.each(filters, function(a,b){
-                    console.log("pdns."+components[1]+"recursor.filter."+b+".count");
-                    config={items:[ {name: "pdns."+components[1]+".recursor.filter."+b+".count", legend: b+" filtered/s"}]};
+                    var thename="pdns."+components[1]+".recursor.filter."+b+".count";
+                    if(stackcount++ < 5)
+                        stackconfig1.items.push({name: thename, legend: b+" filtered/s"});
+                    else
+                        stackconfig2.items.push({name: thename, legend: b+" filtered/s"});
+//                    config={items:[ {name: thename, legend: b+" filtered/s"}]};
+                    config={items:[ { metrics: [thename, "pdns."+components[1]+".recursor.questions"],
+                                    legend: b+" % of queries filtered",
+                                    formula: m.percentalizer }]};
                     configs.push(config);
                 });
+                configs.push(stackconfig1);
+                configs.push(stackconfig2);
+/*
+	        var glob = { items: [ 
+                    { name: "pdns."+components[1]+".recursor.global-blocked.count", legend: "Global blocks/s"},
+                    { name: "pdns."+components[1]+".recursor.parental-blocked.count", legend: "Category blocks/s"}
+                ]};	
+
+                configs.push(glob); */
             }
                 
 	}

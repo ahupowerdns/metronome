@@ -154,11 +154,13 @@ $(document).ready(function() {
 	var config6a=    { items: [
 	        { name: servername+".real-memory-usage", legend: "Memory usage (bytes)", kind: "gauge"}
             ]};
-            
-            
-        var config6b=
-	    { items: [
-	        { name: servername+".uptime", legend: "Uptime (seconds)", kind: "gauge"}
+
+        var config6aa = { items: [
+                { name: servername+".fd-usage", legend: "Used filedescriptors", kind: "gauge"}
+            ]};
+
+        var config6b = { items: [
+                { name: servername+".uptime", legend: "Uptime (seconds)", kind: "gauge"}
             ]};
 
 
@@ -301,8 +303,8 @@ $(document).ready(function() {
             }
                 
 	}
-	else if(components[2]=="auth") { 
-	    configs=[config3, config7, config7a, config7aa, config7ab, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];
+	else if(components[2]=="auth") {
+	    configs=[config3, config6a, config6aa, config6b, config7, config7a, config7aa, config7ab, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];
 	}
 	else if(components[0]=="dnsdist") {
 	    configs=[ { 

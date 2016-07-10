@@ -58,7 +58,8 @@ Metronome.prototype.percentalizer=function(r, d)
 	return 0;
 }
 
-// Call this to get array of all metrics at a certain level (listMetricaAt("system", "server1", "network", "interfaces"))
+// Call this to get array of all metrics at a certain level (listMetricsAt("system", "server1", "network", "interfaces"))
+// Note: will not find leaves! Only finds things that have children themselves. Yeah.
 Metronome.prototype.listMetricsAt=function()
 {
   var ref=this.hierarchy;

@@ -115,7 +115,7 @@ $(document).ready(function() {
             { name: servername+".auth4-answers10-100", legend: "10-100ms auth4 answers/s"},
             { name: servername+".auth4-answers100-1000", legend: "100-1000ms auth4 answers/s"},
             { name: servername+".auth4-answers-slow", legend: "Slow auth4 answers/s"},
-            { name: servername+".outgoing4-timeouts", legend: "Out4.timeouts/s" } 	
+            { name: servername+".outgoing4-timeouts", legend: "Outgoing4.timeouts/s" } 	
 	]};
 
 	var config3ab = { renderer: 'stack', items: [ 

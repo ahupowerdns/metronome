@@ -171,7 +171,8 @@ try
       StatStorage ss(g_vm["stats-directory"].as<string>());
       resp.headers["Content-Type"]= "application/json";
       resp.headers["Access-Control-Allow-Origin"]= "*";
-      body<<req.getvars["callback"]<<"(";
+      if(!req.getvars["callback"].empty())
+        body<<req.getvars["callback"]<<"(";
       body<<"{ \"metrics\": [";
       auto metrics = ss.getMetrics();
       for(const auto& metric : metrics)  {
@@ -179,7 +180,9 @@ try
 	  body<<',';
 	body<<'"'<<metric<<'"';
       }
-      body << "]});";
+      body << "]}";
+      if(!req.getvars["callback"].empty())
+        body << ");";
     }
     else if(req.getvars["do"]=="get-all") {  
       StatStorage ss(g_vm["stats-directory"].as<string>());
@@ -206,7 +209,8 @@ try
       int datapoints = atoi(req.getvars["datapoints"].c_str());
       if(!datapoints)
 	datapoints=100;
-      body<<req.getvars["callback"]<<"(";
+      if(!req.getvars["callback"].empty())
+        body<<req.getvars["callback"]<<"(";
       body<<"{ \"raw\": {";
       bool first=true;
       map<string,vector<StatStorage::Datum> > derivative;
@@ -256,7 +260,9 @@ try
 	}
 	body<<"]";
       }
-      body <<"}});";
+      body <<"}}";
+      if(!req.getvars["callback"].empty())
+        body <<");";
     }
     else {
       resp.status=404;

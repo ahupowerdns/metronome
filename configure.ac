@@ -37,6 +37,9 @@ METRONOME_WITH_EIGEN
 BOOST_REQUIRE([1.35])
 BOOST_PROGRAM_OPTIONS([mt])
 
+AX_AVAILABLE_SYSTEMD
+AM_CONDITIONAL([HAVE_SYSTEMD], [ test x"$systemd" = "xy" ])
+
 AC_MSG_CHECKING([whether we should enable hardening])
 AC_ARG_ENABLE([hardening],
   [AS_HELP_STRING([--disable-hardening],[disable compiler security checks @<:@default=no@:>@])],

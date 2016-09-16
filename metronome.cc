@@ -1,3 +1,6 @@
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "yahttp.hpp"
 #include "iputils.hh"
 #include "statstorage.hh"
@@ -11,6 +14,9 @@
 #include <fcntl.h>
 #include "interpolate.hh"
 #include <boost/program_options.hpp>
+#ifdef HAVE_SYSTEMD
+#include <systemd/sd-daemon.h>
+#endif
 
 namespace po = boost::program_options;
 po::variables_map g_vm;
@@ -378,6 +384,10 @@ try
   }
 
   launchWebserver(ws, wsLocal);
+
+#ifdef HAVE_SYSTEMD
+  sd_notify(0, "READY=1");
+#endif
 
   int client;
   ComboAddress remote=carbonLocal;

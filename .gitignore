@@ -68,5 +68,8 @@ metronome-*.tar.bz2
 msubmit
 mmanage
 metronome
+mdump
+
+metronome.service
 
 debian/changelog

@@ -207,7 +207,7 @@ try
       if(!datapoints)
 	datapoints=100;
       body<<req.getvars["callback"]<<"(";
-      body<<"{ raw: {";
+      body<<"{ \"raw\": {";
       bool first=true;
       map<string,vector<StatStorage::Datum> > derivative;
       for(const auto& name : names) {
@@ -240,7 +240,7 @@ try
 	body<<"]";
 	derivative[name]=derived;
       }
-      body<<"}, derivative: {  ";
+      body<<"}, \"derivative\": {  ";
       first=true;
       for(const auto& deriv: derivative) {
 	if(!first)

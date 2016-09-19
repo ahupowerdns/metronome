@@ -1,0 +1,39 @@
+#!/bin/bash
+
+if [ -z "$VERSION" ]; then
+  if [ -x build-aux/gen-version ]; then
+    VERSION="$(./build-aux/gen-version)"
+  elif [ -r .version ]; then
+    VERSION="$(cat .version)"
+  else
+    echo 'Please set $VERSION' >&2
+    exit 1
+  fi
+fi
+
+if [ -z "$RELEASE" ];then
+  echo 'Please set $RELEASE' >&2
+  exit 1
+fi
+
+rpmdev-setuptree
+
+if [ -f metronome-${VERSION}.tar.bz2 ]; then
+  mv metronome-${VERSION}.tar.bz2 $HOME/rpmbuild/SOURCES
+else
+  echo "metronome-${VERSION}.tar.bz2 not found" >&2
+  exit 1
+fi
+
+set -e
+set -x
+
+rm -rf /tmp/metronome.spec
+cp -r metronome.spec /tmp
+
+sed -i "s!@VERSION@!${VERSION}!" /tmp/metronome.spec
+sed -i "s!@RELEASE@!${RELEASE}!" /tmp/metronome.spec
+
+rpmbuild -bb /tmp/metronome.spec
+
+cp $HOME/rpmbuild/RPMS/x86_64/metronome*-${VERSION}* .

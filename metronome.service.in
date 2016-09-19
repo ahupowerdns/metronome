@@ -1,0 +1,15 @@
+[Unit]
+Description=Metronome
+After=network-online.target
+
+[Service]
+Type=notify
+ExecStart=@bindir@/metronome --daemon 0 \
+  --carbon-address '[::]:2003' \
+  --webserver-address '[::]:8000' \
+  --stats-directory /var/lib/metronome
+User=metronome
+Group=metronome
+
+[Install]
+WantedBy=multi-user.target

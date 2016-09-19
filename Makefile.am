@@ -30,7 +30,8 @@ metronome_LDFLAGS = \
 	$(YAHTTP_LIBS)
 
 metronome_LDADD = \
-	$(BOOST_PROGRAM_OPTIONS_LIBS)
+	$(BOOST_PROGRAM_OPTIONS_LIBS) \
+	$(SYSTEMD_LIBS)
 
 msubmit_SOURCES = \
   msubmit.cc \
@@ -61,7 +62,19 @@ dist_doc_DATA = \
 EXTRA_DIST = \
   LICENSE \
   build-aux/gen-version \
-  .version
+  .version \
+  metronome.service.in
+
+if HAVE_SYSTEMD
+metronome.service: metronome.service.in
+	$(AM_V_GEN)sed -e 's![@]bindir[@]!$(bindir)!' < $< > $@
+
+systemdsystemunitdir = $(SYSTEMD_DIR)
+
+systemdsystemunit_DATA = \
+	metronome.service
+endif
+
 
 #if DOXYGEN
 #codedocs: codedocs/html/index.html

@@ -46,6 +46,7 @@ void dolog(std::ostream& os, const char* s, T value, Args... args)
 }
 
 extern bool g_console;
+extern bool g_disableSyslog;
 extern bool g_verbose;
 
 template<typename... Args>
@@ -53,7 +54,8 @@ void genlog(int level, const char* s, Args... args)
 {
   std::ostringstream str;
   dolog(str, s, args...);
-  syslog(level, "%s", str.str().c_str());
+  if (!g_disableSyslog)
+    syslog(level, "%s", str.str().c_str());
   if(g_console) 
     std::cout<<str.str()<<std::endl;
 }

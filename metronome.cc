@@ -21,7 +21,8 @@
 namespace po = boost::program_options;
 po::variables_map g_vm;
 bool g_verbose;
-bool g_console;
+bool g_console = false;
+bool g_disableSyslog;
 bool g_http10;
 using namespace std;
 
@@ -323,6 +324,7 @@ void processCommandLine(int argc, char **argv)
     ("http1.0", "If set, use http 1.0 semantics for lighttpd proxy")
     ("quiet", po::value<bool>()->default_value(true), "don't be too noisy")
     ("daemon", po::value<bool>()->default_value(true), "run in background")
+    ("disable-syslog", "don't log to syslog")
     ("stats-directory", po::value<string>()->default_value("./stats"), "Store/access statistics from this directory");
 
   try {
@@ -340,6 +342,8 @@ void processCommandLine(int argc, char **argv)
   }
   if(g_vm.count("http1.0"))
     g_http10=true;
+  if(g_vm.count("disable-syslog"))
+    g_disableSyslog=true;
 }
 
 

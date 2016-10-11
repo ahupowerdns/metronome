@@ -269,6 +269,14 @@ $(document).ready(function() {
 	]};
 	            
 
+	var config15 = { renderer: 'stack', items: [
+	    { name: servername+".udp4-answers-bytes", legend: "UDPv4 out bytes/s"},
+	    { name: servername+".udp6-answers-bytes", legend: "UDPv6 out bytes/s"},
+	    { name: servername+".tcp4-answers-bytes", legend: "TCPv4 out bytes/s"},
+	    { name: servername+".tcp6-answers-bytes", legend: "TCPv6 out bytes/s"},
+	]};
+
+
 	var configs;
 	var components = servername.split('.');
 	if(components[2]=="recursor") { 
@@ -316,7 +324,7 @@ $(document).ready(function() {
                 
 	}
 	else if(components[2]=="auth") {
-	    configs=[config3, config6a, config6aa, config6b, config7, config7a, config7aa, config7ab, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];
+	    configs=[config3, config6a, config6aa, config6b, config7, config7a, config7aa, config7ab, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14, config15];
 	}
 	else if(components[0]=="dnsdist") {
 	    configs=[ { 

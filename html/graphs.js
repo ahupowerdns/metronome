@@ -28,13 +28,15 @@ $(document).ready(function() {
             
             $.each(m.servers, function(key,val) {
                 var re=/.auth$/;
-                if(re.test(val))
+                if(re.test(val)) {
                     allqueries.push(val+".udp-queries");
-                else if((/.recursor$/).test(val)) {
-                        allqueries.push(val+".questions");
-                        servfails.push(val+".servfail-answers");
-                    }
-                });
+                    allqueries.push(val+".tcp-queries");
+                    servfails.push(val+".servfail-packets");
+                } else if((/.recursor$/).test(val)) {
+                    allqueries.push(val+".questions");
+                    servfails.push(val+".servfail-answers");
+                }
+            });
                 
             var config ={ items: [ 
             { metrics: servfails, legend: "Total servfails/s",

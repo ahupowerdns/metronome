@@ -226,18 +226,28 @@ $(document).ready(function() {
 		{name: servername+".query-cache-miss", legend: "Database queries/s"}
 	]};
 
-	var config10a = { items: [ 
-            { 
-		metrics: [servername+".query-cache-miss",servername+".udp-answers"], 
-		legend: "% query to DB amplification", 
-		formula: function(r, d) {
-		        if(d[0] > 0 && d[1] >0) {
-		                return d[0]*100.0/d[1];
+        var config10a = { items: [
+            {
+                metrics: [servername+".query-cache-hit",servername+".query-cache-miss",servername+".udp-answers",servername+".tcp-answers"],
+                    legend: "DB queries/query",
+                    formula: function(r, d) {
+                        if(d[1] > 0 && (d[2] + d[3]) > 0 ) {
+                            return d[1] / (d[2] + d[3]);
                         }
                         return 0;
                     }
-	    }]};    
-
+            },
+            {
+                metrics: [],
+                    legend: "Backend queries/query",
+                    formula: function(r, d) {
+                        if((d[0] + d[1]) > 0 && (d[2] + d[3]) > 0) {
+                            return (d[0] + d[1]) / (d[2] + d[3]);
+                        }
+                        return 0;
+                    }
+            }
+        ]};
 
 	var config11 = { items: [ 
 		{name: servername+".deferred-cache-inserts", legend: "Deferred cache inserts/s"},

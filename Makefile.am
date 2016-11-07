@@ -63,7 +63,8 @@ EXTRA_DIST = \
   LICENSE \
   build-aux/gen-version \
   .version \
-  metronome.service.in
+  metronome.service.in \
+  metronome-upstart.conf
 
 if HAVE_SYSTEMD
 metronome.service: metronome.service.in

@@ -73,3 +73,6 @@ mdump
 metronome.service
 
 debian/changelog
+
+*.deb
+*.rpm

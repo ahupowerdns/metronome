@@ -28,13 +28,24 @@ using namespace std;
 
 bool handleLine(StatStorage& ss, string line, int& numStored, string& err)
 {
+    char *eptr;
     vector<string> parts;
     stringtok(parts, line, " \t\r\n");
     if(parts.size()!=3) {
       err = "Invalid number of parts";
       return false;
     }
-    ss.store(parts[0], atoi(parts[2].c_str()), atof(parts[1].c_str()));
+    time_t t = strtol(parts[2].c_str(), &eptr, 10);
+    if (t == 0 && eptr != NULL && *eptr != '\0') {
+      err = "Timestamp is not a number";
+      return false;
+    }
+    double v = strtod(parts[1].c_str(), &eptr);
+    /* do not refuse everything for non-numeric value */
+    if (v == 0 && eptr != NULL && *eptr != '\0') {
+      return true;
+    }
+    ss.store(parts[0], t, v);
     numStored++;
     return true;
 }

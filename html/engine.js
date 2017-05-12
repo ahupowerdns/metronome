@@ -10,9 +10,9 @@ function Metronome(comconfig)
     this.comconfig=comconfig;
 }
 
-/* The ritual: 
+/* The ritual:
    0) Have a 'div' where you want your graphs
-   1) make a Metronome object -> new Metronome({url: "http://xs.powerdns.com:8080", datapoints: 150}) 
+   1) make a Metronome object -> new Metronome({url: "http://xs.powerdns.com:8080", datapoints: 150})
    2) call its getAllMetrics method with a startup function
    3) Your startup function gets called with metronome object which is ready & includes a metric hierarchy & server list
    4) In startup function, create a graphing config based on hierarchy & server list, and submit it setupHTML("#yourdiv", configs),
@@ -25,35 +25,35 @@ The graph config, as passed to setupGraphs:
   an array of graphs, each with an 'items' field containing an array of metrics to be graphed.
   Each metric has a 'name', which says which metric is to be graphed, plus a legend which is the human friendly name
   Example:
-                configs.push({items: [ 
+                configs.push({items: [
                     { name: "system.xs.interfaces.eth0.tx_packets", legend: "eth0 TX packets/s"},
                     { name: "system.xs.interfaces.eth0.rx_packets", legend: "eth0 RX packets/s"},
                     ]});
-  By default, we plot the nonNegativeDerivative of the metric. 
+  By default, we plot the nonNegativeDerivative of the metric.
   To turn bits into bytes, add 'bitsToBytes: true'.
-  
+
   To stack a graph, set 'renderer: stack'.
-  
-  To do fancy things, instead of a name, add a 'metrics' field with an array of metrics. 
+
+  To do fancy things, instead of a name, add a 'metrics' field with an array of metrics.
   Also, set a function as the formula field. This function gets passed all the metrics you specified (in order),
   plus their nonNegativeDerivative.  (so, we call formula(raw, derived)).
-  
+
   We deliver one stock formula, 'Metronome.percentalizer', which can be used to calculate one rate as a percentage
   of two rates. So, cache hitrates for example:
-  
-        configs.push({ items: [ 
-            { 
-                metrics: [servername+".cache-hits",servername+".cache-misses"], 
-                legend: "% cache hitrate", 
+
+        configs.push({ items: [
+            {
+                metrics: [servername+".cache-hits",servername+".cache-misses"],
+                legend: "% cache hitrate",
                 formula: m.percentalizer
-            });    
+            });
 */
 
 // Pass this to 'formula' to get two rates as a percentage of their sum rate
 Metronome.prototype.percentalizer=function(r, d)
-{ 
-    if(d[0] > 0 && d[1] > 0) 
-        return d[0]*100.0/(d[0] +d[1]); 
+{
+    if(d[0] > 0 && d[1] > 0)
+        return d[0]*100.0/(d[0] +d[1]);
     else
         return 0;
 }
@@ -75,15 +75,15 @@ Metronome.prototype.listMetricsAt=function()
   return ret;
 }
 
-// the startup function, 
-Metronome.prototype.getAllMetrics=function(destination) 
+// the startup function,
+Metronome.prototype.getAllMetrics=function(destination)
 {
     var qstring = this.comconfig.url+"?do=get-metrics&callback=?&name";
     var that=this;
     var alerter = window.setTimeout(function(){ alert("Could not contact Metronome statistics server at "+that.comconfig.url+". This is either due to a connectivity problem or a intervening firewall, or otherwise a timeout."); }, 2500);
-    $.getJSON(qstring, 
+    $.getJSON(qstring,
               function(data) {
-                  window.clearTimeout(alerter);       
+                  window.clearTimeout(alerter);
                   var theservers={};
                   that.hierarchy={};
                   $.each(data.metrics, function(a, b) {
@@ -108,7 +108,7 @@ Metronome.prototype.getAllMetrics=function(destination)
                   destination(that);
               });
 }
-             
+
 Metronome.prototype.updateGraphs=function()
 {
     var that=this;
@@ -138,11 +138,11 @@ Metronome.prototype._showGraph=function(config) {
     qstring+="&begin="+(epoch+this.comconfig.beginTime)+"&end="+(epoch)+"&datapoints="+this.comconfig.datapoints;
 
     var that=this;
-    $.getJSON(qstring, 
-              function(fullseries) {          
+    $.getJSON(qstring,
+              function(fullseries) {
                   var toplot=[];
                   var grouped={};
-                  
+
                   $.each(metrics, function(num, metric) {
                       $.each(fullseries.raw[metric], function(key, value) {
                           if(grouped[value[0]] == undefined) {
@@ -152,7 +152,7 @@ Metronome.prototype._showGraph=function(config) {
                           }
                           grouped[value[0]].raw[num]=value[1];
                       });
-                      
+
                       $.each(fullseries.derivative[metric], function(key, value) {
                           grouped[value[0]].derivative[num]=value[1];
                       });
@@ -168,9 +168,9 @@ Metronome.prototype._showGraph=function(config) {
                       var factor = 1;
                       if(items[num].bytesToBits != undefined)
                           factor = 8;
-                      if(items[num].formula == undefined) 
+                      if(items[num].formula == undefined)
                           toplot[num] = that._coordinateTransform(series[items[num].name], factor);
-                      
+
                   }
 
                   for(num in items) {
@@ -244,7 +244,7 @@ Metronome.prototype.getNaturalInterval=function()
 
 
 Metronome.prototype.setupGraphs=function(where, configs)
-{  
+{
   this.configs=[];
   $(where).html("");
   for(var a in configs) {
@@ -253,11 +253,11 @@ Metronome.prototype.setupGraphs=function(where, configs)
     this.configs.push(configs[a]);
   }
 }
-     
+
 Metronome.prototype._coordinateTransform=function(series, factor)
 {
     var ret=[];
-    $.each(series, function(a, b) {    
+    $.each(series, function(a, b) {
         ret.push({x: b[0], y: factor * b[1]});
     });
     return ret;

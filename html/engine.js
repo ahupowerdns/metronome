@@ -188,52 +188,74 @@ Metronome.prototype._showGraph=function(config) {
                   for(num in items) {
                       plotseries.push( { color: colors[num], data: toplot[num], name: items[num].legend, renderer: 'line'});
                   }
-                  config.div.html('<div class="chart_container"><div class="y_axis"></div><div class="chart"></div><div class="legend"></div>');
+                  var n_items = items.length;
 
-                  var graph = new Rickshaw.Graph( {
-                      element: config.div.find(".chart")[0], 
-                      width: 550, 
-                      height: 250, 
-                      renderer: config.renderer || 'multi',
-                      padding: { top: 0.05 },
-                      series: plotseries
-                      
-                  });
-                  
-                  var axes = new Rickshaw.Graph.Axis.Time( {
-                      graph: graph,
-                      orientation: 'bottom',
-                      timeFixture: new Rickshaw.Fixtures.Time.Local()
-                  } );
-                  
-                  var y_ticks = new Rickshaw.Graph.Axis.Y( {
-                      graph: graph,
-                      orientation: 'left',
-                      tickFormat:
-                      Rickshaw.Fixtures.Number.formatKMBT,
-                      element: config.div.find(".y_axis")[0]
-                  } );
-                  
-                  var legend = new Rickshaw.Graph.Legend( {
-                      graph: graph,
-                      element: config.div.find(".legend")[0]
-                  } );                
-        
-                  graph.render();
+                  var graph, args;
+                  if (!config.graph) {
+                      config.div.html('<div class="chart_container"><div class="y_axis"></div><div class="chart"></div><div class="legend"></div>');
 
-                  var hoverDetail = new Rickshaw.Graph.HoverDetail( {
-                      graph: graph,
+                      args = {
+                          element: config.div.find(".chart")[0],
+                          width: 550,
+                          height: 250,
+                          renderer: config.renderer || 'multi',
+                          padding: { top: 0.05 },
+                          series: plotseries
 
-                      formatter: function(series, x, y) {                         
-                          var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
-                          var content = swatch + series.name + ": " + y.toFixed(2);
-                          return content;
-                      },
-                      xFormatter: function(x) {
-                          return new Date( x * 1000 ).toString();
+                      };
+                      graph = new Rickshaw.Graph(args);
+                      config.graph = graph;
+                      config.graph_args = args;
+                      config.graph_n_items = n_items;
+
+                      var axes = new Rickshaw.Graph.Axis.Time( {
+                          graph: graph,
+                          orientation: 'bottom',
+                          timeFixture: new Rickshaw.Fixtures.Time.Local()
+                      } );
+
+                      var y_ticks = new Rickshaw.Graph.Axis.Y( {
+                          graph: graph,
+                          orientation: 'left',
+                          tickFormat:
+                          Rickshaw.Fixtures.Number.formatKMBT,
+                          element: config.div.find(".y_axis")[0]
+                      } );
+
+                      var legend = new Rickshaw.Graph.Legend( {
+                          graph: graph,
+                          element: config.div.find(".legend")[0]
+                      } );
+
+                      graph.render();
+
+                      var hoverDetail = new Rickshaw.Graph.HoverDetail( {
+                          graph: graph,
+
+                          formatter: function(series, x, y) {
+                              var swatch = '<span class="detail_swatch" style="background-color: ' + series.color + '"></span>';
+                              var content = swatch + series.name + ": " + y.toFixed(2);
+                              return content;
+                          },
+                          xFormatter: function(x) {
+                              return new Date( x * 1000 ).toString();
+                          }
+                      } );
+
+                  } else {
+                      graph = config.graph;
+                      args = config.graph_args;
+                      if (n_items !== config.graph_n_items) {
+                          args.series = plotseries;
+                      } else {
+                          for(num in items) {
+                              args.series[num].data = toplot[num];
+                          }
                       }
-                  } );
-              });       
+                      graph.render();
+                  }
+
+              });
 }
 
 // This interval represents a millisecond timestep that will keep the shape of your graph identical if you call updateGraphs

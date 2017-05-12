@@ -56,7 +56,7 @@ Metronome.prototype.percentalizer=function(r, d)
         return d[0]*100.0/(d[0] +d[1]);
     else
         return 0;
-}
+};
 
 // Call this to get array of all metrics at a certain level (listMetricsAt("system", "server1", "network", "interfaces"))
 // Note: will not find leaves! Only finds things that have children themselves. Yeah.
@@ -64,8 +64,7 @@ Metronome.prototype.listMetricsAt=function()
 {
   var ref=this.hierarchy;
   for(var i = 0; i < arguments.length; ++i) {
-    var tmp = ref[arguments[i]];
-    ref = tmp;
+    ref = ref[arguments[i]];
   }
   var ret=[];
   $.each(ref, function(key, val) {
@@ -73,7 +72,7 @@ Metronome.prototype.listMetricsAt=function()
     });
   ret.sort();
   return ret;
-}
+};
 
 // the startup function,
 Metronome.prototype.getAllMetrics=function(destination)
@@ -94,7 +93,7 @@ Metronome.prototype.getAllMetrics=function(destination)
                       for(var i = 0; i < parts.length ; ++i) {
                           var ref = that.hierarchy;
                           for(var j = 0 ; j < i; ++j) {
-                              if(ref[parts[j]]==undefined)
+                              if(ref[parts[j]]===undefined)
                                   ref[parts[j]]={};
                               ref = ref[parts[j]];
                           }
@@ -107,7 +106,7 @@ Metronome.prototype.getAllMetrics=function(destination)
                   that.servers.sort();
                   destination(that);
               });
-}
+};
 
 Metronome.prototype.updateGraphs=function()
 {
@@ -115,7 +114,7 @@ Metronome.prototype.updateGraphs=function()
     $.each(this.configs, function(key, val) {
         that._showGraph(val);
     });
-}
+};
 
 Metronome.prototype._showGraph=function(config) {
     var items = config.items;
@@ -123,9 +122,9 @@ Metronome.prototype._showGraph=function(config) {
     var qstring = this.comconfig.url+"?do=retrieve&callback=?&name=";
     var metrics=[];
     for(var item in items) {
-        if(items[item].name != undefined)
+        if(items[item].name !== undefined)
             metrics.push(items[item].name);
-        if(items[item].metrics != undefined) {
+        if(items[item].metrics !== undefined) {
             $.each(items[item].metrics, function(key, value) {
                 metrics.push(value);
             });
@@ -145,7 +144,7 @@ Metronome.prototype._showGraph=function(config) {
 
                   $.each(metrics, function(num, metric) {
                       $.each(fullseries.raw[metric], function(key, value) {
-                          if(grouped[value[0]] == undefined) {
+                          if(grouped[value[0]] === undefined) {
                               grouped[value[0]] = {};
                               grouped[value[0]].raw = {};
                               grouped[value[0]].derivative = {};
@@ -160,21 +159,21 @@ Metronome.prototype._showGraph=function(config) {
                   //                  console.log("Grouped", grouped);
                   for(var num in items) {
                       var series;
-                      if(items[num].kind=="gauge")
+                      if(items[num].kind==="gauge")
                           series = fullseries.raw;
                       else
                           series = fullseries.derivative;
 
                       var factor = 1;
-                      if(items[num].bytesToBits != undefined)
+                      if(items[num].bytesToBits !== undefined)
                           factor = 8;
-                      if(items[num].formula == undefined)
+                      if(items[num].formula === undefined)
                           toplot[num] = that._coordinateTransform(series[items[num].name], factor);
 
                   }
 
                   for(num in items) {
-                      if(items[num].formula != undefined) {
+                      if(items[num].formula !== undefined) {
                           toplot[num]=[];
                           $.each(grouped, function(key, value) {
                               toplot[num].push({x: 1.0*key, y: items[num].formula(value.raw, value.derivative) });
@@ -256,13 +255,13 @@ Metronome.prototype._showGraph=function(config) {
                   }
 
               });
-}
+};
 
 // This interval represents a millisecond timestep that will keep the shape of your graph identical if you call updateGraphs
 Metronome.prototype.getNaturalInterval=function()
 {
     return -this.comconfig.beginTime*1000/this.comconfig.datapoints;
-}
+};
 
 
 Metronome.prototype.setupGraphs=function(where, configs)
@@ -274,7 +273,7 @@ Metronome.prototype.setupGraphs=function(where, configs)
     $(where).append(configs[a].div);
     this.configs.push(configs[a]);
   }
-}
+};
 
 Metronome.prototype._coordinateTransform=function(series, factor)
 {
@@ -283,4 +282,4 @@ Metronome.prototype._coordinateTransform=function(series, factor)
         ret.push({x: b[0], y: factor * b[1]});
     });
     return ret;
-}
+};

@@ -361,7 +361,7 @@ $(document).ready(function() {
             ]},
             { renderer: "stack", items: [
                 { metrics: ["dnsdist."+components[1]+".main.cpu-sys-msec"], legend: "System CPU%", formula: function(r,d) { return d[0]/10.0; } },
-                { metrics: ["dnsdist."+components[1]+".main.cpu-user-msec"], legend: "User CPU%", formula: function(r,d) { return d[0]/10.0; } },
+                { metrics: ["dnsdist."+components[1]+".main.cpu-user-msec"], legend: "User CPU%", formula: function(r,d) { return d[1]/10.0; } },
             ]},
 	    { items: [
 	        { name: "dnsdist."+components[1]+".main.real-memory-usage", legend: "Memory usage (bytes)", kind: "gauge"}

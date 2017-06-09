@@ -23,7 +23,7 @@ Group:            System Environment/Daemons
 
 License:          GPLv2
 URL:              https://github.com/ahupowerdns/metronome
-Source0:          metronome-@VERSION@.tar.bz2
+Source0:          metronome-@SRC_VERSION@.tar.bz2
 
 %if %{?rhel} >= 7
 BuildRequires:    boost-devel

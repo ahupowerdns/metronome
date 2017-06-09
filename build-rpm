@@ -1,5 +1,9 @@
 #!/bin/bash
 
+if [-z "$SRC_VERSION" ]; then
+  SRC_VERSION="$(./build-aux/gen-version)"
+fi
+
 if [ -z "$VERSION" ]; then
   if [ -x build-aux/gen-version ]; then
     VERSION="$(./build-aux/gen-version)"
@@ -18,10 +22,10 @@ fi
 
 rpmdev-setuptree
 
-if [ -f metronome-${VERSION}.tar.bz2 ]; then
-  mv metronome-${VERSION}.tar.bz2 $HOME/rpmbuild/SOURCES
+if [ -f metronome-${SRC_VERSION}.tar.bz2 ]; then
+  mv metronome-${SRC_VERSION}.tar.bz2 $HOME/rpmbuild/SOURCES
 else
-  echo "metronome-${VERSION}.tar.bz2 not found" >&2
+  echo "metronome-${SRC_VERSION}.tar.bz2 not found" >&2
   exit 1
 fi
 
@@ -32,6 +36,7 @@ rm -rf /tmp/metronome.spec
 cp -r metronome.spec /tmp
 
 sed -i "s!@VERSION@!${VERSION}!" /tmp/metronome.spec
+sed -i "s!@SRC_VERSION@!${SRC_VERSION}!" /tmp/metronome.spec
 sed -i "s!@RELEASE@!${RELEASE}!" /tmp/metronome.spec
 
 rpmbuild -bb /tmp/metronome.spec

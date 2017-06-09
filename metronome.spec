@@ -46,7 +46,7 @@ Metronome is a small receiver for Carbon (graphite) data with a small http API t
 %if %{?rhel} < 7
 source /opt/rh/devtoolset-4/enable
 %endif
-%setup -q
+%setup -q -n %{name}-@SRC_VERSION@
 
 %build
 

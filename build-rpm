@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [-z "$SRC_VERSION" ]; then
+if [ -z "$SRC_VERSION" ]; then
   SRC_VERSION="$(./build-aux/gen-version)"
 fi
 

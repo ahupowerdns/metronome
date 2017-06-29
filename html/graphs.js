@@ -28,13 +28,15 @@ $(document).ready(function() {
             
             $.each(m.servers, function(key,val) {
                 var re=/.auth$/;
-                if(re.test(val))
+                if(re.test(val)) {
                     allqueries.push(val+".udp-queries");
-                else if((/.recursor$/).test(val)) {
-                        allqueries.push(val+".questions");
-                        servfails.push(val+".servfail-answers");
-                    }
-                });
+                    allqueries.push(val+".tcp-queries");
+                    servfails.push(val+".servfail-packets");
+                } else if((/.recursor$/).test(val)) {
+                    allqueries.push(val+".questions");
+                    servfails.push(val+".servfail-answers");
+                }
+            });
                 
             var config ={ items: [ 
             { metrics: servfails, legend: "Total servfails/s",
@@ -224,18 +226,28 @@ $(document).ready(function() {
 		{name: servername+".query-cache-miss", legend: "Database queries/s"}
 	]};
 
-	var config10a = { items: [ 
-            { 
-		metrics: [servername+".query-cache-miss",servername+".udp-answers"], 
-		legend: "% query to DB amplification", 
-		formula: function(r, d) {
-		        if(d[0] > 0 && d[1] >0) {
-		                return d[0]*100.0/d[1];
+        var config10a = { items: [
+            {
+                metrics: [servername+".query-cache-hit",servername+".query-cache-miss",servername+".udp-answers",servername+".tcp-answers"],
+                    legend: "DB queries/query",
+                    formula: function(r, d) {
+                        if(d[1] > 0 && (d[2] + d[3]) > 0 ) {
+                            return d[1] / (d[2] + d[3]);
                         }
                         return 0;
                     }
-	    }]};    
-
+            },
+            {
+                metrics: [],
+                    legend: "Backend queries/query",
+                    formula: function(r, d) {
+                        if((d[0] + d[1]) > 0 && (d[2] + d[3]) > 0) {
+                            return (d[0] + d[1]) / (d[2] + d[3]);
+                        }
+                        return 0;
+                    }
+            }
+        ]};
 
 	var config11 = { items: [ 
 		{name: servername+".deferred-cache-inserts", legend: "Deferred cache inserts/s"},
@@ -256,6 +268,14 @@ $(document).ready(function() {
 		{name: servername+".signatures", legend: "DNSSEC signatures/s"},
 	]};
 	            
+
+	var config15 = { renderer: 'stack', items: [
+	    { name: servername+".udp4-answers-bytes", legend: "UDPv4 out bytes/s"},
+	    { name: servername+".udp6-answers-bytes", legend: "UDPv6 out bytes/s"},
+	    { name: servername+".tcp4-answers-bytes", legend: "TCPv4 out bytes/s"},
+	    { name: servername+".tcp6-answers-bytes", legend: "TCPv6 out bytes/s"},
+	]};
+
 
 	var configs;
 	var components = servername.split('.');
@@ -304,7 +324,7 @@ $(document).ready(function() {
                 
 	}
 	else if(components[2]=="auth") {
-	    configs=[config3, config6a, config6aa, config6b, config7, config7a, config7aa, config7ab, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];
+	    configs=[config3, config6a, config6aa, config6b, config7, config7a, config7aa, config7ab, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14, config15];
 	}
 	else if(components[0]=="dnsdist") {
 	    configs=[ { 

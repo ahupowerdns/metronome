@@ -187,7 +187,8 @@ $(document).ready(function() {
             { name: servername+".udp-recvbuf-errors", legend: "UDP recvbuf errors/s" }, 
             { name: servername+".udp-sndbuf-errors", legend: "UDP sndbuf errors/s"},
             { name: servername+".udp-noport-errors", legend: "UDP noport errors/s"},
-            { name: servername+".udp-in-errors", legend: "UDP in-errors/s"}            
+            { name: servername+".udp-in-errors", legend: "UDP in-errors/s"},
+            { name: servername+".too-old-drops", legend: "Too-old drops/s"}  
             
             ]};
 

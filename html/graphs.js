@@ -246,10 +246,13 @@ $(document).ready(function() {
 	var config11 = { items: [ 
 		{name: servername+".deferred-cache-inserts", legend: "Deferred cache inserts/s"},
 		{name: servername+".deferred-cache-lookup", legend: "Deferred cache lookups/s"},
+		{name: servername+".deferred-packetcache-inserts", legend: "Deferred packet cache inserts/s"},
+		{name: servername+".deferred-packetcache-lookup", legend: "Deferred packet cache lookups/s"},
 	]};
 
 	var config12 ={ items: [
-	        { name: servername+".packetcache-size", legend: "Packet cache size", kind: "gauge"}
+	        { name: servername+".packetcache-size", legend: "Packet cache size", kind: "gauge"},
+	        { name: servername+".query-cache-size", legend: "Query cache size", kind: "gauge"}
         ]};
 
 	var config13 ={ items: [

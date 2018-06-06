@@ -192,6 +192,11 @@ $(document).ready(function() {
             
             ]};
 
+	var config7ac = { items: [ 
+            { name: servername+".ecs-responses", legend: "ECS answers/s from auths"},
+            { name: servername+".ecs-queries", legend: "ECS questions/s to auths" }
+            
+            ]};
 
 	var config7b = { items: [ 
             { name: servername+".qsize-q", legend: "DB Queue", kind: "gauge"}
@@ -261,7 +266,7 @@ $(document).ready(function() {
 	var configs;
 	var components = servername.split('.');
 	if(components[2]=="recursor") { 
-	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3b, config4, config5, config6, config6a, config6b, config7ab];
+	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3b, config4, config5, config6, config6a, config6b, config7ab, config7ac];
 
             configs.push({items:[ {name: servername+".dnssec-queries", legend: "DNSSEC queries/s"},
                                   {name: servername+".dnssec-validations", legend: "DNSSEC validations/s"}]});

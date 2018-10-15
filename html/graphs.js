@@ -127,6 +127,17 @@ $(document).ready(function() {
             { name: servername+".outgoing6-timeouts", legend: "Out6.timeouts/s" } 	
 	]};
 
+	var config3ac = { renderer: 'stack', items: [ 
+            { name: servername+".x-ourtime-slow", legend: "Ourtime slow/s" }, 		
+            { name: servername+".x-ourtime0-1", legend: "Ourtime 0-1ms/s"},
+            { name: servername+".x-ourtime1-2", legend: "Ourtime 1-2ms/s"},
+            { name: servername+".x-ourtime2-4", legend: "Ourtime 2-4ms/s"},
+            { name: servername+".x-ourtime4-8", legend: "Ourtime 4-8ms/s"},
+            { name: servername+".x-ourtime8-16", legend: "Ourtime 8-16ms/s"},
+            { name: servername+".x-ourtime16-32", legend: "Ourtime 16-32ms/s"}
+	]};
+
+
 	var config3b ={ items: [
             { name: servername+".concurrent-queries", legend: "Concurrent queries", kind: "gauge"}
         ]};
@@ -138,6 +149,14 @@ $(document).ready(function() {
 		legend: "% packetcache hitrate", 
 		formula: m.percentalizer
 	    }]};    
+
+	var config4a = { items: [ 
+            { 
+		metrics: [servername+".variable-responses",servername+".questions"], 
+		legend: "% variable responses", 
+		formula: m.percentalizer
+	    }]};    
+
 
 	var config5 = { items: [ 
             { 
@@ -197,6 +216,9 @@ $(document).ready(function() {
             { name: servername+".ecs-queries", legend: "ECS questions/s to auths" }
             
             ]};
+
+            
+            
 
 	var config7b = { items: [ 
             { name: servername+".qsize-q", legend: "DB Queue", kind: "gauge"}
@@ -269,7 +291,7 @@ $(document).ready(function() {
 	var configs;
 	var components = servername.split('.');
 	if(components[2]=="recursor") { 
-	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3b, config4, config5, config6, config6a, config6b, config7ab, config7ac];
+	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3ac, config3b, config4, config4a, config5, config6, config6a, config6b, config7ab, config7ac];
 
             configs.push({items:[ {name: servername+".dnssec-queries", legend: "DNSSEC queries/s"},
                                   {name: servername+".dnssec-validations", legend: "DNSSEC validations/s"}]});
@@ -318,19 +340,27 @@ $(document).ready(function() {
 	else if(components[0]=="dnsdist") {
 	    configs=[ { 
 		items: [ 
-		    {name: "dnsdist."+components[1]+".main.servfail-responses", legend: "Servfail/s"},
-		    {name: "dnsdist."+components[1]+".main.queries", legend: "Queries/s"},
-		    {name: "dnsdist."+components[1]+".main.responses", legend: "Responses/s"}
-
+		    { name: "dnsdist."+components[1]+".main.queries", legend: "Queries/s"},
+                    { metrics: ["dnsdist."+components[1]+".main.cache-hits", "dnsdist."+components[1]+".main.responses"], legend: "Responses/s", 
+                        formula: function(r,d) { return d[1]+d[2]; }}
 		]
 	    },
+	    { renderer: 'stack', items: [ 
+	    		  { name: "dnsdist."+components[1]+".main.no-policy", legend: "No-policy/s"},
+			  { name: "dnsdist."+components[1]+".main.responses", legend: "Backend responses/s"},
+			  { name: "dnsdist."+components[1]+".main.cache-hits", legend: "Cache hits/s"},
+			  { name: "dnsdist."+components[1]+".main.downstream-timeouts", legend: "Downstream timeout/s"},
+			  { name: "dnsdist."+components[1]+".main.self-answered", legend: "Self-answered/s"},
+			  { name: "dnsdist."+components[1]+".main.rule-drop", legend: "Rule-drop/s"}
+			   
+                      ]},
 		      { renderer: 'stack', items: [ 
 			  { name: "dnsdist."+components[1]+".main.latency-slow", legend: "Slow answers/s"},
 			  { name: "dnsdist."+components[1]+".main.latency0-1", legend: "<1 ms answers/s"},
 			  { name: "dnsdist."+components[1]+".main.latency1-10", legend: "1-10ms answers/s"},
 			  { name: "dnsdist."+components[1]+".main.latency10-50", legend: "10-50ms answers/s"},
 			  { name: "dnsdist."+components[1]+".main.latency50-100", legend: "50-100ms answers/s"},
-			  { name: "dnsdist."+components[1]+".main.latency100-1000", legend: "100-1000ms answers/s"} ]}		  	    ,
+			  { name: "dnsdist."+components[1]+".main.latency100-1000", legend: "100-1000ms answers/s"} ]},
             { 
 		items: [ 
 		    {name: "dnsdist."+components[1]+".main.downstream-timeouts", legend: "Timeouts/s"},
@@ -471,6 +501,63 @@ $(document).ready(function() {
                     );
                 }
                 configs.push.apply(configs, per_frontend_values);
+            }
+            console.log("Dus...");
+            if ("doh" in m.hierarchy["dnsdist"][components[1]]["main"]) {           
+                console.log("hiero");
+                var dohs=m.listMetricsAt("dnsdist", components[1], "main", "doh");             
+                var https2_values=[];                
+                var https1_values=[];
+                var method_values=[];
+                var connect_values=[];
+                var dispo_values=[];                
+                
+                $.each(dohs, function(key, val) {
+                    pools_count++;
+                    https2_values.push(
+                        { name: "dnsdist."+components[1]+".main.doh."+val+".http2-queries", legend: "http2 "+val}
+                    );                
+                    https1_values.push(
+                        { name: "dnsdist."+components[1]+".main.doh."+val+".http1-queries", legend: "http1 "+val}
+                    );                
+                    method_values.push(
+                        { name:"dnsdist."+components[1]+".main.doh."+val+".get-queries", legend: "get "+val}
+                    );                   
+                    method_values.push(
+                        { name:"dnsdist."+components[1]+".main.doh."+val+".post-queries", legend: "post "+val}
+                    );
+                    connect_values.push(
+                        { name:"dnsdist."+components[1]+".main.doh."+val+".http-connects", legend: "connects "+val}
+                    );
+                    dispo_values.push(
+                        { name:"dnsdist."+components[1]+".main.doh."+val+".bad-requests", legend: "bad "+val}
+                    );
+                    dispo_values.push(
+                        { name:"dnsdist."+components[1]+".main.doh."+val+".valid-responses", legend: "valid resp "+val}
+                    );
+                    dispo_values.push(
+                        { name:"dnsdist."+components[1]+".main.doh."+val+".error-responses", legend: "error resp "+val}
+                    );
+                    
+                    
+                    
+                    
+                })
+                configs.push(
+                        { renderer: 'stack', items: https2_values}
+                    );
+                configs.push(
+                        { renderer: 'stack', items: https1_values}
+                    );
+                configs.push(
+                        { renderer: 'stack', items: method_values}
+                    );
+                configs.push(
+                        { renderer: 'stack', items: connect_values}
+                    );
+                configs.push(
+                        { renderer: 'stack', items: dispo_values}
+                    );                    
             }
             if ("pools" in m.hierarchy["dnsdist"][components[1]]["main"]) {
                 var pools=m.listMetricsAt("dnsdist", components[1], "main", "pools");

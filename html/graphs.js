@@ -509,6 +509,7 @@ $(document).ready(function() {
                 var https2_values=[];                
                 var https1_values=[];
                 var method_values=[];
+                var tls_values=[];
                 var connect_values=[];
                 var dispo_values=[];                
                 
@@ -519,7 +520,28 @@ $(document).ready(function() {
                     );                
                     https1_values.push(
                         { name: "dnsdist."+components[1]+".main.doh."+val+".http1-queries", legend: "http1 "+val}
+                    );
+
+                    tls_values.push(
+                        { name: "dnsdist."+components[1]+".main.doh."+val+".tls10-queries", legend: "TLS 1.0 "+val}
                     );                
+
+                    tls_values.push(
+                        { name: "dnsdist."+components[1]+".main.doh."+val+".tls11-queries", legend: "TLS 1.1 "+val}
+                    );
+
+                    tls_values.push(
+                        { name: "dnsdist."+components[1]+".main.doh."+val+".tls12-queries", legend: "TLS 1.2 "+val}
+                    );                
+
+                    tls_values.push(
+                        { name: "dnsdist."+components[1]+".main.doh."+val+".tls13-queries", legend: "TLS 1.3 "+val}
+                    );                
+/*
+                    tls_values.push(
+                        { name: "dnsdist."+components[1]+".main.doh."+val+".tls-unknown-queries", legend: "TLS ? "+val}
+                    );                
+*/
                     method_values.push(
                         { name:"dnsdist."+components[1]+".main.doh."+val+".get-queries", legend: "get "+val}
                     );                   
@@ -538,10 +560,6 @@ $(document).ready(function() {
                     dispo_values.push(
                         { name:"dnsdist."+components[1]+".main.doh."+val+".error-responses", legend: "error resp "+val}
                     );
-                    
-                    
-                    
-                    
                 })
                 configs.push(
                         { renderer: 'stack', items: https2_values}
@@ -552,6 +570,10 @@ $(document).ready(function() {
                 configs.push(
                         { renderer: 'stack', items: method_values}
                     );
+                configs.push(
+                        { renderer: 'stack', items: tls_values}
+                    );
+
                 configs.push(
                         { renderer: 'stack', items: connect_values}
                     );

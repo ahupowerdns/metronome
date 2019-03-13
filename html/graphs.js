@@ -65,7 +65,8 @@ $(document).ready(function() {
         ]};	
 	
         var config1a = { items: [ 
-            { name: servername+".qa-latency", legend: "Latency (usec)", kind: "gauge"}
+            { name: servername+".qa-latency", legend: "Latency (usec)", kind: "gauge"},
+            { name: servername+".x-our-latency", legend: "Non-network latency (usec)", kind: "gauge"}
             ]};
 
 
@@ -217,6 +218,17 @@ $(document).ready(function() {
             
             ]};
 
+	var config7ad = { items: [
+            {
+		metrics: [servername+".sys-msec",servername+".user-msec", servername+".questions"],
+		legend: "QPS per CPU capacity",
+		formula: function(r, d) {
+		        if(d[0] > 0 && d[1] >0) {
+		            return 1000.0*d[2] / (d[0] + d[1]);
+                        }
+                        return 0;
+                    }
+	    }]};
             
             
 
@@ -291,7 +303,7 @@ $(document).ready(function() {
 	var configs;
 	var components = servername.split('.');
 	if(components[2]=="recursor") { 
-	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3ac, config3b, config4, config4a, config5, config6, config6a, config6b, config7ab, config7ac];
+	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3ac, config3b, config4, config4a, config5, config6, config6a, config6b, config7ab, config7ac, config7ad];
 
             configs.push({items:[ {name: servername+".dnssec-queries", legend: "DNSSEC queries/s"},
                                   {name: servername+".dnssec-validations", legend: "DNSSEC validations/s"}]});

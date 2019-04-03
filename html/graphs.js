@@ -101,7 +101,38 @@ $(document).ready(function() {
             { metrics: [servername+".user-msec"], legend: "User CPU%",
 	      formula: function(r,d) { return d[1]/10.0; }
 	    }]};
-	
+
+	var config3threads ={items: [ 
+            { metrics: [servername+".cpu-msec-thread-0"], legend: "Thread 0 CPU%",
+	      formula: function(r,d) { return d[0]/10.0; }
+	    }, 
+            { metrics: [servername+".cpu-msec-thread-1"], legend: "Thread 1 CPU%",
+	      formula: function(r,d) { return d[1]/10.0; }
+	    },
+            { metrics: [servername+".cpu-msec-thread-2"], legend: "Thread 2 CPU%",
+	      formula: function(r,d) { return d[2]/10.0; }
+	    },
+            { metrics: [servername+".cpu-msec-thread-3"], legend: "Thread 3 CPU%",
+	      formula: function(r,d) { return d[3]/10.0; }
+	    },
+            { metrics: [servername+".cpu-msec-thread-4"], legend: "Thread 4 CPU%",
+	      formula: function(r,d) { return d[4]/10.0; }
+	    },
+            { metrics: [servername+".cpu-msec-thread-5"], legend: "Thread 5 CPU%",
+	      formula: function(r,d) { return d[5]/10.0; }
+	    },
+            { metrics: [servername+".cpu-msec-thread-6"], legend: "Thread 6 CPU%",
+	      formula: function(r,d) { return d[6]/10.0; }
+	    }
+            
+
+        ]};
+
+        var config3threads2 = { items: [ 
+            { name: servername+".rebalanced-queries", legend: "Rebalanced/s" }
+        ]};
+
+        
 	var config3a = { items: [ 
             { name: servername+".outgoing-timeouts", legend: "Out.timeouts/s" }, 	
             { name: servername+".unreachables", legend: "Unreachable/s" }, 	
@@ -303,7 +334,7 @@ $(document).ready(function() {
 	var configs;
 	var components = servername.split('.');
 	if(components[2]=="recursor") { 
-	    configs=[config1, config1a, config2, config2a, config2b, config3, config3a, config3aa, config3ab, config3ac, config3b, config4, config4a, config5, config6, config6a, config6b, config7ab, config7ac, config7ad];
+	    configs=[config1, config1a, config2, config2a, config2b, config3, config3threads, config3threads2, config3a, config3aa, config3ab, config3ac, config3b, config4, config4a, config5, config6, config6a, config6b, config7ab, config7ac, config7ad];
 
             configs.push({items:[ {name: servername+".dnssec-queries", legend: "DNSSEC queries/s"},
                                   {name: servername+".dnssec-validations", legend: "DNSSEC validations/s"}]});

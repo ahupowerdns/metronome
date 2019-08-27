@@ -16,14 +16,13 @@ exit 1
 %{nil}
 
 Name:             metronome
-Version:          @VERSION@
-Release:          @RELEASE@
+Version:          %{getenv:BUILDER_RPM_VERSION}
+Release:          %{getenv:BUILDER_RPM_RELEASE}%{dist}
 Summary:          A tiny graphite receiver with flat-file storage
 Group:            System Environment/Daemons
-
 License:          GPLv2
 URL:              https://github.com/ahupowerdns/metronome
-Source0:          metronome-@SRC_VERSION@.tar.bz2
+Source0:          %{name}-%{getenv:BUILDER_VERSION}.tar.bz2
 
 %if %{?rhel} >= 7
 BuildRequires:    boost-devel
@@ -33,7 +32,8 @@ Requires(preun):  systemd-units
 Requires(postun): systemd-units
 %else
 BuildRequires:    boost148-devel
-BuildRequires:    devtoolset-4-gcc-c++
+BuildRequires:    boost148-program-options
+BuildRequires:    devtoolset-7-gcc-c++
 %endif
 
 BuildRequires:    eigen3-devel
@@ -44,11 +44,14 @@ Metronome is a small receiver for Carbon (graphite) data with a small http API t
 
 %prep
 %if %{?rhel} < 7
-source /opt/rh/devtoolset-4/enable
+source /opt/rh/devtoolset-7/enable
 %endif
-%setup -q -n %{name}-@SRC_VERSION@
+%setup -n %{name}-%{getenv:BUILDER_VERSION}
 
 %build
+%if %{?rhel} < 7
+source /opt/rh/devtoolset-7/enable
+%endif
 
 %configure \
   --disable-silent-rules \
@@ -57,7 +60,7 @@ source /opt/rh/devtoolset-4/enable
 %else
   --disable-systemd \
   --with-boost=/usr/include/boost148 \
-  LIBRARY_PATH=/usr/lib64/boost148
+  LIBRARY_PATH=/usr/lib64/boost148 LDFLAGS=-L/usr/lib64/boost148
 %endif
 
 %if %{?rhel} >= 7

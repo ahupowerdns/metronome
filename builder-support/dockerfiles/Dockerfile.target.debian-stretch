@@ -1,0 +1,4 @@
+# First do the source builds
+@INCLUDE Dockerfile.target.sdist
+FROM debian:stretch as dist-base
+@INCLUDE Dockerfile.debbuild

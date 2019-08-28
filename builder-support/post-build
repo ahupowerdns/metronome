@@ -1,0 +1,22 @@
+#!/bin/bash
+
+SRCDIR="${BUILDER_TMP}/${BUILDER_VERSION}/${BUILDER_TARGET}"
+DESTDIR="built_pkgs/"
+
+mkdir -p ${DESTDIR}
+
+# We need the GNU version of tar for --transform
+[ -z "$tar" ] && tar=`which gtar tar | grep '^/' | head -1`
+if ! $tar --version | grep -q GNU; then
+    echo "ERROR: could not find GNU tar (as gtar or tar)"
+    echo "On macOS: brew install gnu-tar"
+    exit 1
+fi
+
+if [ $(find ${SRCDIR}/dist -name "metronome*" 2>/dev/null | wc -l) -ne 0 ]; then
+  dst=${DESTDIR}/metronome/${BUILDER_VERSION}
+  mkdir -p ${dst}
+  cp ${BUILDER_TMP}/${BUILDER_VERSION}/sdist/metronome-${BUILDER_VERSION}.tar.bz2 ${dst}
+  tardirname=metronome-${BUILDER_VERSION}-${BUILDER_TARGET}
+  "$tar" -cjf ${dst}/${tardirname}.tar.bz2 --transform="s,.*/,${tardirname}/,g"  $(find ${SRCDIR} -type f)
+fi

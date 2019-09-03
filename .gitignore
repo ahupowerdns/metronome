@@ -76,3 +76,4 @@ debian/changelog
 
 *.deb
 *.rpm
+built_pkgs

@@ -15,6 +15,9 @@ script:
  - ./configure
  - make -j 4
  - make -j 4 check
+ - cd -
+ - ./builder/build.sh centos-7
+ - ./builder/build.sh debian-buster
 notifications:
   email:
     - bert.hubert@netherlabs.nl

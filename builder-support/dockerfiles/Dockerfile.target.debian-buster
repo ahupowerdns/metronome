@@ -1,0 +1,4 @@
+# First do the source builds
+@INCLUDE Dockerfile.target.sdist
+FROM debian:buster as dist-base
+@INCLUDE Dockerfile.debbuild

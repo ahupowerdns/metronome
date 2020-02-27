@@ -82,8 +82,8 @@ endif
 #	doxygen
 #endif
 
-#check: testrunner
-#	./testrunner
+check: testrunner
+	./testrunner
 
-#testrunner: testrunner.o test-statstorage.o statstorage.o
-#	$(CXX) $^ -lboost_unit_test_framework -o $@ 
+testrunner: testrunner.o test-statstorage.o statstorage.o
+	$(CXX) $^ -lboost_unit_test_framework -o $@ 

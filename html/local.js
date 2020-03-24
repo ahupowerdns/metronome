@@ -1,2 +1,2 @@
 "use strict";
-var metronomeServer="https://metronome.presales.powerdns.equipment/metronome";
+var metronomeServer="http://127.0.0.1:8000/";

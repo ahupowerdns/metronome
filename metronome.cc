@@ -26,25 +26,65 @@ bool g_disableSyslog;
 bool g_http10;
 using namespace std;
 
-void startCarbonThread(int sock, ComboAddress remote)
-try
+bool handleLine(StatStorage& ss, string line, int& numStored, string& err)
 {
-  StatStorage ss(g_vm["stats-directory"].as<string>());
-  infolog("Got carbon connection from %s", remote.toStringWithPort());
-  string line;
-
-  int numStored=0;
-  while(sockGetLine(sock, &line)) {
-    // format: name value timestamp
-//    cout<<"Got: "<<line;
+    char *eptr;
     vector<string> parts;
     stringtok(parts, line, " \t\r\n");
     if(parts.size()!=3) {
-      writen(sock, "ERR Wrong number of parts to line");
-      break;
-    }	
-    ss.store(parts[0], atoi(parts[2].c_str()), atof(parts[1].c_str()));
+      err = "Invalid number of parts";
+      return false;
+    }
+    time_t t = strtol(parts[2].c_str(), &eptr, 10);
+    if (t == 0 && eptr != NULL && *eptr != '\0') {
+      err = "Timestamp is not a number";
+      return false;
+    }
+    double v = strtod(parts[1].c_str(), &eptr);
+    /* do not refuse everything for non-numeric value */
+    if (v == 0 && eptr != NULL && *eptr != '\0') {
+      return true;
+    }
+    ss.store(parts[0], t, v);
     numStored++;
+    return true;
+}
+
+void startCarbonThread(int sock, ComboAddress remote)
+try
+{
+  string buffer;
+  char c[1500];
+  StatStorage ss(g_vm["stats-directory"].as<string>());
+  infolog("Got carbon connection from %s", remote.toStringWithPort());
+  string line, errstr;
+  string::size_type pos;
+  bool eof = false;
+  int numStored=0;
+  ssize_t err;
+
+  for(;;) {
+    while((pos = buffer.find('\n')) != string::npos) {
+       bool ok = handleLine(ss, buffer.substr(0, pos-1), numStored, errstr);
+       buffer.erase(0, pos+1);
+       if (!ok) {
+         eof = true;
+         errstr = "ERR " + errstr;
+         writen(sock, errstr);
+         break;
+       }
+    }
+    // buffer consumed and no more data can be read
+    if (eof)
+      break;
+    // try read more
+    err = ::read(sock, c, sizeof(c));
+    if (err < 0)
+      throw runtime_error("Error reading from socket: "+string(strerror(errno)));
+    else if (err == 0)
+      eof = true;
+    else
+      buffer.append(c, err);
   }
   infolog("Closing connection with %s, stored %d data", remote.toStringWithPort(), numStored);
   close(sock);

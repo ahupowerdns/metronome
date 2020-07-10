@@ -34,7 +34,7 @@ try
   string line;
 
   int numStored=0;
-  while(sockGetLine(sock, &line)) {
+  while(sockGetLine(sock, line, g_vm["carbon-timeout"].as<unsigned int>())) {
     // format: name value timestamp
 //    cout<<"Got: "<<line;
     vector<string> parts;
@@ -146,7 +146,7 @@ try
 
   for(int numrequests=0;;++numrequests) {
     string input, line;
-    while(sockGetLine(sock, &line)) {
+    while (sockGetLine(sock, line, g_vm["webserver-timeout"].as<unsigned int>())) {
 
       input.append(line);
       if(line.empty() || line=="\n" || line=="\r\n") // XXX NO
@@ -326,7 +326,9 @@ void processCommandLine(int argc, char **argv)
   desc.add_options()
     ("help,h", "produce help message")
     ("carbon-address", po::value<string>()->default_value("[::]:2003"), "Accept carbon data on this address")
+    ("carbon-timeout", po::value<unsigned int>()->default_value(5), "Maximum time in seconds to send a carbon line")
     ("webserver-address", po::value<string>()->default_value("[::]:8000"), "Provide HTTP service on this address")
+    ("webserver-timeout", po::value<unsigned int>()->default_value(5), "Maximum time in seconds to send an HTTP request line")
     ("http1.0", "If set, use http 1.0 semantics for lighttpd proxy")
     ("quiet", po::value<bool>()->default_value(true), "don't be too noisy")
     ("daemon", po::value<bool>()->default_value(true), "run in background")

@@ -1,3 +1,5 @@
+#include <poll.h>
+
 #include "iputils.hh"
 /** these functions provide a very lightweight wrapper to the Berkeley sockets API. Errors -> exceptions! */
 
@@ -154,20 +156,58 @@ int makeIPv4sockaddr(const std::string& str, struct sockaddr_in* ret)
   return -1;
 }
 
-bool sockGetLine(int sock, string* ret)
+static int waitForData(int fd, unsigned int seconds)
 {
-  ret->clear();
+  struct pollfd pfd;
+  memset(&pfd, 0, sizeof(pfd));
+  pfd.fd = fd;
+  pfd.events = POLLIN;
+
+  return poll(&pfd, 1, seconds * 1000);
+}
+
+bool sockGetLine(int sock, string& ret, unsigned int timeout)
+{
+  const time_t startTime = time(nullptr);
+  ret.clear();
   char c;
   int err;
-  for(;;) {
-    err=read(sock, &c, 1);
-    if(err < 0)
+
+  for (;;) {
+    const time_t now = time(nullptr);
+    if (now < startTime) {
+      return false;
+    }
+
+    if ((now - startTime) > timeout) {
+      return false;
+    }
+
+    int res  = waitForData(sock, timeout - (now - startTime));
+    if (res < 0) {
+      throw runtime_error("Error while waiting to read from socket: " + string(strerror(errno)));
+    }
+    else if (res == 0) {
+      /* timeout */
+      return false;
+    }
+
+    err = read(sock, &c, 1);
+    if (err < 0) {
       throw runtime_error("Error reading from socket: "+string(strerror(errno)));
-    if(!err)
+    }
+
+    if (err == 0) {
+      /* disconnected */
       break;
-    ret->append(1, c);
-    if(c=='\n')
+    }
+
+    ret.append(1, c);
+
+    if (c == '\n') {
       break;
+    }
   }
-  return !ret->empty();
+
+  return !ret.empty();
 }

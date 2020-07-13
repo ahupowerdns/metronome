@@ -38,15 +38,13 @@ void StatStorage::store(const string& name, uint32_t timestamp, float value)
     return;
 
   string fname=makeFilename(name, timestamp);
-  FILE* fp=fopen(fname.c_str(), "a");
+  auto fp = std::unique_ptr<FILE, int(*)(FILE*)>(fopen(fname.c_str(), "a"), fclose);
   if(!fp)
     unixDie("Opening '"+fname+"'");
   StatStorage::Val val({timestamp, value});  
-  if(fwrite(&val, 1, sizeof(val), fp) != sizeof(val)) {
-    fclose(fp);
+  if(fwrite(&val, 1, sizeof(val), fp.get()) != sizeof(val)) {
     throw runtime_error("Failed to store datum in "+fname+", may be corrupted now");
   }
-  fclose(fp);
 }
 
 void StatStorage::store(const string& name, const vector<Datum>& data)
@@ -56,25 +54,20 @@ void StatStorage::store(const string& name, const vector<Datum>& data)
 
   unsigned int weekno=0;
   string fname;
-  FILE* fp=0;
+  std::unique_ptr<FILE, int(*)(FILE*)> fp{nullptr, fclose};
   for(const auto& d: data) {
     if(getWeekNum(d.timestamp) != weekno) {
       weekno=getWeekNum(d.timestamp);
-      if(fp)
-	fclose(fp);
       fname=makeFilename(name, d.timestamp);
-      fp=fopen(fname.c_str(), "a");
+      fp = std::unique_ptr<FILE, int(*)(FILE*)>(fopen(fname.c_str(), "a"), fclose);
       if(!fp)
 	unixDie("Opening '"+fname+"'");
     }
     StatStorage::Val val({d.timestamp, d.value});  
-    if(fwrite(&val, 1, sizeof(val), fp) != sizeof(val)) {
-      fclose(fp);
+    if(fwrite(&val, 1, sizeof(val), fp.get()) != sizeof(val)) {
       throw runtime_error("Failed to store datum in "+fname+", may be corrupted now");
     }
   }
-  if(fp)
-    fclose(fp);
 }
 
 
@@ -89,28 +82,27 @@ static uint64_t filesize(int fd)
 
 vector<string> StatStorage::getMetrics()
 {
-  DIR *dir = opendir(d_root.c_str());
-  if(!dir)
+  auto dir = std::unique_ptr<DIR, int(*)(DIR*)>(opendir(d_root.c_str()), closedir);
+  if (!dir) {
     unixDie("Listing metrics from statistics storage");
-  struct dirent entry, *result=0;
+  }
+
   vector<string> ret;
   for(;;) {
-    if(readdir_r(dir, &entry, &result)) {
-      closedir(dir);
-      unixDie("Reading directory entry");
-    }
-    if(!result)
+    struct dirent* result = readdir(dir.get());
+    if (!result) {
       break;
-    if(result->d_name[0] != '.') {
+    }
+    if (result->d_name[0] != '.') {
       char *p;
       for(p=result->d_name + strlen(result->d_name) - 1; p !=result->d_name && *p!='.'; --p);
-      *p=0;
+      *p='\0';
       
-      if(*result->d_name)
+      if (*result->d_name) {
 	ret.push_back(result->d_name);
+      }
     }
   }
-  closedir(dir);
   sort(ret.begin(), ret.end());
   auto newend=unique(ret.begin(), ret.end());
   ret.resize(distance(ret.begin(), newend));
@@ -119,22 +111,21 @@ vector<string> StatStorage::getMetrics()
 
 vector<StatStorage::Val> StatStorage::retrieveVals(const std::string& name)
 {
-  DIR *dir = opendir(d_root.c_str());
-  if(!dir)
+  auto dir = std::unique_ptr<DIR, int(*)(DIR*)>(opendir(d_root.c_str()), closedir);
+  if (!dir) {
     unixDie("Listing metrics from statistics storage");
-  struct dirent entry, *result=0;
+  }
+
   vector<string> files;
   for(;;) {
-    if(readdir_r(dir, &entry, &result)) {
-      closedir(dir);
-      unixDie("Reading directory entry");
-    }
-    if(!result)
+    struct dirent* result = readdir(dir.get());
+    if (!result) {
       break;
-    if(boost::starts_with(result->d_name, name+".") || result->d_name==name)
+    }
+    if (boost::starts_with(result->d_name, name+".") || result->d_name==name) {
       files.push_back(result->d_name);
+    }
   }
-  closedir(dir);
 
   vector<StatStorage::Val> ret;
   for(const auto& f: files) {
@@ -146,22 +137,20 @@ vector<StatStorage::Val> StatStorage::retrieveVals(const std::string& name)
 
 void StatStorage::retrieveAllFromFile(const std::string& fname, vector<StatStorage::Val>* values)
 {
-  FILE* fp=fopen(fname.c_str(), "r");
+  auto fp = std::unique_ptr<FILE, int(*)(FILE*)>(fopen(fname.c_str(), "r"), fclose);
   if(!fp) {
     if(errno!=ENOENT)
       unixDie("Opening '"+fname+"'");
     return;
   }
-  auto size = filesize(fileno(fp));
+  auto size = filesize(fileno(fp.get()));
   auto numEntries = size/sizeof(StatStorage::Val);
   auto oldsize=values->size();
   values->resize(oldsize + numEntries);
   //  cerr<<"Filesize: "<<size<<", "<<values.size()<<endl;
-  if(fread(&(*values)[oldsize], sizeof(StatStorage::Val), numEntries, fp) != numEntries) {
-    fclose(fp);
+  if(fread(&(*values)[oldsize], sizeof(StatStorage::Val), numEntries, fp.get()) != numEntries) {
     unixDie("Reading from '"+fname+"'");
   }
-  fclose(fp);
 }
 			 
 

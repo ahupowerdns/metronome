@@ -26,39 +26,45 @@ bool g_disableSyslog;
 bool g_http10;
 using namespace std;
 
-void startCarbonThread(int sock, ComboAddress remote)
-try
+static void startCarbonThread(int sd, ComboAddress remote)
 {
-  StatStorage ss(g_vm["stats-directory"].as<string>());
-  infolog("Got carbon connection from %s", remote.toStringWithPort());
-  string line;
+  Socket sock(sd);
+  sd = -1;
+  try
+  {
+    StatStorage ss(g_vm["stats-directory"].as<string>());
+    infolog("Got carbon connection from %s", remote.toStringWithPort());
+    string line;
 
-  int numStored=0;
-  while(sockGetLine(sock, line, g_vm["carbon-timeout"].as<unsigned int>())) {
-    // format: name value timestamp
+    int numStored=0;
+    while(sockGetLine(sock.getHandle(), line, g_vm["carbon-timeout"].as<unsigned int>())) {
+      // format: name value timestamp
 //    cout<<"Got: "<<line;
-    vector<string> parts;
-    stringtok(parts, line, " \t\r\n");
-    if(parts.size()!=3) {
-      writen(sock, "ERR Wrong number of parts to line");
-      break;
-    }	
-    ss.store(parts[0], atoi(parts[2].c_str()), atof(parts[1].c_str()));
-    numStored++;
+      vector<string> parts;
+      stringtok(parts, line, " \t\r\n");
+      if(parts.size()!=3) {
+        writen(sock.getHandle(), "ERR Wrong number of parts to line");
+        break;
+      }
+      ss.store(parts[0], atoi(parts[2].c_str()), atof(parts[1].c_str()));
+      numStored++;
+    }
+    infolog("Closing connection with %s, stored %d data", remote.toStringWithPort(), numStored);
   }
-  infolog("Closing connection with %s, stored %d data", remote.toStringWithPort(), numStored);
-  close(sock);
-}
-catch(exception& e)
-{
-  errlog("Exception: %s", e.what());
-  try {
-    writen(sock, string("Error: ")+e.what()+"\n");
-  }catch(...){}
-  close(sock);
+  catch (const exception& e)
+  {
+    errlog("Exception: %s", e.what());
+    try {
+      writen(sock.getHandle(), string("Error: ")+e.what()+"\n");
+    }
+    catch (...)
+    {
+    }
+  }
 }
 
-void dumpRequest(const YaHTTP::Request& req)
+#if 0
+static void dumpRequest(const YaHTTP::Request& req)
 {
   cout<<"Headers: \n";
   for(auto h : req.headers) {
@@ -72,6 +78,7 @@ void dumpRequest(const YaHTTP::Request& req)
   cout<<"Body: "<<req.body<<endl;
   cout<<"Method: "<<req.method<<endl;
 }
+#endif
 
 static void daemonize(void)
 {
@@ -92,7 +99,7 @@ static void daemonize(void)
 }
 
 
-pair<double,double> smooth(const vector<StatStorage::Datum>& vals, double timestamp, int window)
+static pair<double,double> smooth(const vector<StatStorage::Datum>& vals, double timestamp, int window)
 {
   auto from = upper_bound(vals.begin(), vals.end(), timestamp-window/2.0);
   auto to = upper_bound(vals.begin(), vals.end(), timestamp+window/2.0);
@@ -139,20 +146,22 @@ pair<double,double> smooth(const vector<StatStorage::Datum>& vals, double timest
   return interpolate(id, 3, timestamp);
 }
 
-void startWebserverThread(int sock, ComboAddress remote)
+static void startWebserverThread(int sd, const ComboAddress remote)
+{
 try
 {
+  Socket sock(sd);
+  sd = -1;
   infolog("Got web connection from %s", remote.toStringWithPort());
 
   for(int numrequests=0;;++numrequests) {
     string input, line;
-    while (sockGetLine(sock, line, g_vm["webserver-timeout"].as<unsigned int>())) {
+    while (sockGetLine(sock.getHandle(), line, g_vm["webserver-timeout"].as<unsigned int>())) {
 
       input.append(line);
       if(line.empty() || line=="\n" || line=="\r\n") // XXX NO
 	goto ok;      
     }
-    close(sock);
     if(input.size()) {
       warnlog("Did not receive full request, got %ld bytes", input.size());
     }
@@ -284,18 +293,18 @@ try
     ostringstream ostr;
     ostr << resp;
     
-    writen(sock, ostr.str());
+    writen(sock.getHandle(), ostr.str());
     if(g_http10)
       break;
   }
-  close(sock);
 }
 catch(exception& e) {
   errlog("Web connection thread for %s terminated because of error: %s", remote.toStringWithPort(), e.what());
-  close(sock);
+}
 }
 
-void webServerThread(int sock, const ComboAddress& local)
+static void webServerThread(int sock, const ComboAddress& local)
+{
 try
 {
   for(;;) {
@@ -313,14 +322,15 @@ catch(...)
 {
   errlog("Webserver thread died because of exception");
 }
+}
 
-void launchWebserver(int s, const ComboAddress& local)
+static void launchWebserver(int s, const ComboAddress& local)
 {
   thread t1(webServerThread, s, local);
   t1.detach();
 }
 
-void processCommandLine(int argc, char **argv)
+static void processCommandLine(int argc, char **argv)
 {
   po::options_description desc("Allowed options");
   desc.add_options()
@@ -355,7 +365,7 @@ void processCommandLine(int argc, char **argv)
 }
 
 
-int makeAndBindSocket(const ComboAddress& local, string name) 
+static int makeAndBindSocket(const ComboAddress& local, string name)
 {
   int s = SSocket(local.sin4.sin_family, SOCK_STREAM, 0);
   SSetsockopt(s, SOL_SOCKET, SO_REUSEADDR, 1);
@@ -367,6 +377,7 @@ int makeAndBindSocket(const ComboAddress& local, string name)
 
 
 int main(int argc, char** argv)
+{
 try
 {
   signal(SIGPIPE, SIG_IGN);
@@ -414,4 +425,5 @@ try
 catch(exception& e) {
   errlog("Fatal error: %s", e.what());
   exit(EXIT_FAILURE);
+}
 }

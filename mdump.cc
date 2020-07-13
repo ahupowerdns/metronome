@@ -14,21 +14,22 @@ using std::endl;
 
 // syntax: mmanage
 int main(int argc, char** argv)
-try
 {
-  StatStorage ss("./stats");
-  auto metrics=ss.getMetrics();
-  cout<<"Have "<<metrics.size()<<" metrics"<<endl;
-  for(const auto& m: metrics) {
-    auto vals=ss.retrieve(m);
-    cout<<"Have "<<vals.size()<<" values for "<<m<<endl;
-    for(auto& v : vals)
-      cout<<v.timestamp<<"\t"<<v.value<<endl;
+  try
+  {
+    StatStorage ss("./stats");
+    auto metrics=ss.getMetrics();
+    cout<<"Have "<<metrics.size()<<" metrics"<<endl;
+    for(const auto& m: metrics) {
+      auto vals=ss.retrieve(m);
+      cout<<"Have "<<vals.size()<<" values for "<<m<<endl;
+      for(auto& v : vals)
+        cout<<v.timestamp<<"\t"<<v.value<<endl;
+    }
   }
-
-}
-catch(std::exception& e)
-{
-  cerr<<"Error: "<<e.what()<<endl;
-  exit(EXIT_FAILURE);
+  catch (const std::exception& e)
+  {
+    cerr<<"Error: "<<e.what()<<endl;
+    exit(EXIT_FAILURE);
+  }
 }

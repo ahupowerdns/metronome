@@ -38,7 +38,7 @@ namespace {
     return ret;
   }
 
-
+#if 0
   void plotSolution(const vector<InterpolateDatum>& input, const VectorXd& res, int order)
   {
     ofstream plot("plot");
@@ -51,6 +51,7 @@ namespace {
     for(const auto& i : input) 
       r<<i.x<<'\t'<<i.y<<endl;
   }
+#endif
   
   vector<InterpolateDatum> normalize(const vector<InterpolateDatum>& input, double* x, double *factor)
   {

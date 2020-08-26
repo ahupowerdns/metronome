@@ -4,6 +4,8 @@
 #include <errno.h>
 #include <string.h>
 #include <vector>
+#include <unistd.h>
+
 #include "dolog.hh"
 using std::string;
 
@@ -40,3 +42,27 @@ stringtok (Container &container, string const &in,
     i = j + 1;
   }
 }
+
+class Socket
+{
+public:
+  Socket(int descriptor): d_sock(descriptor)
+  {
+  }
+
+  ~Socket()
+  {
+    if (d_sock != -1) {
+      close(d_sock);
+      d_sock = -1;
+    }
+  }
+
+  int getHandle() const
+  {
+    return d_sock;
+  }
+
+private:
+  int d_sock{-1};
+};

@@ -9,6 +9,7 @@ ExecStart=@bindir@/metronome --daemon 0 \
   --carbon-address '[::]:2003' \
   --webserver-address '[::]:8000' \
   --stats-directory /var/lib/metronome
+Restart=on-failure
 User=metronome
 Group=metronome
 PrivateTmp=true

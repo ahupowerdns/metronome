@@ -18,6 +18,7 @@ script:
  - cd -
  - ./builder/build.sh centos-7
  - ./builder/build.sh debian-buster
+ - ./builder/build.sh debian-bullseye
 notifications:
   email:
     - bert.hubert@netherlabs.nl

@@ -276,6 +276,12 @@ $(document).ready(function() {
             { name: servername+".latency", legend: "Latency (usec)", kind: "gauge"}
             ]};
 
+        var config7e = { items: [
+            { name: servername+".send-latency", legend: "Latency send (usec)", kind: "gauge"},
+            { name: servername+".cache-latency", legend: "Latency cache (usec)", kind: "gauge"},
+            { name: servername+".backend-latency", legend: "Latency backend (usec)", kind: "gauge"},
+            { name: servername+".receive-latency", legend: "Latency receive (usec)", kind: "gauge"}
+            ]};
 
 	var config8 = { items: [ 
             { 
@@ -284,12 +290,19 @@ $(document).ready(function() {
 		formula: m.percentalizer
 	    }]};    
 
-	var config9 = { items: [ 
-            { 
-		metrics: [servername+".query-cache-hit",servername+".query-cache-miss"], 
-		legend: "% query cache hitrate", 
-		formula: m.percentalizer
- 	    }]};    
+        var config8a = { items: [
+            {
+                metrics: [servername+".zone-cache-miss",servername+".zone-cache-hit"],
+                legend: "% zone cache missrate",
+                formula: m.percentalizer
+            }]};
+
+        var config9 = { items: [
+            {
+                metrics: [servername+".query-cache-miss",servername+".query-cache-hit"],
+                legend: "% query cache missrate",
+                formula: m.percentalizer
+            }]};
 
 	var config10 = { items: [ 
 		{name: servername+".query-cache-miss", legend: "Database queries/s"}
@@ -378,7 +391,7 @@ $(document).ready(function() {
                 
 	}
 	else if(components[2]=="auth") {
-	    configs=[config3, config6a, config6aa, config6b, config7, config7a, config7aa, config7ab, config7b, config7c, config7d, config8, config9, config10, config10a, config11, config12, config13, config14];
+	    configs=[config3, config6a, config6aa, config6b, config7, config7a, config7aa, config7ab, config7b, config7c, config7d, config7e, config8, config8a, config9, config10, config10a, config11, config12, config13, config14];
 	}
 	else if(components[0]=="dnsdist") {
 	    configs=[ { 

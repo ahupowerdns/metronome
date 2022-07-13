@@ -34,6 +34,10 @@ $(document).ready(function() {
                         allqueries.push(val+".questions");
                         servfails.push(val+".servfail-answers");
                     }
+                    else if((/.main$/).test(val)) {
+                            allqueries.push(val+".queries");
+                            servfails.push(val+".servfail-responses");
+                        }
                 });
                 
             var config ={ items: [ 

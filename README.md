@@ -56,7 +56,7 @@ it knows the Webserver IP address of metronome (port 8000 on :: by default).
 Thanks to
 =========
 Aki Tuomi for the excellent [yahttp](https://github.com/cmouse/yahttp), 
-[Rickshaw](http://code.shutterstock.com/rickshaw/) for the graphs. [Eigen](http://eigen.tuxfamily.org) for the math. And a cast of thousands for C++2011.
+[Rickshaw](https://github.com/shutterstock/rickshaw) for the graphs. [Eigen](http://eigen.tuxfamily.org) for the math. And a cast of thousands for C++2011.
 
 status
 ======
